@@ -1,0 +1,135 @@
+<template>
+<section class="col-lg-12">
+    <div class="card card-success card-outline">
+        <div class="card-header justify-content-between"> 
+            <div class="card-title">Pending Loans</div> 
+        </div> 
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Customer Name</th>
+                        <th scope="col">Loan Name</th>
+                        <th scope="col">Loan Type</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Balance</th>
+                        <th scope="col">Created On</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"></th>
+                    </tr> 
+                </thead> 
+                <tbody>
+                    <tr v-for="account in accounts.data" :key="account.id">
+                        <th scope="row">{{account.user | FullName}} </th>
+                        <th scope="row">{{account.name}} <br /><span class="text-muted">{{ account.unique_id }}</span></th>
+                        <td>{{ account.type ? account.type.name : 'Old Type' }}</td>
+                        <td>{{ account.amount}}</td>
+                        <td class="text-warning">{{ account.balance}}</td>
+                        <td>{{ account.created_at | excelDate }}</td>
+                        <td>{{ account.duration }} weeeks</td>
+                        <td><span class="badge bg-outline-primary">{{ account.status }}</span></td>
+                        <td>
+                            <button type="button" class="btn btn-light" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
+                            <div class="dropdown-menu">
+                                <router-link class="btn btn-block dropdown-item" :to="'/staff/loans/'+account.id"><i class="fa fa-eye mr-1 text-primary"></i> View Loan Account</router-link>
+                                <router-link class="btn btn-block dropdown-item" :to="'/staff/customers/'+account.user_id"><i class="fa fa-user mr-1 text-success"></i> View Customer</router-link>
+                                <button v-if="account.status < 6" class="btn btn-block dropdown-item" @click="assignLoanOfficer()"><i class="fa fa-user-cog mr-1"></i> Assign Account Officer</button>
+                                <!--<button v-if="account.status > 13" class="btn btn-block dropdown-item" @click="closeLoan()"><i class="fa fa-times mr-1 text-danger"></i> Close Loan</button>
+                                <button v-else class="btn btn-block dropdown-item" @click="deleteLoan(1)"><i class="fa fa-trash mr-1 text-danger"></i> Delete Loan Request</button>-->
+                            </div>
+                        </td>
+                    </tr> 
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer clearfix">
+            <ul class="pagination pagination-sm m-0 float-right">
+                <li class="page-item"><a class="page-link" href="#">&laquo;</a></li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
+            </ul>
+        </div>
+    </div>   
+</section>
+</template>
+<script>
+export default {
+    data(){
+        return  {
+            editMode: false,
+            accounts: {},
+            account: {},
+            all_banks: [],
+            loan_types: [],
+            option_mode: '',
+            initial_route: '',
+        }
+    },
+    created() {
+        this.getInitials();
+        
+    },
+    methods:{
+        addNew(){
+            console.log("Working");
+            this.$Progress.start();
+            this.editMode = false;
+            this.loan = {};
+            Fire.$emit('LoanDataFill', {});
+            $('#loanModal').modal('show');
+            this.$Progress.finish();
+        },
+        closeLoan(){
+
+        },
+        closeModal(){
+            $('#loanModal').modal('hide');
+        },
+        deleteLoan(id){
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+                })
+            .then((result) => {
+                if(result.value){
+                    this.form.delete('/api/loans/accounts/'+id)
+                    .then(response=>{
+                    Swal.fire('Deleted!', 'Loan Account has been deleted.', 'success');
+                    Fire.$emit('CatRefresh', response);   
+                    })
+                    .catch(()=>{
+                    Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: '<a href>Why do I have this issue?</a>'});
+                    });
+                }
+            });
+        },
+        getInitials(){
+            axios.get('/api/loans/accounts/pending').then(response =>{
+                this.reloadPage(response);
+                toast.fire({icon: 'success', title: 'Assigned Loan Accounts loaded successfully',});
+            })
+            .catch(()=>{
+                this.$Progress.fail();
+                toast.fire({icon: 'error', title: 'Assigned Loan Accounts not loaded successfully',});
+            });
+        },
+        reloadPage(response){
+            this.accounts = response.data.accounts;
+            this.all_banks = response.data.all_banks;
+            this.loan_types = response.data.loan_types;
+        },
+    },
+    props:{
+        mode: String,
+        user: Object,
+    },
+}
+</script>

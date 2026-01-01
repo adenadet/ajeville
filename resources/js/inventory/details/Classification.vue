@@ -1,0 +1,3 @@
+<template>
+    Classification summary
+</template>

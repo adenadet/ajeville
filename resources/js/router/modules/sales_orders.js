@@ -1,0 +1,16 @@
+export default[
+    {path: '/sales_orders',                                  component: () => import ('@/sales_orders/Dashboard.vue')}, //SalesDashboard},
+    {path: '/sales_orders/customers',                        component: () => import ('@/sales_orders/Customers.vue')}, //SalesCustomers},
+    {path: '/sales_orders/customers/:id',                    component: () => import ('@/sales_orders/Customer.vue')}, //SalesCustomer},
+    {path: '/sales_orders/dashboard',                        component: () => import ('@/sales_orders/Dashboard.vue')}, //SalesDashboard},
+    {path: '/sales_orders/delivery_notes',                   component: () => import ('@/sales_orders/DeliveryNotes.vue')}, //SalesDeliveryNotes},
+    {path: '/sales_orders/delivery_notes/:id',               component: () => import ('@/sales_orders/DeliveryNote.vue')}, //SalesDeliveryNote},
+    {path: '/sales_orders/invoices',                         component: () => import ('@/sales_orders/Invoices.vue')}, //SalesInvoices},
+    {path: '/sales_orders/invoices/:id',                     component: () => import ('@/sales_orders/Invoice.vue')}, //SalesInvoice},
+    {path: '/sales_orders/orders',                           component: () => import ('@/sales_orders/Orders.vue')}, //SalesOrders},
+    {path: '/sales_orders/orders/new',                       component: () => import ('@/sales_orders/forms/Sales.vue')}, //SalesFormSales},
+    {path: '/sales_orders/orders/:id',                       component: () => import ('@/sales_orders/Order.vue')}, //SalesOrder},
+    {path: '/sales_orders/quotations',                       component: () => import ('@/sales_orders/Quotations.vue')}, //SalesQuotations},
+    {path: '/sales_orders/quotations/new',                   component: () => import ('@/sales_orders/forms/Quotation.vue')}, //SalesFormQuotation},
+    {path: '/sales_orders/quotations/:id',                   component: () => import ('@/sales_orders/Quotation.vue')}, //SalesQuotation},
+];

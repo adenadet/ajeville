@@ -1,0 +1,5 @@
+<template>
+    <section class="container-fluid">
+        <div class="row"></div>
+    </section>
+</template>

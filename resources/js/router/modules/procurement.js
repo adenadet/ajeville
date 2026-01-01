@@ -1,0 +1,17 @@
+export default[
+    {path:'/procurement',                                   component: () => import ('@/procurement/Dashboard.vue')},
+    {path:'/procurement/dashboard',                         component: () => import ('@/procurement/Dashboard.vue')},
+    {path:'/procurement/items',                             component: () => import ('@/inventory/Items.vue')},
+    {path:'/procurement/purchase_orders',                   component: () => import ('@/procurement/PurchaseOrders.vue')},
+    {path:'/procurement/purchase_orders/create',            component: () => import ('@/procurement/PurchaseOrderNew.vue')},
+    {path:'/procurement/purchase_orders/:id',               component: () => import ('@/procurement/PurchaseOrder.vue')},
+    {path:'/procurement/settings/approval_matrices',        component: () => import ('@/procurement/ApprovalMatrices.vue')},
+    {path:'/procurement/settings/general',                  component: () => import ('@/procurement/Settings.vue')},
+    {path:'/procurement/settings/payment_terms',            component: () => import ('@/procurement/PaymentTerms.vue')},
+    {path:'/procurement/settings/vendor_categories',        component: () => import ('@/procurement/VendorCategories.vue')},
+    {path:'/procurement/vendors',                           component: () => import ('@/procurement/Vendors.vue')},
+    {path:'/procurement/vendors/:id',                       component: () => import ('@/procurement/Vendor.vue')},
+    {path:'/procurement/work_orders',                       component: () => import ('@/procurement/WorkOrders.vue')},
+    {path:'/procurement/work_orders/create',                component: () => import ('@/procurement/WorkOrderNew.vue')},
+    {path:'/procurement/work_orders/:id',                   component: () => import ('@/procurement/WorkOrder.vue')},
+];

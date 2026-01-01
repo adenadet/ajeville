@@ -1,0 +1,3 @@
+<template>
+    Lead Details
+</template>
