@@ -9,6 +9,7 @@ use App\Http\Traits\EMR\NursingTrait;
 use App\Http\Traits\EMR\PharmacyTrait;
 use App\Http\Traits\EMR\PhysiotheraphyTrait;
 use App\Http\Traits\EMR\RadiologyTrait;
+use App\Http\Traits\EMR\VisitTransactionTrait;
 use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\General\FileManagerTrait;
 use App\Http\Traits\General\LogTrait;
@@ -31,7 +32,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 trait VisitTrait{
-    use FileManagerTrait, LogTrait, TransactionTrait;
+    use FileManagerTrait, LogTrait, VisitTransactionTrait;
 
     private function emr_visit_unique_id_create(){
         return config('app.short_code').'-'.dechex(time());
@@ -73,7 +74,7 @@ trait VisitTrait{
             /** ------------------------------
              * 3. Ensure no active visit
              * ------------------------------ */
-            $activeVisitExists = Visit::where('patient_id', '=', $patient->id)->whereIn('status', [Visit::StatusStarted, Visit::StatusAdmitted])->exists();
+            $activeVisitExists = Visit::where('patient_id', '=', $patient->id)->whereIn('status', [Visit::StatusOpen, Visit::StatusOngoing])->exists();
 
             if ($activeVisitExists) {throw new Exception('Patient already has an active visit.');}
 
@@ -96,37 +97,31 @@ trait VisitTrait{
                 'unique_id'        => $this->emr_visit_unique_id_create(),
                 'branch_id'        => $appointment->branch_id,
                 'patient_id'       => $patient->id,
-                'plan_id'          => $data['plan_id'] ?? $patient->primary_care_id,
+                'plan_id'          => $data['plan_id'] ?? $patient->primary_care_id ?? null,
                 'start_date'       => $data['start_date'] ?? now()->toDateString(),
                 'start_timestamp'  => $data['start_timestamp'] ?? now(),
-                'status'           => Visit::StatusStarted,
+                'status'           => Visit::StatusOpen,
                 'created_by'       => Auth::id() ?? auth('api')->id(),
                 'updated_by'       => Auth::id() ?? auth('api')->id(),
             ]);
 
-            /** ------------------------------
-             * 6. Attach visit to appointment
-             * ------------------------------ */
             $appointment->update([
                 'visit_id'       => $visit->id,
             ]);
 
-            /** ------------------------------
-             * 7. Registration billing (if new)
-             * ------------------------------ */
             if ($wasUnregistered) {
                 $registrationServiceId = config('emr.registration_service_id');
 
-                $this->finance_transaction_create($registrationServiceId, $patient->id, 1, true, $visit->id);
+                $this->emr_visit_transaction_create($registrationServiceId, $patient->id, 1, true, $visit->id);
             }
 
             /** ------------------------------
              * 8. Consultation billing
              * ------------------------------ */
             if ($appointment->service_type_id == 4) { // Consultation
-                    $itemId = ConsultationService::resolveItemId($appointment->specialty_id,$appointment->consultant_id);
+                    $item_id = ConsultationService::resolveItemId($appointment->specialty_id,$appointment->consultant_id);
 
-                    if ($itemId) {$this->finance_transaction_create($itemId, $patient->id, 1, true, $visit->id);}
+                    if ($item_id) {$this->emr_visit_transaction_create($item_id, $patient->id, 1, false, $visit->id);}
                 }
 
             $this->log_user_activity('Appointment Conversion to Visit', $appointment->id,true);
@@ -146,10 +141,20 @@ trait VisitTrait{
         DB::beginTransaction();
 
         try{
+            if (empty($data['patient_id'])){
+                $patient = $this->emr_patient_create($data['patient']);
+                if (is_string($patient)){
+                    echo $patient;
+                    DB::rollback();
+                    $this->log_user_activity('Appointment Creation', null, false);
+                    return $patient;
+                }
+                echo $patient->id;
+            }
             $query = Appointment::create([
                 'unique_id' => $this->emr_visit_unique_id_create(),
                 'branch_id' => $data['branch_id'] ?? request()->cookie('current_branch'),
-                'patient_id' => $data['patient_id'] ?? request()->cookie('current_patient'),
+                'patient_id' => $data['patient_id'] ?? $patient->id ?? request()->cookie('current_patient'),
                 'plan_id' => $data['plan_id'] ?? null,
                 'consultant_id' => $data['consultant_id'] ?? null,
                 'specialty_id' => $data['specialty_id'] ?? null,
@@ -175,7 +180,6 @@ trait VisitTrait{
     }
 
     public function emr_appointment_get_all($type, $specific, $detailed, $paginated, $page){
-        //echo request()->cookie('current_branch');
         $query = Appointment::where('branch_id', '=', request()->cookie('current_branch'));
         switch($type){
             case 'all':
@@ -343,8 +347,6 @@ trait VisitTrait{
         }
     }
 
-    public function emr_visit_create_from($data){}
-
     public function emr_visit_end($id){
         DB::beginTransaction();
 
@@ -375,16 +377,13 @@ trait VisitTrait{
 
     public function emr_visit_get_all($type, $specific, $detailed, $paginated, $page){
         $query = Visit::where('branch_id', '=', request()->cookie('current_branch'));
-        
+    
         switch ($type){
             case 'all':
                 $query = $query->withTrashed();
             break;
             case 'active':
-                $query = $query->where('status', '=', 1);
-            break;
-            case 'branch_active':
-                $query = $query->where('status', '=', 1);
+                $query = $query->whereIn('status', [Visit::StatusOpen, Visit::StatusOngoing, Visit::StatusOngoing]);
             break;
             case 'finished':
                 $query = $query->where('status', '=', 2);
@@ -398,18 +397,15 @@ trait VisitTrait{
     }
 
     public function emr_visit_get_by($type, $id, $detailed){
-        switch($type){
-            case 'id':
-                $query = Visit::where('id', '=', $id);
-            break;
-            case 'unique_id':
-                $query = Visit::where('unique_id', '=', $id);
-            break;
+        try{
+            $query = Visit::where('id', '=', $id)->orWhere('unique_id', '=', $id);
+            $query = $detailed ? $query->with(['branch', 'patient.user', 'price_list']) :$query->with(['patient.user']);
+
+            return $query->firstOrFail();
         }
-
-        $query = $detailed ? $query->with(['branch', 'patient.user', 'price_list', 'visit_type']) :$query->with(['patient.user']);
-
-        return $query->first();
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function emr_visit_patient_pending($patient_id){

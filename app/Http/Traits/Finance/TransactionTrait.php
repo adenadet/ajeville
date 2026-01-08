@@ -8,6 +8,10 @@ use Carbon\Carbon;
 
 trait TransactionTrait
 {
+    public function finance_transaction_create($item, $patient_id, $quantity, $done, $visit_id, $plan_id){
+
+    }
+
     public function createTransaction(string $type, float $amount, array $data = [])
     {
         $tx = Transaction::create([

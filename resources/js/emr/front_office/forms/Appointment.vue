@@ -1,47 +1,80 @@
 <template>
 <section class="overlay-wrapper">
+    <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
     <form @submit.prevent="editMode ? updateAppointment() : createAppointment()">
     <!--form-->
         <div class="row">
-            <div class="col-md-12 mb-3">
+            <div class="col-md-3 mb-3">
                 <label class="form-label">Patient</label>
-                <select v-model="appointmentData.patient_id" class="form-control" @change="onPatientChange">
-                    <option value="">-- Select Patient --</option>
-                    <option v-for="p in patients" :key="p.id" :value="p.id">{{ FullName(p.user) }} ({{ p.unique_id }})</option>
-                    <option value="new">+ Create New Patient</option>
+                <select v-model.number="appointmentData.patient_type_id" class="form-control">
+                    <option value="1">Exsiting</option>
+                    <option value="0">Create New Patient</option>
                 </select>
             </div>
+            <div class="col-md-9 mb-3" v-if="appointmentData.patient_type_id == '1'">
+                <div class="form-group">
+                    <label>Select Patient</label>
+                    <model-list-select class="form-control" :list="patients" v-model="appointmentData.patient_id" option-value="id" :custom-text="codeAndNameAndDesc" />
+                    <!--model-list-select class="form-control" :list="patients" v-model="patient_id" option-value="unique_id" :custom-text="codeAndNameAndDesc" placeholder="Select Applicant" /-->
+                
+                </div>
+            </div>
         </div>
-        <div class="row"  v-if="selectedPatient && selectedPatient.hmo_plan">
+        
+        <!--div class="row" v-if="selectedPatient && selectedPatient.hmo_plan">
             <div class="alert alert-info">
                 <strong>Insurance:</strong>{{ selectedPatient.hmo_plan.provider.name }} – {{ selectedPatient.hmo_plan.name }}
             </div>
         </div>
-        <div class="row"  v-else>
-            <div v-if="appointmentData.patient_id === 'new'" class="border rounded p-3 mb-3">
+        <div class="row" v-else-->
+        <div class="row" v-if="appointmentData.patient_type_id == '0'">
+            <div class="border rounded p-3 mb-3">
                 <h6 class="mb-3">New Patient Details</h6>
-
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">First Name</label>
-                        <input v-model="newPatient.first_name" class="form-control" />
+                        <input v-model="appointmentData.patient.first_name" class="form-control" />
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Last Name</label>
-                        <input v-model="newPatient.last_name" class="form-control" />
+                        <input v-model="appointmentData.patient.last_name" class="form-control" />
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Phone</label>
-                        <input v-model="newPatient.phone" class="form-control" />
+                        <input v-model="appointmentData.patient.phone" class="form-control" />
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Gender</label>
-                        <select v-model="newPatient.gender" class="form-control">
+                        <label class="form-label">Sex</label>
+                        <select v-model="appointmentData.patient.sex" class="form-control">
                             <option value="">-- Select --</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                     </div>
+                    <!--div class="col-md-4 mb-3">
+                        <div class="form-group">
+                            <label>Payment Method</label>
+                            <select v-model="appointmentData.patient.provider_type_id" class="form-control">
+                                <option value="">-- Select Payment Method --</option>
+                                <option value="0">Cash</option>
+                                <option v-for="pm in provider_types" :value="pm.id">{{ pm.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-4" v-if="!isCashPayment">
+                        <label>Provider</label>
+                        <select class="form-control" v-model="appointmentData.patient.insurance.provider_id">
+                            <option value="">--Select Provider--</option>
+                            <option v-for="provider in filtered_providers" :key="provider.id" :value="provider.id">{{ provider.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-4" v-if="!isCashPayment">
+                        <label>Plan</label>
+                        <select class="form-control" v-model="appointmentData.patient.insurance.plan_id">
+                            <option value="">--Select Plan--</option>
+                            <option v-for="plan in filtered_plans" :key="plan.id" :value="plan.id">{{ plan.name }}</option>
+                        </select>
+                    </div-->
                 </div>
             </div>
         </div>
@@ -117,65 +150,80 @@
 </template>
 <script>
 export default {
+    computed: {
+        isNewPatient() {
+            return this.appointmentData.patient_type_id === 0
+        },
+        isCashPayment() {
+            return this.appointmentData.patient.provider_type_id === 0
+        },
+        filtered_providers() {
+            if (this.isCashPayment) return []
+            return this.providers.filter(
+                p => p.hmo_type_id === this.appointmentData.patient.provider_type_id
+            )
+        },
+        filtered_plans() {
+            if (!this.appointmentData.patient.insurance.provider_id) return []
+            return this.plans.filter(
+                pl => pl.provider_id === this.appointmentData.patient.insurance.provider_id
+            )
+        }
+    },
     data() {
         return {
-            branches: [],
-            consultants: [],
-            patients: [],
-            specialties: [],
-            
-            filteredConsultants: [],
-            loading: false,
-            loadingSlots: false,
-            selectedPatient: null,
-            service_types: [],
-            timeSlots: [],
             appointmentData: new Form({
-                branch_id: '',
-                consultant_id: '',
-                date: '',
-                patient_id: '',
-                patient: {
-                    first_name: '',
-                    last_name: '',
-                    phone: '',
-                    gender: '',
+            patient_type_id: 1, // 1 = existing, 0 = new
+            patient_id: '',
+            branch_id: '',
+            consultant_id: '',
+            date: '',
+            patient: {
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
+                sex: '',
+                provider_type_id: 0, // default CASH
+                insurance: {
                     provider_id: '',
                     plan_id: '',
                 },
-                plan_id: '',
-                remarks: '',
-                specialty_id: '',
-                time_slot: '',
-                type: '',
-                service_type_id: '',
-            }),
-
-            newPatient: {
-                first_name: '',
-                last_name: '',
-                phone: '',
-                gender: '',
-                provider_id: '',
-                plan_id: '',
-            }
+            },
+            remarks: '',
+            specialty_id: '',
+            time_slot: '',
+            service_type_id: '',
+        }),
+            branches: [],
+            consultants: [],
+            filteredConsultants: [],
+            loading: false,
+            loadingSlots: false,
+            patients: [],
+            payment_methods: [],
+            plans: [],
+            providers: [],
+            payment_methods: [],
+            selectedPatient: null,
+            service_types: [],
+            specialties: [],
+            timeSlots: [],
+            
         }
     },
     emits:['refreshAppointmentForm'],
     methods: {
+        codeAndNameAndDesc (item) {
+            return `${item.user.last_name}, ${item.user.first_name} ${item.user.middle_name} (${item.unique_id})`
+        },
         createAppointment(){
-            alert("Working");
             this.loading = true;
             this.appointmentData.post('/api/emr/hims/appointments')
             .then(response =>{
-                this.$emit('refreshAppointmentForm', response);
-                this.$swal.fire({
-                    icon: 'success',
-                    title: 'The Appointment details has been created',
-                    showConfirmButton: false,
-                    timer: 1500
-                    });
-                })
+                this.$emit('refreshAppointmentForm');
+                this.$swal.fire({icon: 'success', title: 'The Appointment details has been created', showConfirmButton: false, timer: 1500});
+            })
             .catch(()=>{
                 this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
             })
@@ -185,7 +233,6 @@ export default {
             if (
                 !this.appointmentData.branch_id || !this.appointmentData.consultant_id || !this.appointmentData.date
             ) {
-                alert("Missing Details");
                 this.timeSlots = []
                 return
             }
@@ -225,6 +272,7 @@ export default {
                 this.filteredConsultants = res.data.consultants;
                 this.patients = res.data.patients;
                 this.providers = res.data.providers;
+                this.provider_types = res.data.provider_types;
                 this.plans = res.data.plans;
                 this.service_types = res.data.service_types;
                 this.specialties = res.data.specialties;
@@ -239,17 +287,42 @@ export default {
             }
         },
         onPatientChange() {
-            this.selectedPatient = this.patients.find(p => p.id === this.appointmentData.patient_id) || null
+            if (this.appointmentData.patient_id === 0) {
+                // New patient
+                this.selectedPatient = null
+                this.appointmentData.patient = {
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone: '',
+                    sex: '',
+                    provider_type_id: '',
+                    insurance:{
+                        provider_id: '',
+                        plan_id: '',
+                    }
+                }
+            } 
+            else {
+                // Existing patient
+                this.selectedPatient = this.patients.find(
+                    p => p.id === this.appointmentData.patient_id
+                )
+
+                // Force CASH for existing patients
+                this.appointmentData.patient.provider_type_id = 0
+                this.appointmentData.patient.provider_id = ''
+                this.appointmentData.patient.plan_id = ''
+            }
         },
         submit() {
             console.log('Submitting', this.form, this.newPatient)
         },
         updateAppointment(){
-            alert("Working 2");
             this.loading = true;
             this.appointmentData.put('/api/emr/hims/appointments/'+this.appointment.id)
             .then(response =>{
-                this.$emit('refreshAppointmentForm', response);
+                this.$emit('refreshAppointmentForm');
                 this.$swal.fire({
                     icon: 'success',
                     title: 'The Appointment details has been updated',
@@ -274,7 +347,35 @@ export default {
         appointment(){
             this.loading = true;
             this.appointmentData.fill(this.appointment);
+            this.appointmentData.patient = this.appointment != null && !this.editMode ? this.appointment.patient :  {first_name: '', last_name: '', email: '', phone: '', sex: '', provider_type_id: '', insurance: { provider_id: '', plan_id: '',}},
             this.loading = false;
+        },
+        'appointmentData.patient_type_id'(val) {
+            if (val === 0) {
+                // New patient
+                this.appointmentData.patient_id = ''
+                this.appointmentData.patient = {
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone: '',
+                    sex: '',
+                    provider_type_id: 0,
+                    insurance: {
+                        provider_id: '',
+                        plan_id: '',
+                    },
+                }
+            } else {
+                // Existing patient
+                this.appointmentData.patient = {
+                    provider_type_id: 0,
+                    insurance: {
+                        provider_id: '',
+                        plan_id: '',
+                    }
+                }
+            }
         }
     }
 }

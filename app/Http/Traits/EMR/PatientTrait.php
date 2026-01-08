@@ -2,7 +2,7 @@
 
 namespace App\Http\Traits\EMR;
 
-use App\Http\Traits\Finance\TransactionTrait;
+use App\Http\Traits\EMR\VisitTransactionTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Http\Traits\UMS\UserTrait;
 use App\Models\EMR\Patient\Patient;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 trait PatientTrait{
 
-    use LogTrait, TransactionTrait, UserTrait;
+    use LogTrait, VisitTransactionTrait, UserTrait;
     /*
     ---------------------------------------------------------------------------------------------------
     Patient Basics
@@ -26,11 +26,15 @@ trait PatientTrait{
         DB::beginTransaction();
         try{
             $user = $this->ums_user_create($data);
+
+            $item_id = isset($data['patient_type']) ? $data['patient_type'] : 730; 
+            $reg_type = isset($data['reg_type']) ? $data['reg_type'] : Patient::TypeTemp;
+
             $patient = Patient::create([
                 'user_id' =>$user->id,
                 'balance' =>0.00,
                 'credit_limit' =>0.00,
-                'patient_type' =>$data['patient_type'],
+                'patient_type' =>$reg_type,
                 'unique_id' => config('app.short_code').'-'.date('YmdHis'),
                 'old_emr_numbers' =>$data['old_emr_numbers'] ?? NULL,
                 'blood_group' =>$data['blood_group'] ?? NULL,
@@ -42,18 +46,18 @@ trait PatientTrait{
                 'created_by' =>Auth::id() ?? auth('api')->id(),
                 'updated_by' =>Auth::id() ?? auth('api')->id(),
             ]);
-            if (count($data['contacts']) != 0){
+            if (!empty($data['contacts']) && count($data['contacts']) != 0){
                 foreach($data['contacts'] as $contact){$this->emr_patient_contact_create($patient->id, $contact);}
             }
-            if (count($data['insurances']) != 0){
+            if (!empty($data['insurances']) && count($data['insurances']) != 0){
                 foreach($data['insurances'] as $insurance){$this->emr_patient_insurance_create($patient->id, $insurance);}
             }
-            if (count($data['nok']) != 0){
+            if (!empty($data['contacts']) && count($data['nok']) != 0){
                 //$data['nok']['user_id'] = $user->id;
                 $this->ums_user_next_of_kin_create($data['nok'], $user->id);
             }
             //Create a Transaction For Registration
-            $this->finance_transaction_create($data['patient_type'], $patient->id, 1, true, NULL);
+            //$this->emr_visit_transaction_create($item_id, $patient->id, 1, true, null);
             //Log This Activity
             $this->log_user_activity('EMR Patient Create', $patient->id, true);
             DB::commit();
@@ -85,15 +89,22 @@ trait PatientTrait{
             break;
         }
 
-        $query = $detailed ? $query->with(['insurances', 'user', 'contacts']) : $query->with(['user']);
+        $query = $detailed ? $query->has('user')->with(['insurances', 'user', 'contacts']) : $query->has('user')->with(['user']);
 
         $query = $paginated ? $query->paginate(100) : $query->get();
 
         return $query;
     }
 
-    public function emr_patient_get_by_id($id){
-        return Patient::where('unique_id', '=', $id)->with(['user.next_of_kin', 'allergies', 'contacts', 'insurances.plan.provider', 'transactions.service_type'])->first();
+    public function emr_patient_get_by_id($type, $id, $detailed){
+        try{
+            $query = Patient::where('unique_id', '=', $id)->orWhere('id', '=', $id);
+            $query = $detailed ? $query->with(['user.next_of_kin', 'allergies', 'contacts', 'insurances.plan.provider', 'transactions.service_type']) : $query;
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function emr_patient_update($data, $id){

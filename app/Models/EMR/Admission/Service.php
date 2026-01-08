@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Models\Operations;
+namespace App\Models\EMR\Admission;
 
 use App\Models\Structure;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RadiologyService extends Structure
+class Service extends Structure
 {
     protected $primaryKey = 'id';
-    protected $table = 'operation_radiology_services';
-    protected $fillable = array('name', 'item_id', 'bottle_type_id', 'specimen_id', 'result_template_id', 'status', 'description', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
+    protected $table = 'emr_admission_services';
+    protected $fillable = array('item_id', 'category_id', 'sub_category_id', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 	
     public function bottle_type(){
 		return $this->belongsTo('App\Models\Operations\BottleType', 'bottle_type_id', 'id');

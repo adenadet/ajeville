@@ -65,7 +65,7 @@ class ConsultantController extends Controller
             'radiology_services' => $this->inventory_item_get_all('classification_name', 'Radiology', false, false, null),
             'routes' => DrugRoute::select('id', 'name')->orderBy('name', 'ASC')->get(),
             'specific_drugs' => $this->inventory_item_get_all('classification_name', 'Drugs', false, false, null),
-            'symptoms' => Symptom::all(),
+            'symptoms' => Symptom::orderBy('name', 'ASC')->select('id', 'name')->get(),
         ]);
     }
 
@@ -73,18 +73,6 @@ class ConsultantController extends Controller
     {
         return response()->json([
             'consultation' => Consultation::where('id', '=', $id)->with(['consultation_type', 'patient.user', 'specialty', 'transaction', 'laboratory.item', 'radiology.test', 'prescriptions.drugs'])->first(),
-            /*'durations' => Duration::select('id', 'name')->orderBy('name', 'ASC')->get(),
-            'drug_forms' => DrugForm::select('name')->orderBy('name', 'ASC')->get(),
-            //'frequencies' => Frequency::select('id', 'name')->orderBy('name', 'ASC')->get(),
-            'icd_10_codes' => ICD10::select('id', 'code', 'name')->orderBy('code', 'ASC')->get(),
-            'laboratory_services' => $this->inventory_item_get_all('classification_name', 'Laboratory', false, false, null),
-            'locations' => Location::select('id', 'name')->orderBy('name', 'ASC')->get(),
-            //'patient' => 
-            'positions' => Position::select('id','name')->orderBy('name', 'ASC')->get(),
-            'radiology_services' => $this->inventory_item_get_all('classification_name', 'Radiology', false, false, null),
-            'routes' => DrugRoute::select('id', 'name')->orderBy('name', 'ASC')->get(),
-            'specific_drugs' => $this->inventory_item_get_all('classification_name', 'Drugs', false, false, null),
-            *///'symptoms' => Symptom::select('id', 'name', 'code', 'group_code')->orderBy('name', 'ASC')->get(),
         ]);
     }
 

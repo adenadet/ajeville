@@ -9,14 +9,14 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
     Route::get( '/consultations/initials',           'ConsultationController@initials')->name('consultations.initials');
     Route::get( '/consultations/initials/{id}',      'ConsultationController@visit_initials')->name('consultations.visit_initials');
     Route::get( '/consultations/visit/{id}',         'ConsultationController@visit')->name('consultations.visit');
-    Route::get( '/dashboard',                        'VisitationController@dashboard')->name('dashboard');
+    Route::get( '/drugs/initials',                   'DrugController@initials')->name('drugs.initials');
     Route::get( '/drugs/search',                     'DrugController@search')->name('drugs.search');
     Route::get( '/investigations/initials/{id}',     'InvestigationController@initials')->name('investigations.initials');
     Route::get( '/laboratory/initials',              'LaboratoryController@initials')->name('laboratory.initials');
     Route::get( '/patients/all',                     'PatientController@all')->name('patients.all');
     Route::get( '/patients/initials',                'PatientController@initials')->name('patients.initials');
     Route::get( '/patients/{id}/insurances',         'PatientController@insurances')->name('patients.insurances');
-    Route::post('/patients/set_cookie',             'PatientController@set_cookie')->name('patients.set_cookie');
+    Route::post('/patients/set_cookie',              'PatientController@set_cookie')->name('patients.set_cookie');
     Route::get( '/prescriptions/initials',           'PrescriptionController@initials')->name('prescriptions.initials');
     Route::get( '/queues/doctor',                    'QueueController@doctor')->name('queues.doctor');
     Route::get( '/queues/dialysis',                  'QueueController@dialysis')->name('queues.dialysis');
@@ -29,10 +29,11 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
     Route::get( '/services/initials',                'ServiceController@initials')->name('services.initials');
     Route::get( '/visits/bills/{id}',                'VisitationController@bills')->name('visits.bills');
     Route::put( '/visits/end/{id}',                  'VisitationController@end')->name('visits.end');
+    Route::get( '/visits/get_cookie',                'VisitationController@get_cookie')->name('visits.get_cookie');
     Route::get( '/visits/initials',                  'VisitationController@initials')->name('visits.initials');
     Route::get( '/visits/{id}/start',                'VisitationController@start')->name('visits.start');
-    Route::post('/visits/set_cookie',               'VisitationController@set_cookie')->name('visits.set_cookie');
-    Route::post('/visits/transactions',             'VisitationController@transactions')->name('visits.transactions');
+    Route::post('/visits/set_cookie',                'VisitationController@set_cookie')->name('visits.set_cookie');
+    Route::post('/visits/transactions',              'VisitationController@transactions')->name('visits.transactions');
 
     Route::apiResources([
         'allergies'     => 'AllergyController',
@@ -40,6 +41,7 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
         'appointments'  => 'AppointmentController',
         'consultations' => 'ConsultationController',
         'contacts'      => 'ContactController',
+        'dashboard'     => 'DashboardController',
         'drugs'         => 'DrugController',
         'laboratory'    => 'LaboratoryController',
         'investigations'=> 'InvestigationController',

@@ -12,6 +12,8 @@ use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Patient\Insurance as PatientInsurance;
 use App\Models\EMR\SpecialtyDoctor;
 use App\Models\EMR\Visit;
+use App\Models\EMR\VisitTransaction;
+use App\Models\EMR\VisitTransactionCoverage;
 use App\Models\Finance\Payment;
 use App\Models\Finance\PriceListItem;
 use App\Models\Finance\Transaction;
@@ -29,6 +31,14 @@ use Exception;
 
 trait InsuranceTrait{
     use LogTrait, TransactionTrait;
+
+    private function normalizeMoney($value): float{
+        return round((float) $value, 2);
+    }
+
+    private function normalizePercent($value): float{
+        return round(min(100, max(0, (float) $value)), 2);
+    }
 
     public function insurance_claims_get_all($data){
         // Items in the query 1. Patient ID 2. Provider ID 3. Plan ID 4. Start Date 5. End Date 6. List of Visits 7. Report Type 8. Report Format
@@ -111,7 +121,7 @@ trait InsuranceTrait{
                 $query = Provider::where('status', '!=', 1)->orderBy('name', 'ASC');
             break;
         }
-        $query = $detailed ? $query->with(['insurance_type', 'plans' ]) : $query->select('id', 'name', 'type_id', 'status');
+        $query = $detailed ? $query->with(['insurance_type', 'plans' ]) : $query->select('id', 'name', 'hmo_type_id');
         $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
@@ -491,7 +501,12 @@ trait InsuranceTrait{
     }
 
     public function insurance_provider_type_get_by_id($id){
-        return ProviderType::where('id', '=', $id)->first();
+        try{
+            return ProviderType::where('id', '=', $id)->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function insurance_provider_type_update($data, $id){
@@ -550,5 +565,88 @@ trait InsuranceTrait{
         $query = $paginated ? $query->paginate(30) : $query->get();
 
         return $query;
+    }
+
+
+    public function insurance_transaction_coverage_auto_create($plan_id, $transaction_id){
+        DB::beginTransaction();
+
+        try{
+            $visit_transaction = VisitTransaction::find($transaction_id);
+            $price_list_item = PriceListItem::where('item_id', '=', $visit_transaction->item_id)->where('plan_id', '=', $plan_id)->firstOrFail();
+            $plan = Plan::where('id', '=', $plan_id)->with(['provider'])->firstOrFail();
+            if (VisitTransactionCoverage::where('visit_transaction_id', $transaction_id)->exists()) {
+                return ('Coverage already exists for this transaction.');
+            }
+
+            $unit_price = $this->normalizeMoney($price_list_item->price);
+            $unit_coverage = $this->normalizeMoney($price_list_item->coverage ?? 0);
+            $covered_amount = $price_list_item->covered ? $this->normalizeMoney(min($unit_coverage, $unit_price) * $visit_transaction->quantity) : 0;
+
+            $patient_payable = max(0, $this->normalizeMoney($visit_transaction->amount - $covered_amount));
+
+            $coverage = VisitTransactionCoverage::create([
+                'visit_transaction_id' => $transaction_id, 
+                'provider_id' => $plan->provider->id ?? null, 
+                'plan_id' => $plan_id,
+                'authorization_code' => ($price_list_item->covered && !($price_list_item->requires_code)) ? 'Auto Cleared': null, 
+                'covered_amount' => $this->normalizeMoney($covered_amount), 
+                'patient_payable' => $this->normalizeMoney($patient_payable),
+                'coverage_percent' => null,
+                'approval_status' => ($price_list_item->covered && !($price_list_item->requires_code)) ? VisitTransactionCoverage::ApprovalApproved : VisitTransactionCoverage::ApprovalPending, 
+                'claim_status' => VisitTransactionCoverage::ClaimOpen, 
+                'notes' => null,
+            ]);
+
+            DB::commit();
+            return $coverage;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return $e->getMessage();
+        }
+    }
+
+    public function insurance_transaction_coverage_create($data){
+        DB::beginTransaction();
+
+        try{
+            $visit_transaction = VisitTransaction::find($data['transaction_id']);
+            if (VisitTransactionCoverage::where('visit_transaction_id', $data['transaction_id'])->exists()) {
+                return ('Coverage already exists for this transaction.');
+            }
+            $price_list_item = PriceListItem::where('item_id', '=', $visit_transaction->item_id)->where('plan_id', '=', $data['plan_id'])->firstOrFail();
+            $plan = Plan::where('id', '=', $data['plan_id'])->with(['provider'])->firstOrFail();
+
+            $transaction_amount = $this->normalizeMoney($visit_transaction->amount);
+
+            $coverage_percent = isset($data['coverage_percent']) ? $this->normalizePercent($data['coverage_percent']) : $this->normalizePercent(($data['covered_amount'] / max(1, $transaction_amount)) * 100);
+
+            $covered_amount = isset($data['covered_amount']) ? $this->normalizeMoney($data['covered_amount']) : $this->normalizeMoney(($coverage_percent / 100) * $transaction_amount);
+
+            $covered_amount = min($covered_amount, $transaction_amount);
+
+            $patient_payable = $this->normalizeMoney(min(($transaction_amount - $covered_amount), 0));
+
+            $coverage = VisitTransactionCoverage::create([
+                'visit_transaction_id' => $data['transaction_id'], 
+                'provider_id' => $plan->provider->id ?? null, 
+                'plan_id' => $data['plan_id'],
+                'authorization_code' => $data['authorization_code'], 
+                'covered_amount' => $covered_amount, 
+                'patient_payable' => $patient_payable,
+                'coverage_percent' => $coverage_percent,
+                'approval_status' => VisitTransactionCoverage::ApprovalApproved, 
+                'claim_status' => VisitTransactionCoverage::ClaimOpen, 
+                'notes' => null,
+            ]);
+
+            DB::commit();
+            return $coverage;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return $e->getMessage();
+        }
     }
 }

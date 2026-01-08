@@ -50,10 +50,11 @@ class PatientController extends Controller
 
     public function get_cookie()
     {
-        $patient_id = request()->cookie('current_branch');
+        $patient_id = request()->cookie('current_patient');
+        $patient = $this->emr_patient_get_by_id(null, request()->cookie('current_patient'), true);
         return response()->json([
-            'branch' => Branch::where('id', '=', $patient_id)->first(),
-        ]);
+            'patient' => $patient,
+        ], is_string($patient) ? 500 : 200);
     }
 
     public function index()
@@ -88,7 +89,7 @@ class PatientController extends Controller
     public function show($id)
     {
         return response()->json([
-            'patient' => $this->emr_patient_get_by_id($id),
+            'patient' => $this->emr_patient_get_by_id(null, $id, true),
             'transactions' => Transaction::where('patient_id', '=', $id)->latest()->paginate(10),     
         ]);
     }

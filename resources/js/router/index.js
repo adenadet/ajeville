@@ -89,6 +89,8 @@ import EMRConsultantMyPastConsultations    from '../emr/consultant/MyPastConsult
     import EMRConsultantDetailSummary         from '../emr/consultant/details/Summary.vue';
     import EMRConsultantDetailResultQueue     from '../emr/consultant/details/ResultQueue.vue';
 
+    import EMRConsultantFormConsult             from '../emr/consultant/forms/Consult.vue';
+    import EMRConsultantFormConsultant          from '../emr/consultant/forms/Consultant.vue';
     import EMRConsultantFormConsultation        from '../emr/consultant/forms/Consultation.vue';
     import EMRConsultantFormHistory             from '../emr/consultant/forms/History.vue';
     import EMRConsultantFormLaboratory          from '../emr/consultant/forms/Laboratory.vue';
@@ -96,12 +98,35 @@ import EMRConsultantMyPastConsultations    from '../emr/consultant/MyPastConsult
     import EMRConsultantFormRadiology           from '../emr/consultant/forms/Radiology.vue';
     import EMRConsultantFormSoapNote            from '../emr/consultant/forms/SoapNote.vue';
 
+import EMRFinanceCashRegister                   from '../emr/finance/CashRegister.vue';
+import EMRFinanceDashboard                      from '../emr/finance/Dashboard.vue';
+import EMRFinancePayments                       from '../emr/finance/Payments.vue';
+import EMRFinanceTransaction                    from '../emr/finance/Transaction.vue';             
+import EMRFinanceTransactions                   from '../emr/finance/Transactions.vue';
+
+    import EMRFinanceDetailPatientTransaction       from '../emr/finance/details/PatientTransaction.vue';
+    import EMRFinanceDetailPatientTransactions      from '../emr/finance/details/PatientTransactions.vue';
+
+    import EMRFinanceFormDeposit                    from '../emr/finance/forms/Deposit.vue';
+    import EMRFinanceFormMode                       from '../emr/finance/forms/Mode.vue';
+
 import EMRFrontOfficeDashboard                  from '../emr/front_office/Dashboard.vue';
 import EMRFrontOfficeAppointment                from '../emr/front_office/Appointment.vue';
 import EMRFrontOfficeAppointments               from '../emr/front_office/Appointments.vue';
+import EMRFrontOfficeVisitBill                  from '../emr/front_office/VisitBill.vue';
+import EMRFrontOfficeVisit                      from '../emr/front_office/Visit.vue';
+import EMRFrontOfficeVisits                     from '../emr/front_office/Visits.vue';
+
+    import EMRFrontOfficeDetailVisit                from '../emr/front_office/details/Visit.vue'; 
+    import EMRFrontOfficeDetailVisitList            from '../emr/front_office/details/VisitList.vue';       
+    import EMRFrontOfficeDetailAppointmentList      from '../emr/front_office/details/AppointmentList.vue';    
 
     import EMRFrontOfficeFormAppointment            from '../emr/front_office/forms/Appointment.vue';
     import EMRFrontOfficeFormCheckIn                from '../emr/front_office/forms/CheckIn.vue';
+
+import EMRInsuranceClaims                       from '../emr/insurance/Claims.vue';
+import EMRInsuranceDashboard                    from '../emr/insurance/Dashboard.vue';
+
 
 import EMRPatientAll                            from '../emr/patients/All.vue';
 import EMRPatientAllergies                      from '../emr/patients/Allergies.vue';  
@@ -165,11 +190,6 @@ import EMRRadiologyReferredOut                  from '../emr/radiology/ReferredO
 
     import EMRRadiologyDetailReferralList           from '../emr/radiology/details/ReferralList.vue'
     import EMRRadiologyDetailRequestList            from '../emr/radiology/details/RequestList.vue';
-
-import EMRVisitAll                              from '../emr/visitations/All.vue';
-import EMRVisitBill                             from '../emr/visitations/Bill.vue';
-import EMRVisitDashboard                        from '../emr/visitations/Dashboard.vue';
-import EMRVisitSingle                           from '../emr/visitations/Single.vue';
 
     import EMRVisitDetailList                   from '../emr/visitations/details/List.vue';
     import EMRVisitDetailSummary                from '../emr/visitations/details/Summary.vue';
@@ -846,26 +866,27 @@ const routes = [
     {path: '/emr/consultations/my_queue',                       component: EMRConsultantQueueMy},
     {path: '/emr/consultations/start/:id',                      component: EMRConsultantConsultation},
     
+
+    {path: '/emr/billings',                                     component: EMRFinanceDashboard},
+    {path: '/emr/billings/transactions',                        component: EMRFinanceDashboard},    
+    
     {path: '/emr/front_office',                                 component: EMRFrontOfficeDashboard},
     {path: '/emr/front_office/appointments',                    component: EMRFrontOfficeAppointments},
     {path: '/emr/front_office/appointments/:id',                component: EMRFrontOfficeAppointment},
     {path: '/emr/front_office/dashboard',                       component: EMRFrontOfficeDashboard},
     {path: '/emr/front_office/patients',                        component: EMRPatientAll},
     {path: '/emr/front_office/patients/new',                    component: EMRPatientFormRegistration},
-    {path: '/emr/front_office/patients/search',                 component: EMRPatientSearch},
-    {path: '/emr/front_office/patients/:id',                    component: EMRPatientSingle},
+    {path: '/emr/front_office/visits',                          component: EMRFrontOfficeVisits},
+    {path: '/emr/front_office/visits/:id',                      component: EMRFrontOfficeVisit},
 
     {path: '/emr/insurance',                                    component: InsuranceDashboard},
     {path: '/emr/insurance/dashboard',                          component: InsuranceDashboard},
-    
     {path: '/emr/insurance/claims',                             component: InsuranceClaims},
-
     {path: '/emr/insurance/plans',                              component: InsurancePlans},
     {path: '/emr/insurance/plans/:id',                          component: InsurancePlan},
     {path: '/emr/insurance/providers',                          component: InsuranceProviders},
     {path: '/emr/insurance/providers/suspended',                component: InsuranceProvidersSuspended},
     {path: '/emr/insurance/providers/:id',                      component: InsuranceProvider},
-
     {path: '/emr/insurance/queue',                              component: InsuranceQueueAuthorizations},
     {path: '/emr/insurance/queue/authorizations',               component: InsuranceQueueAuthorizations},
     {path: '/emr/insurance/queue/co-paid',                      component: InsuranceQueueCoPaid},
@@ -1199,6 +1220,8 @@ export function registerGlobalComponents(app) {
         app.component('EMRConsultantDetailReview',          EMRConsultantDetailReview);
         app.component('EMRConsultantDetailSummary',         EMRConsultantDetailSummary);
 
+        app.component('EMRConsultantFormConsult',           EMRConsultantFormConsult);
+        app.component('EMRConsultantFormConsultant',        EMRConsultantFormConsultant);
         app.component('EMRConsultantFormConsultation',      EMRConsultantFormConsultation);
         app.component('EMRConsultantFormHistory',           EMRConsultantFormHistory);
         app.component('EMRConsultantFormLaboratory',        EMRConsultantFormLaboratory);
@@ -1206,10 +1229,29 @@ export function registerGlobalComponents(app) {
         app.component('EMRConsultantFormRadiology',         EMRConsultantFormRadiology);
         app.component('EMRConsultantFormSoapNote',          EMRConsultantFormSoapNote);
 
+    app.component('EMRFinanceCashRegister',             EMRFinanceCashRegister);
+    app.component('EMRFinanceDashboard',                EMRFinanceDashboard);
+    app.component('EMRFinancePayments',                 EMRFinancePayments);
+    app.component('EMRFinanceTransaction',              EMRFinanceTransaction);
+    app.component('EMRFinanceTransactions',             EMRFinanceTransactions);
+
+        app.component('EMRFinanceDetailPatientTransaction',     EMRFinanceDetailPatientTransaction);
+        app.component('EMRFinanceDetailPatientTransactions',    EMRFinanceDetailPatientTransactions);
+
+        app.component('EMRFinanceFormDeposit',                  EMRFinanceFormDeposit);
+        app.component('EMRFinanceFormMode',                     EMRFinanceFormMode);
     
     app.component('EMRFrontOfficeDashboard',                EMRFrontOfficeDashboard),
     app.component('EMRFrontOfficeAppointment',              EMRFrontOfficeAppointment),
     app.component('EMRFrontOfficeAppointments',             EMRFrontOfficeAppointments),
+    app.component('EMRFrontOfficeVisit',                    EMRFrontOfficeVisit),
+    app.component('EMRFrontOfficeVisitBill',                EMRFrontOfficeVisitBill),
+    app.component('EMRFrontOfficeVisits',                   EMRFrontOfficeVisits),
+    
+
+        app.component('EMRFrontOfficeDetailAppointmentList',    EMRFrontOfficeDetailAppointmentList);
+        app.component('EMRFrontOfficeDetailVisit',              EMRFrontOfficeDetailVisit);
+        app.component('EMRFrontOfficeDetailVisitList',          EMRFrontOfficeDetailVisitList);    
 
         app.component('EMRFrontOfficeFormAppointment',          EMRFrontOfficeFormAppointment);
         app.component('EMRFrontOfficeFormCheckIn',              EMRFrontOfficeFormCheckIn);
@@ -1280,13 +1322,14 @@ export function registerGlobalComponents(app) {
         app.component('EMRRadiologyDetailReferralList',         EMRRadiologyDetailReferralList);
         app.component('EMRRadiologyDetailRequestList',          EMRRadiologyDetailRequestList);
     
-    app.component('EMRVisitAll',                            EMRVisitAll);
+    /*app.component('EMRVisitAll',                            EMRVisitAll);
     app.component('EMRVisitBill',                           EMRVisitBill);
     app.component('EMRVisitDashboard',                      EMRVisitDashboard);
     app.component('EMRVisitSingle',                         EMRVisitSingle);
 
         app.component('EMRVisitDetailList',                 EMRVisitDetailList);
         app.component('EMRVisitDetailSummary',              EMRVisitDetailSummary);
+    */
 
     app.component('EquipmentAsset',                              EquipmentAsset);
     app.component('EquipmentAssets',                             EquipmentAssets);

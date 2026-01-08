@@ -1,65 +1,74 @@
 import { createStore } from 'vuex';
+import axios from 'axios';
 
 const store = createStore({
-    state:{
-        branch: {},
-        user : {},
+    state: {
+        branch: null,
+        user: null,
         roles: [],
-        patient: {},
-        visit: {},
+        patient: null,
+        visit: null,
     },
+
     getters: {
-        branch_modules(state) {
-            return state.branch.modules;
-        },
-        currentBranch(state){
-            return state.branch;
-        },
-        currentPatient(state){
-            if (state.patient == null){
-                this.getPatientCookie(context);
-            }
-            return state.patient;
-        },
-        currentVisit(state){
-            return state.visit;
-        },
-        hasRole: (state) => (role) => {
-            return state.roles.includes(role);
-        },
-        hasAnyRole: (state) => (roles) => {
-            return roles.some(r => state.roles.includes(r));
-        },
+        branch_modules: state => state.branch?.modules || [],
+
+        currentBranch: state => state.branch,
+        currentPatient: state => state.patient,
+        currentVisit: state => state.visit,
+        
+        hasRole: state => role => state.roles.includes(role),
+        hasAnyRole: state => roles => roles.some(r => state.roles.includes(r)),
     },
+
     mutations: {
-        clearUser(state){
+        clearUser(state) {
             state.user = null;
             state.roles = [];
         },
-        setUser(state, user){
+
+        setUser(state, user) {
             state.user = user;
-            state.roles = user.roles || [];
+            state.roles = user?.roles || [];
         },
-        updateBranch(state, branch){
+
+        updateBranch(state, branch) {
             state.branch = branch;
         },
-        updatePatient(state, patient){
+
+        updatePatient(state, patient) {
             state.patient = patient;
         },
-        updateVisit(state, visit){
+
+        updateVisit(state, visit) {
             state.visit = visit;
         },
-    },
-    actions: {
-        fetchUser({ commit }) {
-        return axios.get('/api/ums/users/auth')
-            .then(response => {
-            commit('setUser', response.data);
-            });
+
+        clearVisitContext(state) {
+            state.patient = null;
+            state.visit = null;
         },
-        getBranchCookie(context){
+    },
+
+    actions: {
+        async fetchUser({ commit }) {
+            const response = await axios.get('/api/ums/users/auth');
+            commit('setUser', response.data);
+        },
+
+        async hydrateBranch({ commit, state }) {
+            if (state.branch?.id) return state.branch;
+
+            const response = await axios.get('/api/operations/branches/get_cookie');
+            const branch = response.data.branch || response.data.user.branch;
+
+            commit('updateBranch', branch);
+            return branch;
+        },
+
+        async getBranchCookie(context){
             if (context.branch == null || context.branch.id == null){
-                axios.get('/api/operations/branches/get_cookie')
+                await axios.get('/api/operations/branches/get_cookie')
                 .then((response)=> {
                     var branch = response.data.branch;
                     if (branch == null){branch = response.data.user.branch;}
@@ -68,34 +77,40 @@ const store = createStore({
                 })    
             }
         },
-        getPatientCookie(context){
-            if (context.patient == null || context.patient.id == null){
-                axios.get('/api/emr/hims/patients/get_cookie')
-                .then((response)=> {
-                    var patient = response.data.patient;
-                    context.commit('updatePatient', patient)
-                })    
-            }
+
+        async setBranchCookie({ commit }, branch) {
+            commit('updateBranch', branch);
+            await axios.post('/api/operations/branches/set_cookie', { branch });
         },
-        setBranchCookie(context, branch){
-            context.commit('updateBranch', branch);
-            axios.post('/api/operations/branches/set_cookie', { 'branch' : branch})
-            .then(()=> {location.reload();})
+
+        async hydrateVisitContext({ commit }) {
+            const [patientRes, visitRes] = await Promise.all([
+                axios.get('/api/emr/hims/patients/get_cookie'),
+                axios.get('/api/emr/hims/visits/get_cookie'),
+            ]);
+
+            commit('updatePatient', patientRes.data.patient || null);
+            commit('updateVisit', visitRes.data.visit || null);
         },
-        setPatient(context, patient){
-            context.commit("updatePatient", patient);
+
+        setPatient({ commit }, patient) {
+            commit('updatePatient', patient);
         },
-        setPatientCookie(context, patient){
-            context.commit('updatePatient', patient);
-            //this.$emit('patientReset');
-            axios.post('/api/emr/hims/patients/set_cookie', {'patient' : patient})
-            .then(()=>{})
+
+        setPatientCookie({ commit }, patient) {
+            commit('updatePatient', patient);
+            return axios.post('/api/emr/hims/patients/set_cookie', { patient });
         },
-        setVisitCookie(context, visit){
-            context.commit('updateVisit', visit);
-            axios.post('/api/emr/hims/visits/set_cookie', {'visit' : visit})
+
+        setVisitCookie({ commit }, visit) {
+            commit('updateVisit', visit);
+            return axios.post('/api/emr/hims/visits/set_cookie', { visit });
+        },
+
+        clearVisitContext({ commit }) {
+            commit('clearVisitContext');
         },
     }
-}); 
+});
 
 export default store;

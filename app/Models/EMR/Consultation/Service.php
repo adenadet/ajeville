@@ -12,7 +12,7 @@ class Service extends Structure
 
     protected $table = 'emr_consultation_services';
 
-    protected $fillable = ['item_id', 'specialty_id', 'consultant_id', 'is_default', 'created_by', 'created_at', 'updated_by', 'updated_at', 'deleted_by', 'deleted_at']; 
+    protected $fillable = ['item_id', 'specialty_id', 'consultant_id', 'is_default', 'status', 'created_by', 'created_at', 'updated_by', 'updated_at', 'deleted_by', 'deleted_at']; 
 
     protected $casts = [
         'is_default' => 'boolean',

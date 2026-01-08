@@ -406,7 +406,7 @@ export default {
     data() {
         return {
             consultation: {},
-            complaintForm: new Form({symptoms: [],}),
+            
             consultationForm: new Form({
                 complaint: '',
                 history: '',

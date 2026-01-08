@@ -96,7 +96,7 @@
             <div class="col-md-12">
                 <div class="form-group">
                     <label class="form-label">Description</label>
-                    <QuillEditor v-model:content="serviceData.item.description" content-type="html" theme="snow"/>
+                    <QuillEditor v-model:content="ItemData.description" content-type="html" theme="snow"/>
                 </div>
             </div>
         </div>
@@ -126,12 +126,14 @@ export default {
         },
 
         serviceComponent() {
-            const map = {
-                1: 'ConsultationServiceForm',
-                2: 'LaboratoryServiceForm',
-                3: 'RadiologyServiceForm',
-                4: 'PhysiotherapyServiceForm',
-                5: 'DialysisServiceForm',
+             const map = {
+                4: 'ConsultationServiceForm',
+                6: 'LaboratoryServiceForm',
+                7: 'RadiologyServiceForm',
+                3: 'AdmissionServiceForm',
+                8: 'PhysiotherapyServiceForm',
+                9: 'ProcedureServiceForm',
+                14: 'DialysisServiceForm',
             }
             return map[this.ItemData.service.service_type_id] || null
         }

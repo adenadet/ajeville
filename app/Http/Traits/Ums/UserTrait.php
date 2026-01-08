@@ -57,7 +57,7 @@ trait UserTrait{
         }
     }
     public function ums_user_create($data){
-        $image_url = (!is_null($data['image'])) ? $this->file_upload_to_location($data['image'], 'image', 'img/profile/', null) : 'default.png';
+        $image_url = (!empty($data['image'])) ? $this->file_upload_to_location($data['image'], 'image', 'img/profile/', null) : 'default.png';
 
         $user = User::create([
             'email' => $data['email'] ?? null,
@@ -69,15 +69,15 @@ trait UserTrait{
             'city' => $data['city'] ?? null,
             'state_id' => $data['state_id'] ?? null,
             'area_id' => $data['area_id'] ?? null,
-            'phone' => $data['phone'],
-            'alt_phone' => $data['alt_phone'],
-            'sex' => $data['sex'],
-            'dob' => $data['dob'],
+            'phone' => $data['phone']?? null,
+            'alt_phone' => $data['alt_phone'] ?? null,
+            'sex' => $data['sex']?? null,
+            'dob' => $data['dob']?? null,
             'image' => $image_url,
-            'unique_id' => $data['username'],
+            'unique_id' => $data['username'] ?? null,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
-            'joined_at' => $data['joined_at'],
+            'joined_at' => $data['joined_at'] ?? null,
             'password' => bcrypt('asdfasdf'),
         ]);
         return $user;

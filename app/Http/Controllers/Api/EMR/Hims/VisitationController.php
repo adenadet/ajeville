@@ -9,6 +9,7 @@ use App\Http\Traits\EMR\ConsultationTrait;
 #use App\Http\Traits\EMR\EmergencyTrait;
 #use App\Http\Traits\EMR\QueueTrait;
 use App\Http\Traits\EMR\InsuranceTrait;
+use App\Http\Traits\EMR\PatientTrait;
 use App\Http\Traits\EMR\VisitTrait;
 use App\Http\Traits\Finance\TransactionTrait;
 
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 
 class VisitationController extends Controller
 {
-    use ConsultationTrait, InsuranceTrait, VisitTrait; //DialysisTrait, EmergencyTrait, QueueTrait, TransactionTrait
+    use ConsultationTrait, InsuranceTrait, PatientTrait, VisitTrait; //DialysisTrait, EmergencyTrait, QueueTrait, TransactionTrait
     public function bills($id){
         $branch_id = request()->cookie('current_branch');
         $visit = $this->visit_get_by_unique_id($id);
@@ -37,22 +38,6 @@ class VisitationController extends Controller
         return response()->json([
             'visit' => $visit,
             'transactions' => $transactions,
-        ]);
-    }
-
-    public function dashboard(){
-        return response()->json([
-            'active_visits' => $this->active_visits(),
-            'patients' => Visit::select('patient_id')->groupBy('patient_id')->get()->toArray(),
-            'booked_appointments' => $this->booked_visits(),
-            'dialysis_queue' => $this->dialysis_queue(),
-            'doctors_queue' => $this->consultant_queue_doctor(),
-            'nurses_queue' => $this->nurses_queue(),
-            'emergency_queue' => $this->emergency_queue(),
-            'laboratory_queue' => $this->laboratory_queue(),
-            'radiology_queue' => $this->radiology_queue(),
-            'admission_queue' => $this->admission_queue(),
-            'physiotherapist_queue' => $this->physiotherapist_queue(),
         ]);
     }
 
@@ -87,8 +72,16 @@ class VisitationController extends Controller
 
         return response()->json([
             'visit' => $visit,
-            'visits' => $this->visit_get_all('all', request()->cookie('current_branch'), null, true, true, $_GET['page'] ?? 1),
+            'visits' => $this->emr_visit_get_all('all', request()->cookie('current_branch'), null, true, true, $_GET['page'] ?? 1),
         ]);
+    }
+
+    public function get_cookie()
+    {
+        $visit = $this->emr_visit_get_by(null, request()->cookie('current_visit'), true);
+        return response()->json([
+            'visit' => $visit,
+        ], is_string($visit) ? 500 : 200);
     }
 
     public function index()
@@ -160,24 +153,30 @@ class VisitationController extends Controller
             ]);
         }
 
-        $visit = $this->visit_create($request);
+        $visit = $this->emr_visit_create($request);
         
         return response()->json([
             'status' => "Completed",
             'message' => "Visit created successfully",
-            'visit' => '',
-            'patient' => Patient::where('id', '=', $request['patient_id'])->with(['user', 'insurances.plan.provider', 'transactions.service_type'])->first(),
-        ]);
+            'visit' => $visit,
+            'patient' => $this->emr_patient_get_by_id(null, $visit->patient_id, true),
+        ], is_string($visit) ? 500 : 201);
     }
 
     public function show($id)
     {
-        $visit = $this->visit_get_by_unique_id($id);
-        $patient = Patient::where('id', '=', $visit->patient_id)->with(['user', 'insurances.plan.provider', 'transactions.service_type'])->first();
-        return response()->json([
-            'visit' => $visit,
-            'patient' => $patient,
-        ]);
+        if (!empty($id)){
+            $visit = $this->emr_visit_get_by(null, $id, true);
+            $patient = is_string($visit) ? null : $visit->patient;
+                
+            return response()->json([
+                'visit' => $visit,
+                'patient' => $patient,
+            ], is_string($visit) ? 500 : 200);
+        }
+        else{
+            return response()->json(['visit' => null, 'patient' => null,]);
+        }
     }
 
     public function transactions(Request $request)

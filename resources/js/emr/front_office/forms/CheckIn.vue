@@ -1,58 +1,59 @@
 <template>
 <section class="overlay-wrapper">
-<form @submit.prevent="checkInPatient">
-    <div class="row">
-        <div class="col-md-12">
-            <label class="form-label">Patient</label>
-            <div class="form-control">{{ patient != null ? FullName(patient.user) : 'Awaiting Details' }} </div>
+    <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+    <form @submit.prevent="checkInPatient">
+        <div class="row">
+            <div class="col-md-12">
+                <label class="form-label">Patient</label>
+                <div class="form-control">{{ patient != null ? FullName(patient.user) : 'Awaiting Details' }} </div>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12" v-if="patient.patient_type == 2">
-            <label class="form-label">Payment Plan</label>
-            <select class="form-control" id="payment_type" name="payment_type" v-model="checkInData.patient_insurance.payment_type">
-                <option value=''>Cash</option>
-                <option v-for="insurance_type in insurance_types" :value="insurance_type.id">{{ insurance_type.name }}</option>
-            </select>            
+        <div class="row">
+            <div class="col-md-12" v-if="patient.patient_type == 2">
+                <label class="form-label">Payment Plan</label>
+                <select class="form-control" id="payment_type" name="payment_type" v-model="checkInData.patient_insurance.payment_type">
+                    <option value=''>Cash</option>
+                    <option v-for="insurance_type in insurance_types" :value="insurance_type.id">{{ insurance_type.name }}</option>
+                </select>            
+            </div>
         </div>
-    </div>
-    <div class="row" v-if="patient.patient_type == 2 && checkInData.patient_insurance.payment_type != ''">
-        <div class="col-md-3">
-            <label class="form-label">Provider</label>
-            <select class="form-control" id="provider_id" name="provider_id" v-model="checkInData.patient_insurance.provider_id">
-                <option v-for="provider in filtered_providers" :value="provider.id">{{ provider.name }}</option>
-            </select>            
+        <div class="row" v-if="patient.patient_type == 2 && checkInData.patient_insurance.payment_type != ''">
+            <div class="col-md-3">
+                <label class="form-label">Provider</label>
+                <select class="form-control" id="provider_id" name="provider_id" v-model="checkInData.patient_insurance.provider_id">
+                    <option v-for="provider in filtered_providers" :value="provider.id">{{ provider.name }}</option>
+                </select>            
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Plan</label>
+                <select class="form-control" id="plan_id" name="plan_id" v-model="checkInData.patient_insurance.plan_id">
+                    <option v-for="plan in filtered_plans" :value="plan.id">{{ plan.name }}</option>
+                </select>            
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Policy Number</label>
+                <input type="text" class="form-control" id="plan_id" name="plan_id" v-model="checkInData.patient_insurance.policy_number">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Expiry Date</label>
+                <input type="date" class="form-control" id="expiry_date" name="expiry_date" v-model="checkInData.patient_insurance.expiry_date">
+            </div>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Plan</label>
-            <select class="form-control" id="plan_id" name="plan_id" v-model="checkInData.patient_insurance.plan_id">
-                <option v-for="plan in filtered_plans" :value="plan.id">{{ plan.name }}</option>
-            </select>            
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Policy Number</label>
-            <input type="text" class="form-control" id="plan_id" name="plan_id" v-model="checkInData.patient_insurance.policy_number">
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Expiry Date</label>
-            <input type="date" class="form-control" id="expiry_date" name="expiry_date" v-model="checkInData.patient_insurance.expiry_date">
-        </div>
-    </div>
 
-    <div class="row" v-if="patient.patient_type == 1">
-        <div class="col-md-12">
-            <label class="form-label">Payment Plan</label>
-            <select class="form-control" id="plan_id" name="plan_id" v-model="checkInData.plan_id">
-                <option v-for="plan in patient.insurances" :value="plan.id">{{ plan.name }}</option>
-            </select>            
+        <div class="row" v-if="patient.patient_type == 1">
+            <div class="col-md-12">
+                <label class="form-label">Payment Plan</label>
+                <select class="form-control" id="plan_id" name="plan_id" v-model="checkInData.plan_id">
+                    <option v-for="plan in patient.insurances" :value="plan.id">{{ plan.name }}</option>
+                </select>            
+            </div>
         </div>
-    </div>
 
-    <button class="btn btn-success btn-sm mt-3" :disabled="loading">
-        <i class="fas fa-check"></i> Check In
-    </button>
+        <button class="btn btn-success btn-sm mt-3" :disabled="loading">
+            <i class="fas fa-check"></i> Check In
+        </button>
 
-</form>
+    </form>
 </section>
 </template>
 <script>
@@ -123,10 +124,7 @@ export default {
     },
     mounted() {
         this.getInitials()
-        /*if (this.hasHMO) {
-            this.checkInData.payment_type = 'hmo'
-            this.checkInData.plan_id = this.patient.hmo_plan.id
-        }*/
+        
     },
     props:{
         appointment: Object,
@@ -169,6 +167,7 @@ export default {
 
         appointment(){
             this.loading = true;
+            console.log(this.appointment)
             this.checkInData.appointment_id = this.appointment.id;
             this.checkInData.branch_id = this.appointment.branch_id;
             this.checkInData.consultant_id = this.appointment.consultant_id;
@@ -193,7 +192,6 @@ export default {
             }
             this.loading = false; 
         },
-
     }
 }
 </script>

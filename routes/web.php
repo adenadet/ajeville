@@ -86,6 +86,7 @@ Route::group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth','ro
 Route::group(['middleware' => ['auth', 'role:Staff'],'namespace' => 'App\Http\Controllers', 'name' => 'emr.', 'prefix' => '/emr'],function(){
     Route::get('/administrator',                            'ModulesController@administrator')->name('administrator');
     Route::get('/consultations',                            'ModulesController@consultation')->name('consultation');
+    Route::get('/billings',                                 'ModulesController@billings')->name('billings');
     Route::get('/front_office',                             'ModulesController@front_office')->name('front_office');
     Route::get('/laboratory',                               'ModulesController@laboratory')->name('laboratory');
     Route::get('/insurance',                                'ModulesController@insurance')->name('insurance');

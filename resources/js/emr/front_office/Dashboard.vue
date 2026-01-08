@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-info">
-                    <div class="inner"><h3>150</h3><p>All Patients</p></div>
+                    <div class="inner"><h3>{{ patients.length }}</h3><p>All Patients</p></div>
                     <div class="icon"><i class="fa fa-users"></i></div>
                     <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
@@ -18,14 +18,14 @@
             </div>
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
-                    <div class="inner"><h3>44</h3><p>Temporary Patient</p></div>
+                    <div class="inner"><h3>{{ temporary_patients.length }}</h3><p>Temporary Patient</p></div>
                     <div class="icon"><i class="fa fa-user-circle"></i></div>
                     <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-primary ">
-                    <div class="inner"><h3>65</h3><p>Active Patients</p></div>
+                    <div class="inner"><h3>{{ visits.total }}</h3><p>Active Patients</p></div>
                     <div class="icon"><i class="fa fa-user-tag"></i>
                     </div>
                     <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
@@ -33,13 +33,23 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-12 col-12">
+            <div class="col-lg-7">
                 <div class="card">
                     <div class="card-header bg-dark">
                         <h3 class="card-title">Active Visits</h3>
                     </div>
                     <div class="card-body table-responsive p-0" style="height: 400px;">
-                        <EMRVisitationsDetailsList :visits="visits" view="dashboard" />
+                        <EMRFrontOfficeDetailVisitList :visits="visits.data" view="dashboard" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header bg-dark">
+                        <h3 class="card-title">Booked Appointments</h3>
+                    </div>
+                    <div class="card-body table-responsive p-0" style="height: 400px;">
+                        <EMRFrontOfficeDetailAppointmentList :appointments="appointments.data" @refreshAppointmentList="getAllInitials()" />
                     </div>
                 </div>
             </div>
@@ -51,12 +61,12 @@
 export default {
     data() {
         return {
+            appointments: {data:[], },
             editMode: false,
             loading: true,
-            selected_transactions: [],
-            //transactions: {},
-            transaction: {}, 
-            transaction_list: [],
+            patients: [],
+            temporary_patients: [],
+            visits: {data: [], }
         }
     },
     mounted() {
@@ -70,14 +80,12 @@ export default {
             this.loading = true;
             axios.get('/api/emr/hims/dashboard').then(response =>{
                 this.refresh(response);
-                this.loading = false;
             })
             .catch(()=>{
+                this.$toast.fire({icon: 'error', title: 'Dashboard was not loaded successfully',})
+            })
+            .finally(()=>{
                 this.loading = false;
-                this.$toast.fire({
-                    icon: 'error',
-                    title: 'Visits were not loaded successfully',
-                })
             });
         },
         inputAuthCode(){
@@ -98,17 +106,12 @@ export default {
             }
         },
         refresh(response){
-            this.transactions = response.data.transactions;
-            this.transaction = response.data.transactions.data[0];
-            this.loading = false;
+            this.appointments = response.data.appointments;
+            this.patients = response.data.patients;
+            this.temporary_patients = response.data.temporary_patients;
+            this.visits = response.data.visits;
         },
-        rejectTransaction(transaction){},
-        requestCode(transaction){
-            this.editMode = false;
-            Fire.$emit('providerDataFill', {});
-            $('#requestCodeModal').modal('show');
-        },
-        setCoverage(transaction){},
+
     },
     props:{
         transactions: Array,

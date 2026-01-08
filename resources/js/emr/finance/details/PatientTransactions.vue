@@ -1,0 +1,229 @@
+<template>
+    <section class="p-0 m-0">
+        <div class="modal fade" id="serviceModal">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add Services</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <HimsFormPatientService :patient="patient" :visit="visit"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="transactionModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Transaction Details</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <FinanceDetailPatientTransaction :patient="patient"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="paymentModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" v-show="editMode">Edit Payment</h4>
+                        <h4 class="modal-title" v-show="!editMode">New Payment</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <FinanceFormDeposit :editMode="editMode"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-header bg-dark">
+            <h3 class="card-title">Transactions</h3>
+            <div class="card-tools">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-primary" title="New Transactions" @click="addService"><i class="fa fa-plus"></i></button>
+                    <router-link :to="source == 'visit' ? '/hims/visits/bills/'+this.$route.params.id : '/hims/patients/bills/'+this.$route.params.id" class="btn btn-sm btn-default" title="Print Transactions"><i class="fa fa-print"></i></router-link>
+                    <button class="btn btn-sm btn-warning" title="Export Transactions"><i class="fa fa-file-pdf"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body table-responsive p-0">
+            <table class="table table-striped table-hover text-nowrap">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Service Name</th>
+                        <th>Amount</th>
+                        <th>Payment Status</th>
+                        <th>Completion Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody v-if="!(loading) && transactions != null && transactions.length != 0">
+                    <tr v-for="(transaction, index) in transactions" :key="transaction.id" :class="transaction.status == 0 ? 'text-danger' : ''">
+                        <td>{{ index | addOne }}</td>
+                        <td>{{ transaction.date }}</td>
+                        <td>{{ transaction.service_type.name}}</td>
+                        <td>{{ transaction.item_name }}</td>
+                        <td>{{ transaction.item_total }}</td>
+                        <td>{{ transaction.status == 0 ? 'Unpaid' : 'Paid'  }}</td>
+                        <td>{{ transaction.service_status == 0 ? 'Not Done' : 'Done' }}</td>
+                        <td>
+                            <span class="nav-link" data-toggle="dropdown" href="#">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </span>
+                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                                <button class="btn btn-block dropdown-item" @click="viewTransaction(transaction)"><i class="fas fa-eye mr-2"></i> View Transaction</button>
+                                <button class="btn btn-block dropdown-item" v-if="transaction.status == 0" @click="makePayment(transaction)"><i class="fas fa-cash-register mr-2"></i> Make Payment</button>
+                                <button class="btn btn-block dropdown-item" v-if="transaction.status == 0 && transaction.paid_by == 1" @click="viaWallet(transaction)"><i class="fas fa-wallet mr-2"></i> Pay via Wallet</button>
+                                <button class="btn btn-block dropdown-item" v-if="transaction.service_status == 0" @click="cancelTransaction(transaction)"><i class="fas fa-times mr-2"></i> Cancel</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-else-if="loading">
+                    <tr>
+                        <td colspan="8">
+                            <div class="card">
+                                <div class="overlay-wrapper">
+                                    <div class="overlay dark"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody v-else>
+                    <tr>
+                        <td colspan="8">No Transaction Created</td>
+                    </tr>
+                </tbody>
+            </table>    
+        </div>
+    </section>
+</template>
+<script>
+export default {
+    computed:{
+        patient(){
+            var patient = this.$store.getters.currentPatient;
+            return patient;
+        },
+        visit(){
+            var visit = this.$store.getters.currentVisit;
+            return visit;
+        },
+        transactions(){
+            if(this.source == 'visit'){return  this.visit.transactions;}
+            else{return this.patient.transactions;}
+        },
+    },
+    data() {
+        return {
+            editMode: false,
+            form: new Form({}),
+            patient_id: '',
+        }
+    },
+    mounted() {
+        
+    },
+    methods: {
+        addService(){
+            $('#serviceModal').modal('show'); 
+        },
+        cancelTransaction(transaction){
+            this.$swal.fire({
+                title: 'Are you sure?',
+                text: "This transaction would be deleted and payment reversed",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!'
+            }) 
+            .then((result) => {
+                if(result.value){
+                    this.loading = true;
+                    this.form.delete('/api/finance/transactions/'+transaction.id)
+                    .then(response=>{
+                        this.$swal.fire('Deleted!', response.data.message, response.data.icon);
+                        this.$store.dispatch('setPatientCookie', response.data.patient);
+                        this.$store.dispatch('setVisitCookie', response.data.visit);
+                        this.loading = false; 
+                    })
+                    .catch(()=>{
+                        this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: '<a href>Why do I have this issue?</a>'});
+                    });
+                }
+            });
+        },
+        closeModal(){
+            $('#paymentModal').modal('hide');  
+            $('#serviceModal').modal('hide');  
+            $('#transactionModal').modal('hide');  
+        },
+        getInitials(page=1) {
+            axios.get('/api/finance/transactions/patients/'+this.patient.id+'/all?page='+page).then(response => {
+                this.refreshPage(response);
+            })
+            .catch(() => {
+                this.$Progress.fail();
+                toast.fire({
+                    icon: 'error',
+                    title: 'Your Transactions did not loaded successfully',
+                })
+            });
+        },
+        makePayment(transaction){
+            this.$Progress.start();
+            this.editMode = false;
+            var transactions = []; 
+            var trans = {id: transaction.id, amount:transaction.item_total};
+            transactions.push(trans);
+            Fire.$emit('DepositDataFill', {patient_id: this.patient.id, transactions: transactions, amount: '', mode_id: '', bank_id: '',});
+            $('#paymentModal').modal('show');
+            this.$Progress.finish();
+        },
+        refreshPage(response) {
+            this.transactions = response.data.transactions;
+        },
+        viaWallet(transaction){
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "The patient's wallet would be debited for this transaction",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed!'
+            }) 
+            .then((result) => {
+                if(result.value){
+                    this.form.transaction_id = transaction.id;
+                    this.form.post('/api/finance/payments')
+                    .then(response=>{
+                        Swal.fire('Update!', response.data.message, response.data.icon);
+                        //this.getInitials();  
+                    })
+                    .catch(()=>{
+                        Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: '<a href>Why do I have this issue?</a>'});
+                    });
+                }
+            });
+        },
+        viewTransaction(transaction){
+            this.transaction = transaction;
+            Fire.$emit('viewTransaction', transaction);
+            $('#transactionModal').modal('show');
+        },
+    },
+    props:{
+        source: String,
+    }
+}
+</script>

@@ -9,7 +9,7 @@ class Service extends Structure
 {
     protected $primaryKey = 'id';
     protected $table = 'emr_services';
-    protected $fillable = array('id', 'item_id', 'service_type_id', 'reference_id', 'description', 'status', 'created_by', 'created_at', 'updated_at', 'deleted_by', 'deleted_at');
+    protected $fillable = array('id', 'item_id', 'service_type_id', 'reference_id', 'description', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
     public function item(){
         return $this->belongsTo('App\Models\Inventory\Item', 'item_id', 'id');

@@ -30,6 +30,16 @@ class ModulesController extends Controller
     
     }
 
+    public function billings()
+    {
+        $params = [
+            'page_title' => 'Billings',
+            'icon' => 'fas fa-cash-register', 
+        ];
+        return view('app')->with($params);
+    
+    }
+
     public function chats()
     {
         $params = [

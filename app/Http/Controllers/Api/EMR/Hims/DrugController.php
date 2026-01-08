@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api\EMR\Hims;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Models\EMR\Drug;
+use App\Models\EMR\Drugs\Drug;
 use App\Http\Traits\Operations\DrugTrait;
+use App\Models\EMR\Drugs\Form;
+use App\Models\EMR\Drugs\Route;
+use App\Models\EMR\Settings\Frequency;
 
 class DrugController extends Controller
 {
@@ -18,17 +21,28 @@ class DrugController extends Controller
             'drugs' => $this->operation_drug_get_all(true, true, $_GET['page'] ?? 1),
         ]);   
     }
+
+    public function initials(){
+        return response()->json([
+            'drug_forms' => Form::select('name')->orderBy('name', 'ASC')->get(),
+            'frequencies' => Frequency::select('id', 'code', 'per_day', 'name')->orderBy('name', 'ASC')->get(),
+            'routes' => Route::select('name')->orderBy('name', 'ASC')->get(),
+        ]);
+    }
    
     public function search()
     {
-        if ($search = \Request::get('q')){
+        if (!empty($_GET['q'])){
+            $search = $_GET['q'];
             $drugs = Drug::select('id', 'name')->orderBy('name', 'ASC')->where('name', 'LIKE', "%$search%");
         }
         else{
             $drugs = Drug::select('id', 'name')->orderBy('name', 'ASC');
         }
         
-        return response()->json(['drugs' => $drugs->with('specific_drugs')->limit(10)->get(),]);
+        return response()->json([
+            'drugs' => $drugs->with('specific_drugs')->get(),
+        ]);
     }
 
     public function specific_store(Request $request)

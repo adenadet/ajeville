@@ -3,17 +3,19 @@
 namespace App\Http\Traits\Operations;
 use App\Http\Traits\Inventory\ItemTrait;
 use App\Http\Traits\UMS\LogTrait;
+
+use App\Models\EMR\Admission\Service as AdmissionService;
+use App\Models\EMR\Consultation\Service as ConsultationService;
+use App\Models\EMR\Laboratory\Service as LaboratoryService;
+use App\Models\EMR\Radiology\Service as RadiologyService;
+
 use App\Models\EMR\Service;
 use App\Models\EMR\Settings\ServiceType;
 use App\Models\EMR\Settings\Category;
 use App\Models\Inventory\Item;
-use App\Models\Operations\AdmissionService;
 use App\Models\Operations\BranchModule;
 use App\Models\Operations\Branch;
-// use App\Models\Operations\Category;
 use App\Models\Operations\Consumable;
-use App\Models\Operations\LaboratoryService;
-use App\Models\Operations\RadiologyService;
 use App\Models\UMS\Employee;
 use App\Models\User;
 use Exception;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-trait ServiceTypeTrait{
+trait ServiceTrait{
     use ItemTrait, LogTrait;
     //Category Operation
     public function operation_emr_category_get_all($main, $sub_cart, $detailed, $paginated, $page){
@@ -37,21 +39,28 @@ trait ServiceTypeTrait{
     public function operation_service_create($data){
         DB::beginTransaction();
         try{
-            $service_type = ServiceType::find($data['service_type_id']);
-            $service = Service::create([
-                'name' => $data['name'],
-                'item_id' => $data['item_id'],
-                'service_type_id' => $data['service_type_id'],
-                'reference_id' => $data['reference_id'] ?? null,
-                'description' => $data['description'],
-                'status' => 1,
-                'created_by' => auth('api')->id() ?? Auth::id(),
-                'updated_by' => auth('api')->id() ?? Auth::id(),
+            $reference = null;
+            //echo $data['item']['name']."\n";
+            $item = Item::create([
+                'average_landing_cost' => $data['item']['landing_cost'] ?? 0.00,
+                'billable' => $data['item']['billable'] ?? 1,
+                'barcode' => $data['item']['barcode'] ?? null,
+                'type_id' => $data['item']['service_type_id'],
+                'consumable' => 1,
+                'description' => $data['item']['description'],
+                'last_landing_cost' => $data['item']['landing_cost'] ?? 0.00,
+                'name' => $data['item']['name'],
+                'specific_id' => null,
+                'status' => $data['item']['status'] ?? 1,
+                'created_by' => Auth::id() ?? auth('api')->id(),
+                'updated_by' => Auth::id() ?? auth('api')->id(),
             ]);
-            switch($service_type->name){
-                case 'Admission':
-                    $item = $this->inventory_item_create_new_item($data['item']);
-                    $service = AdmissionService::create([
+            
+            $service_type = ServiceType::find($data['item']['service_type_id']);
+                    
+            switch(strtolower($service_type->name)){
+                case 'admission':
+                    $reference = AdmissionService::create([
                         'name' => $data['name'],
                         'unique_id' => 'AS-'.strtotime(date('Y-m-d H:i:s')),
                         'item_id' => $item->id,
@@ -63,11 +72,19 @@ trait ServiceTypeTrait{
                         'updated_by' => auth('api')->id() ?? Auth::id(),
                     ]);
                 break;
-                case 'Consultation':
-
-                case 'Laboratory':
-                    $item = $this->inventory_item_create_new_item($data);
-                    $service = LaboratoryService::create([
+                case 'consultation':
+                    $reference = ConsultationService::create([
+                        'item_id' => $item->id,
+                        'consultant_id' => $data['service']['consultant_id'],
+                        'specialty_id' => $data['service']['specialty_id'],
+                        'status' => $data['item']['status'] ?? 1,
+                        'is_default' => 1,
+                        'created_by' => auth('api')->id() ?? Auth::id(),
+                        'updated_by' => auth('api')->id() ?? Auth::id(),
+                    ]);
+                break;    
+                case 'laboratory':
+                    $reference = LaboratoryService::create([
                         'name' => $data['name'],
                         'unique_id' => 'LS-'.strtotime(date('Y-m-d H:i:s')),
                         'item_id' => $item->id,
@@ -80,9 +97,8 @@ trait ServiceTypeTrait{
                         'updated_by' => auth('api')->id() ?? Auth::id(),
                     ]);
                 break;
-                case 'Radiology':
-                    $item = $this->inventory_item_create_new_item($data);
-                    $service = RadiologyService::create([
+                case 'radiology':
+                    $reference = RadiologyService::create([
                         'name' => $data['name'],
                         'unique_id' => 'RS-'.strtotime(date('Y-m-d H:i:s')),
                         'item_id' => $item->id,
@@ -96,14 +112,28 @@ trait ServiceTypeTrait{
                     ]);
                 break;
             }
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Create', true, $service->id);
+
+            //echo $reference->id;
+            //Create Service
+            $service = Service::create([
+                'item_id' => $item->id,
+                'service_type_id' => $data['item']['service_type_id'],
+                'reference_id' => $reference->id ?? null,
+                'description' => $data['item']['description'],
+                'status' => 1,
+                'created_by' => auth('api')->id() ?? Auth::id(),
+                'updated_by' => auth('api')->id() ?? Auth::id(),
+            ]);
+            
+            $this->log_user_activity( 'Operation Service Create', $service->id, true);
             DB::commit();
 
             return $service;
         }
         catch(Exception $e){
             DB::rollback();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Create', false, null);
+            $this->log_user_activity( 'Operation Service Create', null, false);
+            return $e->getMessage();
         }
     }
 
@@ -200,7 +230,7 @@ trait ServiceTypeTrait{
         }
         catch(Exception $e){
             DB::rollback();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Create', false, null);
+            $this->log_user_activity( 'Operation Service Create', false, null);
         }
     }
     
@@ -218,14 +248,14 @@ trait ServiceTypeTrait{
                 'updated_by' => auth('api')->id(),
             ]);
             
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Branch Create', false, null);
+            $this->log_user_activity( 'Operation Branch Create', false, null);
             DB::commit();
 
             return $service_type;
         }
         catch(Exception $e){
             DB::rollback();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Branch Create', false, null);
+            $this->log_user_activity( 'Operation Branch Create', false, null);
         }
         
     }
@@ -241,13 +271,13 @@ trait ServiceTypeTrait{
             $service->save();
 
             DB::commit();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Type Deactivate', true, null);
+            $this->log_user_activity( 'Operation Service Type Deactivate', true, null);
         
             return $service;
         }
         catch(Exception $e){
             DB::rollback();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Type Deactivate', false, null);
+            $this->log_user_activity( 'Operation Service Type Deactivate', false, null);
         }
         
     }
@@ -283,14 +313,14 @@ trait ServiceTypeTrait{
             $service_type->updated_by = auth('api')->id();
 
             $service_type->save();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Type Update', true, null);
+            $this->log_user_activity( 'Operation Service Type Update', true, null);
             DB::commit();
 
             return $service_type;
         }
         catch(Exception $e){
             DB::rollback();
-            $this->log_activity_user_activity(auth('api')->user() ?? Auth::user(), 'Operation Service Type Update', false, null);
+            $this->log_user_activity( 'Operation Service Type Update', false, null);
             return $e->getMessage();
         }
     }

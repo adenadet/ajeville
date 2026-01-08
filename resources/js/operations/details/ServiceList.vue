@@ -73,7 +73,7 @@ export default {
             $('#serviceFormModal').modal('hide');
         },
         refreshPage() {
-            this.closeModals();
+            //this.closeModals();
             this.$emit('refreshPage');
         },
         updateService(service){

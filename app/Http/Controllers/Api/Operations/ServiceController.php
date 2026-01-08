@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\Operations;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\EMR\ConsultantTrait;
 use App\Http\Traits\EMR\DrugTrait;
 use App\Http\Traits\EMR\LaboratoryTrait;
 use App\Http\Traits\EMR\PharmacyTrait;
-use App\Http\Traits\Operations\ServiceTypeTrait;
+use App\Http\Traits\Operations\ServiceTrait;
 use App\Http\Traits\Inventory\ItemTrait;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ use App\Models\User;
 
 class ServiceController extends Controller
 {
-    use ItemTrait, ServiceTypeTrait;
+    use ItemTrait, ConsultantTrait, ServiceTrait;
 
     public function destroy($id)
     {
@@ -43,10 +44,11 @@ class ServiceController extends Controller
     public function initials()
     {
         return response()->json([
-            'drugs'             => $this->emr_drugs_get_all('drug_types', false, false, $_GET['page'] ?? 1),
-            'drug_forms'        => $this->emr_drugs_get_all('drug_forms', false, false, $_GET['page'] ?? 1),
-            'lab_bottle_types'  => $this->laboratory_bottles_get_all('all_active', false, false, $_GET['page'] ?? 1),
+            //'drugs'             => $this->emr_drugs_get_all('drug_types', false, false, $_GET['page'] ?? 1),
+            //'drug_forms'        => $this->emr_drugs_get_all('drug_forms', false, false, $_GET['page'] ?? 1),
+            //'lab_bottle_types'  => $this->laboratory_bottles_get_all('all_active', false, false, $_GET['page'] ?? 1),
             'service_types'     => $this->operation_service_type_get_all('active', null,  false, true),           
+            'specialties'       => $this->emr_specialty_get_all('active', null, true, false),
         ]);        
     }
 
@@ -66,11 +68,11 @@ class ServiceController extends Controller
 
     public function store(Request $request)
     {
-        $branch = $this->operation_branch_create($request);
+        $service = $this->operation_service_create($request);
 
         return response()->json([
-            'branches'    => $this->operation_branch_get_all(true, true, $_GET['page'] ?? 1)
-        ]);
+            'service'    => $service
+        ], is_string($service) ? 500 : 201);
     }
 
     public function update(Request $request, $id)

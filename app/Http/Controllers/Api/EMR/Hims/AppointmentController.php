@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\EMR\Hims;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\ConsultantTrait;
+use App\Http\Traits\EMR\InsuranceTrait;
 use App\Http\Traits\EMR\PatientTrait;
 use App\Http\Traits\EMR\VisitTrait;
 use App\Http\Traits\Operations\BranchTrait;
-use App\Http\Traits\Operations\ServiceTypeTrait;
+use App\Http\Traits\Operations\ServiceTrait;
 use App\Models\EMR\Appointment\Appointment;
 use App\Models\EMR\Consultation\SpecialtyDoctor;
 use App\Models\EMR\Visit;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    use ConsultantTrait, BranchTrait, PatientTrait, ServiceTypeTrait, VisitTrait;
+    use ConsultantTrait, BranchTrait, PatientTrait, InsuranceTrait, ServiceTrait, VisitTrait;
 
     public function available_slots(Request $request)
     {
@@ -48,8 +49,8 @@ class AppointmentController extends Controller
         while ($current->lt($endTime)) {
             $slotEnd = $current->copy()->addMinutes($slotDuration);
             $slots[] = [
-                'start' => $current->format('H:i'),
-                'end' => $slotEnd->format('H:i'),
+                'start' => $current->format('H:i:s'),
+                'end' => $slotEnd->format('H:i:s'),
                 'booked' => false
             ];
             $current->addMinutes($slotDuration);
@@ -82,7 +83,7 @@ class AppointmentController extends Controller
             'specialty_id' => ['nullable', 'exists:emr_specialties,id'],
         ]);
 
-        $visit = $this->emr_appointment_convert_to_visit($request, $request->appintment_id);
+        $visit = $this->emr_appointment_convert_to_visit($request, $request->appointment_id);
 
         return response()->json([
             'visit' => $visit,
@@ -94,6 +95,7 @@ class AppointmentController extends Controller
         
         return response()->json([
             'appointments' => $appointments,
+            'branch' => $this->operation_branch_get_by(null, request()->cookie('branch'), true),
             'service_types' => $this-> operation_service_type_get_all('queueable', null, false, false),
             'specialties' => $this->emr_specialty_get_all('active', null, true, false),
         ], is_string($appointments) ? 500 : 200);
@@ -107,6 +109,9 @@ class AppointmentController extends Controller
             'branches' => $this->operation_branch_get_all(false, false, null),
             'consultants' => $consultants,
             'patients' => $this->emr_patient_get_all('active', null, false, false, null),
+            'plans' => $this->insurance_provider_plan_get_all('active', null, false, false, null),
+            'providers' => $this->insurance_provider_get_all('active', null, true, false, null),
+            'provider_types' => $this->insurance_provider_type_get_all('active', null, true, false, null),
             'service_types' => $this-> operation_service_type_get_all('queueable', null, false, false),
             'specialties' => $this->emr_specialty_get_all('active', null, true, false),
         ]);
@@ -122,7 +127,7 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'patient_id' => ['numeric', 'nullable', 'exists:emr_patients,id'],
+            //'patient_id' => ['numeric', 'nullable', 'exists:emr_patients,id'],
             'consultant_id' => ['nullable', 'exists:users,id'],
             'service_type_id' => ['required', 'exists:emr_settings_service_types,id'],
             'specialty_id' => ['nullable', 'exists:emr_specialties,id'],

@@ -28,7 +28,7 @@ class Drug extends Structure
 	}
 
     public function specific_drugs(){
-        return $this->hasMany('App\Models\Inventory\Item', 'sub_category_id', 'id')->where('service_type_id', 2);   
+        return $this->hasMany('App\Models\Inventory\Item', 'specific_id', 'id')->where('type_id', '=', 2);   
     }
 
     public function updater(){
