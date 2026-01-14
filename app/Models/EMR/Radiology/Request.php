@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Request extends Structure
 {
+
+    const StatusBooked = 0;
+    const StatusStarted = 1;
+    const StatusSampleCollected = 2;
+    const StatusReferredOut = 5;
+    const StatusReported = 10;
+    const StatusSecondaryReport = 15;
+    const StatusConfirmed = 20;
+    
     protected $primaryKey = 'id';
     protected $table = 'emr_radiology_requests';
     protected $fillable = array('visit_id', 'date', 'patient_id', 'item_id', 'consultation_id', 'transaction_id', 'branch_id', 'quantity', 'status', 'result', 'sample_by', 'sample_at', 'sample_remark', 'reported_by', 'reported_at', 'report_remark', 'secondary_report_by', 'secondary_report_at', 'secondary_report_remark', 'approved_by', 'approved_at', 'approval_remark', 'outsourced_by', 'outsourced_type', 'outsourced_to_id', 'outsourced_status_id', 'outsourced_remark', 'insourced_remark', 'insourced_final_remark', 'outsource_result_file', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');

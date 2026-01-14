@@ -23,6 +23,7 @@
                         <th>Name </th>
                         <th>Category </th>
                         <th>Quantity </th>
+                        <th>Emergency</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -32,6 +33,12 @@
                         <td>{{ item.name }}</td>
                         <td>{{ item.category != null ? item.category.name : 'Not applicable' }}</td>
                         <td><input class="form-control" type="number" v-model="modelValue[index].quantity" /></td>
+                        <td>
+                            <select class="form-control" type="number" v-model="modelValue[index].special">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </td>
                         <td><textarea class="form-control" v-model="modelValue[index].description"></textarea></td>
                         <td><button class="btn btn-xs btn-danger" type="button" @click="removeLaboratoryItem(index)"><i class="fa fa-trash"></i></button> </td>
                     </tr>

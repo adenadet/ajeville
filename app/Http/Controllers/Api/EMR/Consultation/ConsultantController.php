@@ -103,7 +103,11 @@ class ConsultantController extends Controller
 
     public function update(Request $request, $id)
     {
-        //
+        $consultation = $this->emr_consultation_complete_request($request, $id);
+
+        return  response()->json([
+            'consultation' => $consultation
+        ], is_string($consultation) ? 500 : 200);
     }
 
     public function my_past_consultations()

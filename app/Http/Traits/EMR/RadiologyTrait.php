@@ -101,28 +101,27 @@ trait RadiologyTrait{
             return $e->getMessage();
         }
     }
-    public function emr_radiology_request_create($data, $visit=null, $consultation = null){
+    public function emr_radiology_request_create($patient_id, $item_id, $visit_id=null, $consultation_id = null, $date = null, $special = 0){
         DB::beginTransaction();
         
         try{ 
-            $patient_id = $consultation->patient_id ?? ($visit->patient_id ?? $data['patient_id']);
-            $transaction = $this->finance_transaction_create($data['item_id'], $patient_id, 1, false, $visit->id);
+            $transaction = $this->emr_visit_transaction_create($item_id, $patient_id, 1, false, $visit_id);
             if(is_string($transaction)){
-                $this->log_activity_user_activity('EMR Radiology Request Create', true, null);
+                $this->log_user_activity('EMR Laboratory Request Create', true, null);
                 return $transaction." Can not create transaction"; 
             }   
             $query = RadiologyRequest::create([
-                'date' => $data['date'],
-                'visit_id' => $consultation->visit_id ?? ($visit->id ?? $data['visit_id']),
-                'branch_id' => $data['branch_id'],
-                'consultation_id' => $consultation->id ?? $data['consultation_id'],
+                'date' => $date,
+                'visit_id' => $visit_id,
+                'branch_id' => $visit_id ?? request()->cookie('current_branch'),
+                'consultation_id' => $consultation_id,
                 'request_type_id' => $data['request_type_id'] ?? null,
                 'patient_id' => $patient_id,
                 'transaction_id' => $transaction->id,
                 'quantity' => 1,
-                'item_id' => $data['item_id'],
-                'status' => $transaction->status == 1 ? 1 : 0,
-                'special' => $data['special'],
+                'item_id' => $item_id,
+                'status' => RadiologyRequest::StatusBooked,
+                'special' => $special,
                 'created_by' => auth('api')->id() ?? Auth::id(),
                 'updated_by' => auth('api')->id() ?? Auth::id(),
             ]);

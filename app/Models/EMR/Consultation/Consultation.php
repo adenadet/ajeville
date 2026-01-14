@@ -6,13 +6,23 @@ use App\Models\Structure;
 
 class Consultation extends Structure
 {
+	public const StatusBooked = 0;
+	public const StatusCalled = 1;
+	public const StatusStarted = 2;
+	public const StatusCompleted = 4;
+	public const StatusReviewed = 5;
+	
     protected $primaryKey = 'id';
     protected $table = 'emr_consultations';
-    protected $fillable = array('unique_id', 'patient_id', 'visit_id', 'specialty_id', 'transaction_id', 'consultation_type_id',  'whom_to_see', 'consultant_id', 'consultant_seen_id', 'initial_diagnosis', 'final_diagnosis', 'complaint', 'soap_note', 'action_plan', 'status', 'start_time', 'end_time', 'created_by', 'updated_by', 'deleted_by');
+    protected $fillable = array('unique_id', 'patient_id', 'visit_id', 'specialty_id', 'transaction_id', 'consultation_type_id',  'whom_to_see', 'consultant_id', 'consultant_seen_id', 'initial_diagnosis', 'final_diagnosis', 'complaint', 'history',  'plan', 'requests', 'status', 'start_time', 'end_time', 'created_by', 'updated_by', 'deleted_by');
 
 	protected $casts = [
 		'start_time' => 'datetime',
 		'end_time' => 'datetime',
+		'initial_diagnosis' => 'array',
+		'final_diagnosis' => 'array',
+		'plan' => 'array',
+		'requests' => 'array',
 	];
 
     public function consultant_seen(){

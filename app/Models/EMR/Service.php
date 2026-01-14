@@ -7,6 +7,8 @@ use App\Models\Structure;
 
 class Service extends Structure
 {
+    public const StatusActive = 1;
+    public const StatusInactive = 0;    
     protected $primaryKey = 'id';
     protected $table = 'emr_services';
     protected $fillable = array('id', 'item_id', 'service_type_id', 'reference_id', 'description', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');

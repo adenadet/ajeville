@@ -8,11 +8,13 @@ use App\Http\Traits\EMR\LaboratoryTrait;
 use App\Http\Traits\EMR\NursingTrait;
 use App\Http\Traits\EMR\PharmacyTrait;
 use App\Http\Traits\EMR\PhysiotheraphyTrait;
+use App\Http\Traits\EMR\VisitTransactionTrait;
 use App\Http\Traits\EMR\RadiologyTrait;
-use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Models\EMR\Consultation\Consultation;
+use App\Models\EMR\Consultation\Specialty;
 use App\Models\EMR\Consultation\SpecialtyDoctor;
+
 use App\Models\Operations\Branch;
 use App\Models\EMR\Patient;
 use App\Models\EMR\PatientInsurance;
@@ -28,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 
 trait ConsultationTrait{
 
-    use LogTrait, RadiologyTrait, TransactionTrait;
+    use LogTrait, RadiologyTrait, VisitTransactionTrait;
     private function authId(){ 
         return  Auth::id() ?? auth('api')->id();
     }
@@ -43,40 +45,112 @@ trait ConsultationTrait{
         }
     }
 
+    /*
+    ------------------------------------------------------------------
+    Consultant Functions
+    ------------------------------------------------------------------
+    */
+
+    public function emr_consultant_create($data){
+        //Create a new consultant        
+    }
+
+    public function emr_consultant_deactivate($id){
+        //Deactivate a Consultant 
+    }
+
+    public function emr_consultant_get_all($type, $specific, $detailed, $paginated){
+        //Get all consultants that meet requirements
+    }
+
+    public function emr_consultant_get_by($type, $id, $detailed){
+        //Get one single consultant
+    }
+
+    public function emr_consultant_update($data, $id){
+        //Update a Consultant's details
+    }
+
+    /*
+    ------------------------------------------------------------------
+    Consultant Specialty Functions
+    ------------------------------------------------------------------
+    */
+
+    public function emr_consultant_specialty_create($data){
+        //Create a new consultant_specialty        
+    }
+
+    public function emr_consultant_specialty_deactivate($id){
+        //Deactivate a Consultant 
+    }
+
+    public function emr_consultant_specialty_get_all($type, $specific, $detailed, $paginated){
+        //Get all consultant_specialtys that meet requirements
+    }
+
+    public function emr_consultant_specialty_get_by($type, $id, $detailed){
+        //Get one single consultant_specialty
+    }
+
+    public function emr_consultant_specialty_update($data, $id){
+        //Update a Consultant's details
+    }
+
+    /*
+    ------------------------------------------------------------------
+    Specialty Functions
+    ------------------------------------------------------------------
+    */
+
     public function emr_consultation_complete_request($data, $id){
         DB::beginTransaction();
 
         try{
             $query = Consultation::findOrFail($id);
             
-            $query->action_plan = $data['action_plan'];
+            $query->history = $data['history'];
             $query->complaint = $data['complaint'];
             $query->consultant_seen_id = $this->authId();
             $query->end_time = date('Y-m-d H:i:s');
             $query->final_diagnosis = $data['final_diagnosis'] ?? null;
             $query->initial_diagnosis = $data['initial_diagnosis'];
-            $query->soap_note = $data['soap_note'];
-            $query->status = 4;
+            $query->plan = $data['plan'];
+            $query->requests = $data['requests'];
+            $query->status = Consultation::StatusCompleted;
             $query->updated_by = $this->authId();
 
             $query->save();
 
-            if (isset($data['lab_requests']) && is_array($data['lab_requests'])){
-                if (count($data['lab_requests']) > 0){
-                    foreach ($data['lab_requests'] as $game){
-                        $this->emr_laboratory_create_request($game, null, $query);
+            if (!empty($data['requests'])){
+                //Sort Dialysis
+                if (isset($data['requests']['dialysis']) && !empty($data['requests']['dialysis'])){
+                    foreach ($data['requests']['dialysis'] as $dialysis){
+                        $this->emr_dialysis_request_create($query->patient_id, $dialysis->item_id, $query->visit_id, $query->id, $date = null, $dialysis->special);
+                    }
+                }
+
+                //Sort Laboratory
+                if (isset($data['requests']['laboratory']) && !empty($data['requests']['laboratory'])){
+                    foreach ($data['requests']['laboratory'] as $laboratory){
+                        $this->emr_laboratory_request_create($query->patient_id, $laboratory->item_id, $query->visit_id, $query->id, $date = null, $laboratory->special);
+                    }
+                }
+
+                //Sort Physiotherapy
+                if (isset($data['requests']['physiotherapy']) && !empty($data['requests']['physiotherapy'])){
+                    foreach ($data['requests']['physiotherapy'] as $physiotherapy){
+                        $this->emr_physiotherapy_request_create($query->patient_id, $physiotherapy->item_id, $query->visit_id, $query->id, $date = null, $physiotherapy->special);
+                    }
+                }
+            
+                //Sort Radiology
+                if (isset($data['requests']['radiology']) && !empty($data['requests']['radiology'])){
+                    foreach ($data['requests']['radiology'] as $radiology){
+                        $this->emr_radiology_request_create($query->patient_id, $radiology->item_id, $query->visit_id, $query->id, $date = null, $radiology->special);
                     }
                 }
             }
-
-            if (isset($data['rad_requests']) && is_array($data['rad_requests'])){
-                if (count($data['rad_requests']) > 0){
-                    foreach ($data['rad_requests'] as $game){
-                        $this->emr_radiology_create_request($game, null, $query);
-                    }
-                }
-            }
-
             $this->log_user_activity('Consultation done', $id, true);
             DB::commit();
             return $query;
@@ -92,7 +166,7 @@ trait ConsultationTrait{
         DB::beginTransaction();
 
         try{
-            $transaction = $this->finance_transaction_create($data['item_id'], $data['patient_id'], 1, true, $data['visit_id']);
+            $transaction = $this->emr_visit_transaction_create($data['item_id'], $data['patient_id'], 1, true, $data['visit_id']);
             if(is_string($transaction)){ 
                 DB::rollBack();
                 $this->log_user_activity('Transaction create', null, false);       
@@ -217,4 +291,100 @@ trait ConsultationTrait{
             return $e->getMessage();
         }
     }
+
+    public function emr_specialty_create($data){
+        //Create a new specialty 
+        DB::beginTransaction();
+
+        try{
+            $query = Specialty::where( 'name', '=', $data['name'])->withTrashed()->first();
+
+            if($query){
+                $query->deleted_at = null;
+                $query->save(); 
+            }
+            else{
+                $query = Specialty::create([
+                    'name' => $data['name'],
+                ]);
+            }
+            
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return $e->getMessage();
+        }       
+    }
+
+    public function emr_specialty_deactivate($id){
+        //Deactivate a Consultant
+        DB::beginTransaction();
+
+        try{
+            $query = Specialty::where('id', '=', $id);
+
+            if (is_null($query->deleted_at)){
+                $query->deleted_at = date('Y-m-d H:i:s');
+            }
+            else{
+                $query->deleted_at = null;  
+            }
+            $query->save();
+
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return $e->getMessage();
+        } 
+    }
+
+    public function emr_specialty_get_all($type, $specific, $detailed, $paginated){
+        //Get all specialtys that meet requirements
+        $query = Specialty::query();
+        switch($type){
+
+        }
+
+        $query = $detailed ? $query->select('id', 'name')->with(['doctors.user']) : $query->select('id', 'name');
+        $query = $query->orderBy('name', 'ASC');
+        $query = $paginated ? $query->paginate(20) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_specialty_get_by($type, $id, $detailed){
+        //Get one single specialty
+        try{
+            $query = Specialty::where('id', '=', $id);
+            $query = $detailed ? $query->select('id', 'name')->with(['doctors']) : $query->select('id', 'name');
+            return $query->firstOrFail();    
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_specialty_update($data, $id){
+        //Update a Consultant's details
+        DB::beginTransaction();
+
+        try{
+            $query = Specialty::findOrFail( $id);
+
+            $query->name = $data['name'];
+            $query->save();
+
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            return $e->getMessage();
+        }
+    }
+
 }

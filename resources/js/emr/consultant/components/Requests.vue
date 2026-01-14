@@ -33,53 +33,39 @@
 
 <script>
 import { markRaw, defineAsyncComponent } from 'vue'
-
-/**
- * Lazy-loaded request modules
- * Heavy components should always be async in EMR systems
- */
-const Prescription = defineAsyncComponent(() =>
-    import('./Prescription.vue')
-)
-const Laboratory = defineAsyncComponent(() =>
-    import('./Laboratory.vue')
-)
-const Radiology = defineAsyncComponent(() =>
-    import('./Radiology.vue')
-)
-const Physiotherapy = defineAsyncComponent(() =>
-    import('./Physiotherapy.vue')
-)
-const Dialysis = defineAsyncComponent(() =>
-    import('./Dialysis.vue')
-)
-const Admission = defineAsyncComponent(() =>
-    import('./Admission.vue')
-)
-const Referral = defineAsyncComponent(() =>
-    import('./Referral.vue')
-)
+const Admission = defineAsyncComponent(() =>import('./Admission.vue'))
+const Dialysis = defineAsyncComponent(() =>import('./Dialysis.vue'))
+const Laboratory = defineAsyncComponent(() =>import('./Laboratory.vue'))
+const Physiotherapy = defineAsyncComponent(() =>import('./Physiotherapy.vue'))
+const Prescription = defineAsyncComponent(() =>import('./Prescription.vue'))
+const Radiology = defineAsyncComponent(() =>import('./Radiology.vue'))
+const Referral = defineAsyncComponent(() =>import('./Referral.vue'))
 
 export default {
     name: 'Requests',
 
-    props: {
-        modelValue: {
-            type: Object,
-            required: true,
+    computed: {
+        /**
+         * Currently active component
+         */
+        activeComponent() {
+            return this.tabs.find(tab => tab.key === this.active)?.component || null
         },
-    },
 
-    emits: ['update:modelValue'],
-
+        localValue() {
+            if (!(this.active in this.modelValue)) {
+                this.$emit('update:modelValue', {
+                    ...this.modelValue,
+                    [this.active]: this.defaultValue(this.active),
+                });
+            }
+            return this.modelValue[this.active];
+        },
+    },    
     data() {
         return {
             active: 'prescription',
 
-            /**
-             * Tab registry
-             * Components are explicitly marked as raw
-             */
             tabs: [
                 { key: 'prescription', label: 'Prescription', component: markRaw(Prescription) },
                 { key: 'laboratory', label: 'Laboratory', component: markRaw(Laboratory) },
@@ -91,20 +77,9 @@ export default {
             ],
         }
     },
+    emits: ['update:modelValue'],
 
-    computed: {
-        /**
-         * Currently active component
-         */
-        activeComponent() {
-            return this.tabs.find(tab => tab.key === this.active)?.component || null
-        },
-
-        localValue() {
-            return this.modelValue[this.active] ?? this.defaultValue(this.active)
-        },
-    },
-
+    
     methods: {
         setActive(key) {
             this.active = key
@@ -134,9 +109,9 @@ export default {
                 admission: null,
                 referral: null,
             }
-
             return defaults[key]
         },
     },
+    props: {modelValue: {type: Object, required: true,},},
 }
 </script>

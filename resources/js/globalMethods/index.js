@@ -25,6 +25,34 @@ export const globalMethods = {
             const className = parts.pop();   // last part
             return className;
         },
+        createEmptyConsultation(id = null) {
+            return {
+                id,
+                complaint: '',
+                history: '',
+                initial_icd_10: [],
+                final_icd_10: [],
+                plan: {
+                    plan: '',
+                    non_drug: '',
+                    follow_up_date: null,
+                    follow_up_note: '',
+                    intent: {
+                        admission: false,
+                        referral: false,
+                    },
+                },
+                requests: {
+                    prescription: [],
+                    laboratory: [],
+                    radiology: [],
+                    physiotherapy: [],
+                    dialysis: {},
+                    admission: null,
+                    referral: null,
+                },
+            }
+        },
         currency(value) {
             if (isNaN(value)) {
                 return '₦ 0.00';

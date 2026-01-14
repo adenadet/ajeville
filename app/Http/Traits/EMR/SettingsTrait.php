@@ -10,7 +10,7 @@ use App\Http\Traits\EMR\PharmacyTrait;
 use App\Http\Traits\EMR\PhysiotheraphyTrait;
 use App\Http\Traits\EMR\RadiologyTrait;
 use App\Http\Traits\Finance\TransactionTrait;
-use App\Http\Traits\General\FileTrait;
+use App\Http\Traits\General\FileManagerTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Models\EMR\Consultation\Consultation;
 use App\Models\EMR\Consultation\SpecialtyDoctor;
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 trait SettingsTrait{
-    use FileTrait, LogTrait;
+    use FileManagerTrait, LogTrait;
     public function emr_settings_frequency_create($data){
         DB::beginTransaction();
 
@@ -105,6 +105,5 @@ trait SettingsTrait{
             $this->log_user_activity('EMR Frequency Update', $id, false);
             return $e->getMessage();
         }   
-    }
-    
+    }   
 }

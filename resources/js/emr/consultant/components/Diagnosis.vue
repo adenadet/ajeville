@@ -1,5 +1,4 @@
 <template>
-<section class="overlay-wrapper p-0">
     <div class="row">
         <div class="col-md-12">
             <label>{{ firstUp(type) }} Diagnosis</label>
@@ -8,7 +7,6 @@
                 :multiple="true" :taggable="true" @tag="addTag" />
         </div>
     </div>
-</section>
 </template>
 <script>
 export default {
