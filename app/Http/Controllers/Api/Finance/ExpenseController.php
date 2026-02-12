@@ -7,13 +7,14 @@ use App\Http\Traits\CRM\CustomerTrait;
 use App\Http\Traits\Finance\ExpenseTrait;
 use App\Http\Traits\Finance\MainTransactionTrait;
 use App\Http\Traits\Finance\SettingTrait;
+use App\Http\Traits\Operations\BranchTrait;
 use App\Http\Traits\Procurement\VendorTrait;
 use App\Http\Traits\Ums\UserTrait;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    use CustomerTrait, ExpenseTrait, MainTransactionTrait,  SettingTrait, UserTrait, VendorTrait;
+    use BranchTrait, CustomerTrait, ExpenseTrait, MainTransactionTrait,  SettingTrait, UserTrait, VendorTrait;
 
     public function destroy(string $id)
     {
@@ -35,6 +36,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'accounts'      => $this->finance_setting_branch_account_get_all('branch', request()->cookie('branch_id'), false, false, null),
+            'branches'      => $this->operation_branch_get_all(false, false, null),
             'customers'     => $this->crm_customer_get_all('active', null, false, false, null),
             'expense_types' => $this->finance_expense_type_get_all('active', null, false, false, null),
             'transactions'  => $this->finance_main_transaction_get_all('all', null, false, false), 

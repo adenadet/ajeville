@@ -1,7 +1,7 @@
 <template>
 <section class="card overlay-wrapper p-0">
     <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>    
-    <div class="modal fade" id="expenseModal">
+    <!--div class="modal fade" id="expenseModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -15,7 +15,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div-->
     <div class="card-header bg-dark">
         <h3 class="card-title">Expenses</h3>
         <div class="card-tools">
@@ -31,7 +31,6 @@
                         <option value="pending">Pending</option>
                         <option value="unpaid">Unpaid</option>
                     </select>
-                    <button type="button" class="btn btn-primary ml-1" @click="addExpense"><i class="fas fa-plus"></i></button>
                     <button type="button" class="btn btn-success ml-1" @click="downloadExpense"><i class="fas fa-download"></i></button>
                 </div>
             </div>
@@ -60,13 +59,6 @@ export default {
         this.getAllInitials();
     },
     methods: {
-        addExpense(){
-            this.loading = true;
-            this.editMode = false;
-            this.expense = {};
-            $('#expenseModal').modal('show');
-            this.loading = false;
-        },
         closeModals(){
             $('#expenseModal').modal('hide');
         },

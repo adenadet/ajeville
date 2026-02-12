@@ -180,7 +180,7 @@ trait ServiceTrait{
             }
         }
 
-        $query = $detailed ? $query->with(['item', 'service_type', 'creator', 'deleter', 'updater']) : $query->select('id', 'item_id', 'service_type_id', 'reference_id', 'description', 'status');
+        $query = $detailed ? $query->with(['item', 'service_type', 'creator', 'deleter', 'updater']) : $query->select('id', 'item_id', 'service_type_id', 'referenceable_id', 'description', 'status')->with(['item']);
         $services = $paginated ? $query->paginate(50) : $query->get();
         
         return $services;
@@ -291,7 +291,7 @@ trait ServiceTrait{
             break;
         }
 
-        $query = $detailed ? $query->with(['creator', 'deleter', 'updater']) : $query->select('id', 'name'); 
+        $query = $detailed ? $query->with(['creator', 'deleter', 'updater', 'services.item']) : $query->select('id', 'name'); 
         $query = $query->orderBy('name', 'ASC');
         $query = $paginated ? $query->paginate(10) : $query->get();
 

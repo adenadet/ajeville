@@ -41,7 +41,7 @@
                 <th>Amount</th>
                 <th>Receiver</th>
                 <th>Status</th>
-                <th></th>
+                <th><button type="button" class="btn btn-xs btn-primary ml-1" @click="addExpense"><i class="fas fa-plus"></i></button></th>
             </tr>
         </thead>
         <tbody v-if="expenses.length > 0">
@@ -101,8 +101,12 @@ export default {
     },
     emits:['refres'],
     methods: {
-        addService(){
-            $('#expenseFormModal').modal('show'); 
+        addExpense(){
+            this.loading = true;
+            this.editMode = false;
+            this.expense = {};
+            $('#expenseFormModal').modal('show');
+            this.loading = false;
         },
         cancelExpense(expense){
             this.$swal.fire({

@@ -20,6 +20,10 @@ class ServiceType extends Structure
         return $this->belongsTo('App\Models\User', 'deleted_by', 'id');
     }
 
+    public function services(){
+        return $this->hasMany('App\Models\EMR\Service', 'service_type_id', 'id');
+    }
+
     public function updater(){
         return $this->belongsTo('App\Models\User', 'updated_by', 'id');
     }

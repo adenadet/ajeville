@@ -23,35 +23,40 @@
                     <div class="card-header bg-dark">
                         <h3 class="card-title">Item Details</h3>
                     </div>
-                    <div class="card-body ">
+                    <div class="card-body p-0">
                         <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a href="#" class="nav-link">Name <span class="float-right">{{ item.name }}</span></a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                Item Type <span class="float-right">{{ item.item_type != null ? item.item_type.name : 'N/A' }}</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                Category <span class="float-right">{{ item.category != null ? item.category.name : 'N/A' }}</span>
-                                </a>
+                                <a href="#" class="nav-link">Item Type <span class="float-right">{{ item.item_type != null ? item.item_type.name : 'N/A' }}</span></a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link">Current Cost Price <span class="float-right">{{ currency(item.last_landing_cost)  }}</span></a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
-                                Status <span class="float-right badge" :class="item.status == 'active' ? 'badge-primary' : 'badge-danger'">{{  firstUp(item.status) }}</span>
+                                Status<span class="float-right badge" :class="item.status == 'active' || item.status == 'Active' ? 'badge-primary' : 'badge-danger'">{{  firstUp(item.status) }}</span>
                                 </a>
                             </li>
                         </ul>
-                        <button class="btn btn-primary col-12 mt-2" type="button" @click="editItem(item)">Change Details</button>
+                        <ul class="nav flex-column border-top" v-if="item.item_type != null && item.item_type.name == 'Services'">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">Service Type <span class="float-right">{{ item.service != null && item.service.service_type != null? item.service.service_type.name : 'N/A' }}</span></a>
+                            </li>
+                        </ul>
+                        <ul class="nav flex-column border-top">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">Category <span class="float-right">{{ item.category != null ? item.category.name : 'N/A' }}</span></a>
+                            </li>
+                        </ul>
+                        <div class="row mt-2 p-3">
+                            <button class="btn btn-primary col-12" type="button" @click="editItem(item)">Change Details</button>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-dark">
                         <h3 class="card-title">Store Levels</h3>
                     </div>
                     <div class="card-body table-responsive p-0">
@@ -64,7 +69,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="location in locations" :key="location.id">
-                                    <td>{{ location.store.name }}</td>
+                                    <td>{{ location.store_item?.store?.name || 'Warehouse' }}</td>
                                     <td>{{ location.balance }}</td>
                                 </tr>
                             </tbody>
@@ -167,6 +172,7 @@ export default {
         return  {
             editMode: false,
             item: {},
+            loading: false,
             locations: [],
             purchase_orders: [],
             sales_orders: [],

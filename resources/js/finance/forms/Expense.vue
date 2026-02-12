@@ -2,167 +2,147 @@
 <section class="overlay-wrapper">
     <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
     <div class="expense-form">
-        <h2 class="text-xl font-semibold mb-4">Create Expense</h2>
-
         <form @submit.prevent="submitExpense" class="grid grid-cols-2 gap-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="form-label">Expense ID</label>
+                    <input type="text" v-model="ExpenseData.unique_id" disabled class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" v-model="ExpenseData.date"  class="form-control"/>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" v-model="ExpenseData.due_date" class="form-control"/>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">Branch</label>
+                    <select v-model="ExpenseData.branch_id"  class="form-control">
+                        <option value="">Select Branch</option>
+                        <option v-for="branch in branches" :key="branch.id" :value="branch.id">{{ branch.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Expense Classification:</label>
+                    <select class="form-control" name="expense_classification" id="expense_classification" v-model="ExpenseData.classification_id">
+                        <option value=''>--Select Classification--</option>
+                        <option v-for="expense_classification in expense_types" :value="expense_classification.id">{{ expense_classification.name}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">Expense For</label>
+                    <select v-model="ExpenseData.expenseable_type" class="form-control">
+                        <option value="">Select Type</option>
+                        <option value="vendor">Vendor</option>
+                        <option value="customer">Customer</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4" v-if="ExpenseData.expenseable_type === 'vendor'">
+                <div class="form-group">
+                    <label class="form-label">Vendor</label>
+                    <select v-model="ExpenseData.vendor_id"  class="form-control">
+                        <option value="">Select Vendor</option>
+                        <option v-for="v in vendors" :key="v.id" :value="v.id">{{ v.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4" v-if="ExpenseData.expenseable_type === 'customer'">
+                <div class="form-group">
+                    <label class="form-label">Customer</label>
+                    <select class="form-control"  v-model="ExpenseData.customer_id">
+                    <option value="">Select Customer</option>
+                    <option v-for="c in customers" :key="c.id" :value="c.id">
+                        {{ c.name }}
+                    </option>
+                    </select>
+                </div>
+            </div>
 
-        <!-- Unique ID -->
-        <div>
-            <label class="form-label">Expense ID</label>
-            <input type="text" v-model="form.unique_id" disabled class="form-input" />
+            <div class="col-md-4" v-if="ExpenseData.expenseable_type === 'staff'">
+                <div class="form-group">
+                    <label class="form-label">Staff</label>
+                    <select class="form-control" v-model="ExpenseData.staff_id">
+                    <option value="">Select Staff</option>
+                    <option v-for="s in staff" :key="s.id" :value="s.id">
+                        {{ s.name }}
+                    </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Expense Account</label>
+                    <select v-model="ExpenseData.account_id" class="form-control">
+                        <option value="">Select Account</option>
+                        <option v-for="a in accounts" :key="a.id" :value="a.id">{{ a.account_name }} {{ a.bank?.bank_name || '' }} [{{a.account_number}}]</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" v-model="ExpenseData.amount" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Is Payable?</label>
+                    <select v-model="ExpenseData.payable" class="form-control">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+            </div>
+            <div clas="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select v-model="ExpenseData.status" class="form-control">
+                        <option value="draft">Draft</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Description</label>
+                    <QuillEditor content-type="html" theme="snow" class="form-control" v-model:content="ExpenseData.description" :class="{'is-invalid' : ExpenseData.errors.has('description') }" />
+                    <has-error :form="ExpenseData" field="description"></has-error>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 form-group">
+                <button class="btn btn-success" @click="editMode ? updateExpenseData() : createExpenseData()">Submit</button>
+            </div>
         </div>
 
-        <!-- Date -->
-        <div>
-            <label class="form-label">Date</label>
-            <input type="date" v-model="form.date" class="form-input" />
-        </div>
-
-        <!-- Due Date -->
-        <div>
-            <label class="form-label">Due Date</label>
-            <input type="date" v-model="form.due_date" class="form-input" />
-        </div>
-
-        <!-- Branch -->
-        <div>
-            <label class="form-label">Branch</label>
-            <select v-model="form.branch_id" class="form-input">
-            <option value="">Select Branch</option>
-            <option v-for="branch in branches" :key="branch.id" :value="branch.id">
-                {{ branch.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Classification -->
-        <div>
-            <label class="form-label">Expense Classification</label>
-            <select v-model="form.classification_id" class="form-input">
-            <option value="">Select Classification</option>
-            <option v-for="c in classifications" :key="c.id" :value="c.id">
-                {{ c.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Expenseable Type -->
-        <div>
-            <label class="form-label">Expense For</label>
-            <select v-model="form.expenseable_type" class="form-input">
-            <option value="">Select Type</option>
-            <option value="vendor">Vendor</option>
-            <option value="customer">Customer</option>
-            <option value="staff">Staff</option>
-            </select>
-        </div>
-
-        <!-- Vendor -->
-        <div v-if="form.expenseable_type === 'vendor'">
-            <label class="form-label">Vendor</label>
-            <select v-model="form.vendor_id" class="form-input">
-            <option value="">Select Vendor</option>
-            <option v-for="v in vendors" :key="v.id" :value="v.id">
-                {{ v.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Customer -->
-        <div v-if="form.expenseable_type === 'customer'">
-            <label class="form-label">Customer</label>
-            <select v-model="form.customer_id" class="form-input">
-            <option value="">Select Customer</option>
-            <option v-for="c in customers" :key="c.id" :value="c.id">
-                {{ c.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Staff -->
-        <div v-if="form.expenseable_type === 'staff'">
-            <label class="form-label">Staff</label>
-            <select v-model="form.staff_id" class="form-input">
-            <option value="">Select Staff</option>
-            <option v-for="s in staff" :key="s.id" :value="s.id">
-                {{ s.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Account -->
-        <div>
-            <label class="form-label">Expense Account</label>
-            <select v-model="form.account_id" class="form-input">
-            <option value="">Select Account</option>
-            <option v-for="a in accounts" :key="a.id" :value="a.id">
-                {{ a.name }}
-            </option>
-            </select>
-        </div>
-
-        <!-- Amount -->
-        <div>
-            <label class="form-label">Amount</label>
-            <input type="number" v-model="form.amount" class="form-input" />
-        </div>
-
-        <!-- Payable -->
-        <div>
-            <label class="form-label">Is Payable?</label>
-            <select v-model="form.payable" class="form-input">
-            <option value="0">No</option>
-            <option value="1">Yes</option>
-            </select>
-        </div>
-
-        <!-- Status -->
-        <div>
-            <label class="form-label">Status</label>
-            <select v-model="form.status" class="form-input">
-            <option value="draft">Draft</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            </select>
-        </div>
-            <div class="row">
-        <div class="col-md-12 form-group">
-            <label>Expense Classification:</label>
-            <select class="form-control" name="expense_classification" id="expense_classification" v-model="ExpenseData.classification_id">
-                <option value=''>--Select Classification--</option>
-                <option v-for="expense_classification in expense_types" :value="expense_classification.id">{{ expense_classification.name}}</option>
-            </select>
-        </div>
+        </form>
     </div>
-    <div class="row">
-        <div class="col-md-12 form-group">
-            <label>Description</label>
-            <QuillEditor content-type="html" theme="snow" class="form-control" v-model:content="ExpenseData.description" :class="{'is-invalid' : ExpenseData.errors.has('description') }" />
-            <has-error :form="ExpenseData" field="description"></has-error>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12 form-group">
-            <button class="btn btn-success" @click="editMode ? updateExpenseData() : createExpenseData()">Submit</button>
-        </div>
-    </div>
-
-
-        <!-- Description -->
-        <div class="col-span-2">
-            <label class="form-label">Description</label>
-            <textarea v-model="form.description" class="form-input"></textarea>
-        </div>
-
-        <!-- Submit -->
-        <div class="col-span-2 flex justify-end">
-            <button type="submit" class="btn-primary">
-            Save Expense
-            </button>
-        </div>
-
-    </form>
-  </div>
 
 </section>
 </template>
@@ -171,6 +151,9 @@ export default {
     data(){
         return  {
             accounts: [],
+            branches: [],
+            classifications: [],
+            customers: [],
             expense_classifications: ['Customer Refund', 'Staff Reimbursement', 'Vendor Payment'],
             expense_types: [],
             ExpenseData: new Form({
@@ -192,7 +175,9 @@ export default {
             }),
             invoice_types: [],
             loading: false,
+            staffs: [],
             trans_sum: 1,
+            vendors: [],
         }
     },
     emits: ['reloadExpenseForm'],
@@ -223,6 +208,8 @@ export default {
             .then(response =>{
                 this.customers = response.data.customers;
                 this.expense_types = response.data.expense_types;
+                this.accounts = response.data.accounts;
+                this.branches = response.data.branches;
                 this.staffs = response.data.staffs;
                 this.vendors = response.data.vendors;
             })

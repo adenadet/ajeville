@@ -7,7 +7,7 @@
 
     <div class="row">
         <div class="col-md-4 no-print">
-            <EMRFrontOfficeDetailVisit source="front_office"/>
+            <EMRFrontOfficeDetailVisit source="front_office" />
         </div>
         <div class="col-md-8">
             <EMRFinanceDetailPatientTransactions source="visit" />
@@ -36,15 +36,10 @@ export default {
     methods: {
         async loadVisit(page = 1) {
             this.loading = true;
-
             // Clear previous visit/patient
             this.$store.dispatch('clearVisitContext');
-
             try {
-                const response = await axios.get(
-                    `/api/emr/hims/visits/${this.$route.params.id}?page=${page}`
-                );
-
+                const response = await axios.get(`/api/emr/hims/visits/${this.$route.params.id}?page=${page}`);
                 this.$store.dispatch('setPatientCookie', response.data.patient);
                 this.$store.dispatch('setVisitCookie', response.data.visit);
 

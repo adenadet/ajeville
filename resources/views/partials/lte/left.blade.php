@@ -4,8 +4,11 @@
         <span class="brand-text font-weight-light text-white">{{config('app.name_short')}}</span>
     </a>
     <div class="sidebar mb-5">
-        @if($page_title == 'Approvals') @include('partials.lte.asides.approvals')
+        @if($page_title == 'Admission') @include('partials.lte.asides.admission')
+        @elseif($page_title == 'Anesthesist') @include('partials.lte.asides.anesthesia')
+        @elseif($page_title == 'Approvals') @include('partials.lte.asides.approvals')
         @elseif($page_title == 'Archives') @include('partials.lte.asides.archives')
+        @elseif($page_title == 'Billings') @include('partials.lte.asides.billings')
         @elseif($page_title == 'Chats') @include('partials.lte.asides.chat')
         @elseif($page_title == 'Consultation') @include('partials.lte.asides.consultation')
         @elseif($page_title == 'Cooperative') @include('partials.lte.asides.cooperative')

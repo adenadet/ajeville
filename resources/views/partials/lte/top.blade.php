@@ -45,13 +45,15 @@
                 <li class="dropdown-submenu dropdown-hover">
                     <a id="dropdownSubMenu2" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="dropdown-item dropdown-toggle"><i class="mr-1 fas fa-clinic-medical"></i> EMR</a>
                     <ul aria-labelledby="dropdownSubMenu2" class="dropdown-menu border-0 shadow">
+                        <li><a href="/emr/anesthesist" class="dropdown-item"><i class="mr-1 fas fa-user-md"></i> Anesthesist</a></li>
                         <li><a href="/emr/consultations" class="dropdown-item"><i class="mr-1 fas fa-user-md"></i> Consultation</a></li>
-                        <li><a href="/emr/billing" class="dropdown-item"><i class="mr-1 fas fa-cash-register"></i> Pay Point</a></li>
+                        <li><a href="/emr/billings" class="dropdown-item"><i class="mr-1 fas fa-cash-register"></i> Billings</a></li>
                         <li><a href="/emr/front_office" class="dropdown-item"><i class="mr-1 fas fa-laptop-house"></i> Front Office</a></li>
                         <li><a href="/emr/laboratory" class="dropdown-item"><i class="mr-1 fas fa-flask"></i> Laboratory</a></li>
                         <li><a href="/emr/insurance" class="dropdown-item"><i class="mr-1 fas fa-file-alt"></i> Managed Care</a></li>
                         <li><a href="/emr/nursing" class="dropdown-item"><i class="mr-1 fas fa-user-nurse"></i> Nursing Care</a></li>
                         <li><a href="/emr/operations" class="dropdown-item"><i class="mr-1 fas fa-cogs"></i> Operations</a></li>
+                        <li><a href="/emr/procedures" class="dropdown-item"><i class="mr-1 fas fa-user-md"></i> Procedures</a></li>
                         <li><a href="/emr/radiology" class="dropdown-item"><i class="mr-1 fas fa-x-ray"></i> Radiology</a></li>
                         <li><a href="/emr/records" class="dropdown-item"><i class="mr-1 fas fa-file-medical"></i> Records</a></li>
                     </ul>

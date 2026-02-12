@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\Finance\PaymentTrait;
+//use App\Http\Traits\Finance\PaymentTrait;
 use App\Http\Traits\Finance\SettingTrait;
 use Illuminate\Http\Request;
 
 class PaymentModeController extends Controller
 {
-    use PaymentTrait, SettingTrait;
+    //use PaymentTrait, SettingTrait;
         
     public function destroy($id)
     {

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\EMR\Hims;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\Inventory\ItemTrait;
+use App\Http\Traits\Operations\ServiceTrait;
 use App\Models\EMR\Service;
 use App\Models\EMR\ServiceType;
 use App\Models\Inventory\Item;
@@ -11,12 +13,13 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    use ItemTrait, ServiceTrait;
     public function initials()
     {
         return response()->json([
-            'categories' => Category::orderBy('name', 'ASC')->get(),
-            'service_types' => ServiceType::select('id', 'name', 'status')->orderBy('name', 'ASC')->with(['creator', 'items', 'categories.items'])->get(),
-            'items' => Item::orderBy('name', 'ASC')->with(['service', 'category', 'sub_category'])->get()
+            'services' => $this->operation_service_get_all('active', null, false, false),
+            'service_types' => $this->operation_service_type_get_all('queueable', null, true, false),
+            'items' => $this->inventory_item_get_all('active', null, false, false, null)
         ]);
     }
 

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\Operations;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\Operations\ServiceTypeTrait;
+use App\Http\Traits\Operations\ServiceTrait;
 use Illuminate\Http\Request;
 
 class ServiceTypeController extends Controller
 {
-    use ServiceTypeTrait;
+    use ServiceTrait;
     public function destroy(string $id)
     {
         $service_type = $this->operation_service_type_delete($id);

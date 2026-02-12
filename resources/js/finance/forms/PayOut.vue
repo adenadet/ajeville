@@ -12,37 +12,7 @@
                 </div>
                 <form role="form" @submit.prevent="editMode ? updatePayment() :createPayment()">
                     <div class="card-body">
-                        <div class="row p-0" v-if="expense == null">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Pay Out Type</label>
-                                    <select class="form-control" id="payout_type" name="payout_type" v-model="paymentData.payout_type">
-                                        <option value="">---Select Payment Type---</option>
-                                        <option value="Customer">Customer Refund</option>
-                                        <option value="Staff">Staff Reimbursement</option>
-                                        <option value="Vendor">Vendor Payment</option> 
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Payment To:</label>
-                                    <select class="form-control" id="customer_id" name="customer_id" v-model="paymentData.customer_id" v-if="paymentData.payout_type == 'Customer'">
-                                        <option value="">--Select Customer--</option>
-                                        <option v-for="customer in customers" :value="customer.id">{{ customer.name }}</option>
-                                    </select>
-                                    <select class="form-control" id="staff_id" name="staff_id" v-model="paymentData.vendor_id" v-if="paymentData.payout_type == 'Vendor'">
-                                        <option value="">--Select Staff--</option>
-                                        <option v-for="vendor in vendors" :value="vendor.id">{{ vendor.name }}</option>
-                                    </select>
-                                    <select class="form-control" id="vendor_id" name="vendor_id" v-model="paymentData.vendor_id" v-if="paymentData.payout_type == 'Vendor'">
-                                        <option value="">--Select Vendor--</option>
-                                        <option v-for="vendor in vendors" :value="vendor.id">{{ vendor.name }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row p-0" v-else>
+                        <div class="row p-0" v-if="expense != null && expense.id != null">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pay Out Type</label>
@@ -78,7 +48,39 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row p-0" v-if="paymentData.receiving_account_id == -1">
+                        <div class="row p-0" v-else="expense == null">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Pay Out Type</label>
+                                    <select class="form-control" id="payout_type" name="payout_type" v-model="paymentData.payout_type">
+                                        <option value="">---Select Payment Type---</option>
+                                        <option value="Customer">Customer Refund</option>
+                                        <option value="Staff">Staff Reimbursement</option>
+                                        <option value="Vendor">Vendor Payment</option> 
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Payment To:</label>
+                                    <select class="form-control" id="customer_id" name="customer_id" v-model="paymentData.customer_id" v-if="paymentData.payout_type == 'Customer'">
+                                        <option value="">--Select Customer--</option>
+                                        <option v-for="customer in customers" :value="customer.id">{{ customer.name }}</option>
+                                    </select>
+                                    <select class="form-control" id="staff_id" name="staff_id" v-model="paymentData.vendor_id" v-if="paymentData.payout_type == 'Staff'">
+                                        <option value="">--Select Staff--</option>
+                                        <option v-for="staff in staffs" :value="staff.id">{{ staff.user?.first_name+' '+ staff.user?.last_name || staff.first_name+' '+staff.last_name  }}</option>
+                                    </select>
+                                    <select class="form-control" id="vendor_id" name="vendor_id" v-model="paymentData.vendor_id" v-if="paymentData.payout_type == 'Vendor'">
+                                        <option value="">--Select Vendor--</option>
+                                        <option v-for="vendor in vendors" :value="vendor.id">{{ vendor.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="row p-0" v-if="paymentData.receiving_account_id == ''">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Bank</label>
@@ -195,6 +197,7 @@ export default {
                 this.banks = response.data.banks;
                 this.customers = response.data.customers;
                 this.staffs = response.data.staffs;
+                this.vendors = response.data.vendors;
                 this.modes = response.data.modes;
             })
             .catch(()=>{

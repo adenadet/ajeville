@@ -97,7 +97,7 @@ export default {
             this.loading = true
             this.checkInData.post('/api/emr/hims/appointments/check_in')
             .then(res => {
-                this.$router.push('/emr/visitations/' + res.data.id)
+                this.$router.push('/emr/front_office/visits/' + res.data.visit.id)
             })
             .catch(() => {
                 this.$swal.fire('Error', 'Unable to check in patient', 'error')

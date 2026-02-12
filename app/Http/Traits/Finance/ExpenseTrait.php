@@ -135,7 +135,6 @@ trait ExpenseTrait{
         $procurementExpenseService = new ProcurementExpenseService();
         $query = $procurementExpenseService->createExpense($data);
         
-        
         if (is_string($query)){
             $this->log_user_activity('Finance Expense Create', null, false);
             return $query;    
@@ -446,12 +445,12 @@ trait ExpenseTrait{
             $query = Invoice::where('id', '=',  $id)->orWhere('unique_id', '=', $id)->firstOrFail();
 
             $approval = Action::create([
-                'action'        => $data['action'],
-                'approvable_id'  => $id,
-                'approvable_type' => 'Invoice',
-                'description'   => $data['description'],
-                'created_by'    => Auth::id() ?? auth('api')->id(),
-                'updated_by'    => Auth::id() ?? auth('api')->id(),
+                'decision'          => $data['action'],
+                'reference_id'      => $id,
+                'reference_type'    => 'Invoice',
+                'description'       => $data['description'],
+                'created_by'        => Auth::id() ?? auth('api')->id(),
+                'updated_by'        => Auth::id() ?? auth('api')->id(),
             ]);
 
             if ($data['action'] == 'reject'){

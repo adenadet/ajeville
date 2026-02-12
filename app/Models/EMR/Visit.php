@@ -13,8 +13,9 @@ class Visit extends Structure
     protected $fillable = array('unique_id', 'branch_id', 'patient_id', 'plan_id', 'status', 'start_date', 'start_timestamp', 'end_date', 'end_timestamp', 'created_by', 'created_at', 'updated_by', 'updated_at', 'deleted_by', 'deleted_at');
 
 	public const StatusBooked = 0;
-	public const StatusOpen = 1;
-	public const StatusOngoing = 5;
+	public const StatusOpen = 1; //Same as created
+	public const StatusOngoing = 5; //Same as in progress
+	public const StatusAwaitingBilling = 50; //Awaiting payment confirmation can be closed especially admissions
 	public const StatusClosed = 100;
 	public const StatusCancelled = 400;
 	

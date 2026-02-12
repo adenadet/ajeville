@@ -180,9 +180,9 @@
                                                             </div>
                                                             <div class="form-group">
                                                                 <label>Plans</label>
-                                                                <multiselect v-model="PatientData.insurances" tag-placeholder="Add this as new tag" placeholder="Search or add a tag" label="name" track-by="id" :options="insurance_forms_plans" :multiple="true" :taggable="true" @tag="addTag">
-                                                                </multiselect>
+                                                                <multiselect v-model="insuranceForm.plan_id" track-by="id" label="name" :options="insurance_forms_plans" :searchable="true" :close-on-select="true" :show-labels="name" placeholder="Pick a value" aria-label="pick a value"></multiselect>
                                                             </div>
+                                                            <button class="btn btn-dark" type="button" @click="addInsurance">Add </button> 
                                                         </div>
                                                         </form>
                                                     </div>
@@ -205,7 +205,7 @@
                                                                 </thead>
                                                                 <tbody>
                                                                     <tr v-for="(plan, index) in PatientData.insurances" :key="plan.id">
-                                                                        <td>{{ index | addOne }}</td>
+                                                                        <td>{{ addOne(index) }}</td>
                                                                         <td>{{ plan.name }}</td>
                                                                         <td>{{ plan.provider.name }}</td>
                                                                         <td><input type="text" class="form-control" v-model="PatientData.insurances[index].enrollee_id" /></td>
@@ -348,6 +348,7 @@ export default {
             insuranceForm: new Form({
                 insurance_type_id: '',
                 provider_type_id: '',
+                plan_id: '',
             }),
             loading: false,
             PatientData: new Form({
@@ -404,6 +405,11 @@ export default {
     methods:{
         addContact(){
             this.PatientData.contacts.push(this.blank_user);
+        },
+        addInsurance(){
+            var plan = this.plans.find(item => item.id === this.insuranceForm.plan_id);
+            console.log(plan)
+            this.PatientData.insurances.push(plan);
         },
         addTag (newTag) {
             const tag = {

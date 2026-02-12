@@ -319,76 +319,52 @@ trait StoreTrait {
     }
     
     public function inventory_store_items_increase_quantity($item_id, $store_id, $batch_id, $quantity){
-
-        $store_item = StoreItem::where('store_id', '=', $store_id)->where('item_id', '=', $item_id)->first();        
-        if (!$store_item){
-            $store_item = StoreItem::create([
-                'store_id' => $store_id,
-                'item_id' => $item_id,
-                'reorder_level' => NULL,
-                'maximum_level' => NULL,
-                'expiry_notification' => 90,
-                'description' => NULL,
-                'status' => 1,
-                'created_by' => Auth::id() ?? auth('api')->id(),
-                'updated_by' => Auth::id() ?? auth('api')->id(),
-            ]);
-        }
-
-        $store_item_batch = StoreItemBatch::where('store_item_id', '=', $store_item->id)->where('batch_id', '=', $batch_id)->first();
-
-        if (!$store_item_batch){
-            $store_item_batch = StoreItemBatch::create([
-                'store_item_id' => $store_item->id, 
-                'batch_id' => $batch_id ?? 0, 
-                'received' => $quantity, 
-                'balance' => $quantity, 
-                'transferred' => 0,
-                'issued' => 0, 
-                'sold' => 0,
-                'status' => 1,
-            ]);
-        }
-        else{
-            $store_item_batch->received += $quantity;
-            $store_item_batch->balance += $quantity;
-            $store_item_batch->save();
-        }
-        
-        /*
-        $settings = StoreItem::where('item_id', '=', $item_id)->where('store_id', '=', $store_id)->first();
-        $store_item_batch = StoreItemBatch::where('item_id', '=', $item_id)->where('store_id', '=', $store_id)->where('batch_id', '=', $batch_id)->first();
-
-        if (isset($store_item_batch)){
-            $store_item_batch->received += $quantity;
-            $store_item_batch->balance += $quantity;
-
-            $store_item_batch->save();
-        }
-        else{
-            $store_item_batch = StoreItemBatch::create([
-                'store_id' => $store_id,
-                'item_id' => $item_id,
-                'batch_id' => $batch_id, 
-                'received' => $quantity,
-                'balance' => $quantity,
-                'transferred' => null,
-                'issued' => null,
-                'sold' => null,
-                'status' => 1,
-            ]);
-        }
-
-        if (isset($settings)){
-            if((!is_null($settings->maximum_level)) && ($settings->maximum_level < $store_item_batch->balance)){
-
+        DB::beginTransaction();
+        try{
+            $store_item = StoreItem::where('store_id', '=', $store_id)->where('item_id', '=', $item_id)->first();        
+            if (!$store_item){
+                $store_item = StoreItem::create([
+                    'store_id' => $store_id,
+                    'item_id' => $item_id,
+                    'reorder_level' => NULL,
+                    'maximum_level' => NULL,
+                    'expiry_notification' => 90,
+                    'description' => NULL,
+                    'status' => 1,
+                    'created_by' => Auth::id() ?? auth('api')->id(),
+                    'updated_by' => Auth::id() ?? auth('api')->id(),
+                ]);
             }
+
+            $store_item_batch = StoreItemBatch::where('store_item_id', '=', $store_item->id)->where('batch_id', '=', $batch_id)->first();
+
+            if (!$store_item_batch){
+                $store_item_batch = StoreItemBatch::create([
+                    'store_item_id' => $store_item->id, 
+                    'batch_id' => $batch_id ?? 0, 
+                    'received' => $quantity, 
+                    'balance' => $quantity, 
+                    'transferred' => 0,
+                    'issued' => 0, 
+                    'sold' => 0,
+                    'status' => 1,
+                ]);
+            }
+            else{
+                $store_item_batch->received += $quantity;
+                $store_item_batch->balance += $quantity;
+                $store_item_batch->save();
+            }
+            
+            DB::commit();
+            $this->log_user_activity('Store Item Batch Increase', ['store_id' => $store_id, 'item_id' => $item_id, 'batch_id' => $batch_id, 'quantity' => $quantity], true);
+            return $store_item_batch;
         }
-        */
-
-        $this->log_user_activity('Store Item Batch Increase', ['store_id' => $store_id, 'item_id' => $item_id, 'batch_id' => $batch_id, 'quantity' => $quantity], true);
-
-        return $store_item_batch;
+        catch(Exception $e){
+            DB::rollback();
+            $this->log_user_activity('Store Item Batch Increase', ['store_id' => $store_id, 'item_id' => $item_id, 'batch_id' => $batch_id, 'quantity' => $quantity], false);
+            return $e->getMessage();
+        }
     }
 
     public function inventory_store_items_reduce_quantity($item_id, $store_id, $batch_id, $type, $quantity, $order_id){

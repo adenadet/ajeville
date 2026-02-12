@@ -192,10 +192,10 @@ trait CustomerTrait {
         }
     }
 
-    public function crm_customer_update_balance($customer_id, $amount){
+    public function crm_customer_update_balance($customer_id, $amount, $addition = true ){
         try{
             $customer = Customer::findOrFail($customer_id);
-            $customer->balance += $amount;
+            $customer->balance = $addition ? $customer->balance + $amount : $customer->balance - $amount;
             $customer->updated_by = auth('api')->id();
             $customer->save();
             

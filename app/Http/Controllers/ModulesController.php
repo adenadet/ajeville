@@ -10,6 +10,25 @@ use Illuminate\Http\Request;
 class ModulesController extends Controller
 {
     use StoreTrait;
+
+    public function admission(){
+        $params = [
+            'page_title' => 'Admission',
+            'icon' => 'fa fa-bed', 
+        ];
+        return view('app')->with($params);
+    
+    }
+
+    public function anesthesist(){
+        $params = [
+            'page_title' => 'Anesthesist',
+            'icon' => 'fas fa-user-md', 
+        ];
+        return view('app')->with($params);
+    
+    }
+
     public function approvals()
     {
         $params = [
@@ -17,7 +36,6 @@ class ModulesController extends Controller
             'icon' => 'fas fa-file-signature', 
         ];
         return view('app')->with($params);
-    
     }
 
     public function archives()

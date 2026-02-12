@@ -5,8 +5,7 @@
             <VisitDetailSummary :visit="visit"/>
         </div>
         <div class="col-md-8">
-            <VisitDetailTransactions source="finance" :visit="visit" :transactions="transactions"/>
-            
+            <VisitDetailTransactions source="finance" :visit="visit" :transactions="transactions"/> 
         </div>
     </div>
 </section>

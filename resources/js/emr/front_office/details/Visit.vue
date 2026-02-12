@@ -233,8 +233,6 @@ export default {
                 </div>
             </div>
         </div>
-
-        <!-- PATIENT ONLY VIEW -->
         <div class="card-body" v-else-if="hasPatient">
             <div class="row">
                 <div class="col-9">
@@ -326,11 +324,14 @@ export default {
         },
     },
     async mounted() {
-        if (!this.hasPatient && !this.hasVisit) {
+        /*if (!this.hasPatient){
+            await this.$store.dispatch('setPatientCookie', patient_);
+        } 
+        if(!this.hasVisit) {
             this.loading = true;
             await this.$store.dispatch('hydrateVisitContext');
             this.loading = false;
-        }
+        }*/
     },
     props: {
         source: String,

@@ -9,6 +9,6 @@ class Route extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'emr_drug_routes';
-    protected $fillable = array('id', 'name', 'description', );
+    protected $fillable = array('id', 'name', 'description');
 
 }

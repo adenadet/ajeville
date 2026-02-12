@@ -74,13 +74,52 @@ import CRMLeads                             from '../crm/Leads.vue';
     
 import DashboardMain        from '../dashboard/Main.vue';
 
-import EMRConsultantConsultation           from '../emr/consultant/Consultation.vue';
-import EMRConsultantDashboard              from '../emr/consultant/Dashboard.vue';
-import EMRConsultantQueue                  from '../emr/consultant/Queue.vue';
-import EMRConsultantQueueDepartment        from '../emr/consultant/Queue.vue';
-import EMRConsultantQueueMy                from '../emr/consultant/Queue.vue';
-import EMRConsultantQueueDoctor            from '../emr/consultant/QueueDoctor.vue';
-import EMRConsultantMyPastConsultations    from '../emr/consultant/MyPastConsultations.vue';
+import EMRAdmissionCategories               from    '../emr/admission/Categories.vue';
+import EMRAdmissionDashboard                from    '../emr/admission/Dashboard.vue';    
+import EMRAdmissionRequest                  from    '../emr/admission/Request.vue';
+import EMRAdmissionRequests                 from    '../emr/admission/Requests.vue';
+import EMRAdmissionRoom                     from    '../emr/admission/Room.vue';
+import EMRAdmissionRoomType                 from    '../emr/admission/RoomType.vue';
+import EMRAdmissionRoomTypes                from    '../emr/admission/RoomTypes.vue';
+import EMRAdmissionServices                 from    '../emr/admission/Services.vue';
+import EMRAdmissionWard                     from    '../emr/admission/Ward.vue';
+import EMRAdmissionWards                    from    '../emr/admission/Wards.vue';
+
+    import EMRAdmissionDetailBed                from '../emr/admission/details/Bed.vue';
+    import EMRAdmissionDetailRequest            from '../emr/admission/details/Request.vue';
+    import EMRAdmissionDetailRequestList        from '../emr/admission/details/RequestList.vue';
+    import EMRAdmissionDetailRoom               from '../emr/admission/details/Room.vue';
+    import EMRAdmissionDetailRoomList           from '../emr/admission/details/RoomList.vue';
+    import EMRAdmissionDetailRoomType           from '../emr/admission/details/RoomType.vue';
+    import EMRAdmissionDetailRoomTypeList       from '../emr/admission/details/RoomTypeList.vue';
+    import EMRAdmissionDetailService            from '../emr/admission/details/Service.vue';
+    import EMRAdmissionDetailServiceList        from '../emr/admission/details/ServiceList.vue';
+    import EMRAdmissionDetailWard               from '../emr/admission/details/Ward.vue';
+    import EMRAdmissionDetailWardList           from '../emr/admission/details/WardList.vue';
+
+    import EMRAdmissionFormBed                  from '../emr/admission/forms/Bed.vue';
+    import EMRAdmissionFormBedAssignment        from '../emr/admission/forms/BedAssignment.vue';
+    import EMRAdmissionFormCategory             from '../emr/admission/forms/Category.vue';
+    import EMRAdmissionFormRequest              from '../emr/admission/forms/Request.vue';
+    import EMRAdmissionFormPrecheck             from '../emr/admission/forms/Precheck.vue';
+    import EMRAdmissionFormRoom                 from '../emr/admission/forms/Room.vue';
+    import EMRAdmissionFormRoomType             from '../emr/admission/forms/RoomType.vue';
+    import EMRAdmissionFormService              from '../emr/admission/forms/Service.vue';
+    import EMRAdmissionFormWard                 from '../emr/admission/forms/Ward.vue';
+
+import EMRAnesthesistCase                   from    '../emr/anesthesia/Case.vue';
+import EMRAnesthesistCases                  from    '../emr/anesthesia/Cases.vue';
+import EMRAnesthesistDashboard              from    '../emr/anesthesia/Dashboard.vue';    
+
+    import EMRAnesthesistDetailCaseList         from '../emr/anesthesia/details/CaseList.vue';
+
+import EMRConsultantConsultation            from '../emr/consultant/Consultation.vue';
+import EMRConsultantDashboard               from '../emr/consultant/Dashboard.vue';
+import EMRConsultantQueue                   from '../emr/consultant/Queue.vue';
+import EMRConsultantQueueDepartment         from '../emr/consultant/Queue.vue';
+import EMRConsultantQueueMy                 from '../emr/consultant/Queue.vue';
+import EMRConsultantQueueDoctor             from '../emr/consultant/QueueDoctor.vue';
+import EMRConsultantMyPastConsultations     from '../emr/consultant/MyPastConsultations.vue';
 
     import EMRConsultantDetailConsultation    from '../emr/consultant/details/Consultation.vue';
     import EMRConsultantDetailQueue           from '../emr/consultant/details/Queue.vue';
@@ -100,7 +139,10 @@ import EMRConsultantMyPastConsultations    from '../emr/consultant/MyPastConsult
 
 import EMRFinanceCashRegister                   from '../emr/finance/CashRegister.vue';
 import EMRFinanceDashboard                      from '../emr/finance/Dashboard.vue';
+import EMRFinancePatient                        from '../emr/finance/Patient.vue';
 import EMRFinancePayments                       from '../emr/finance/Payments.vue';
+import EMRFinanceReport                         from '../emr/finance/Report.vue';
+
 import EMRFinanceTransaction                    from '../emr/finance/Transaction.vue';             
 import EMRFinanceTransactions                   from '../emr/finance/Transactions.vue';
 
@@ -123,10 +165,61 @@ import EMRFrontOfficeVisits                     from '../emr/front_office/Visits
 
     import EMRFrontOfficeFormAppointment            from '../emr/front_office/forms/Appointment.vue';
     import EMRFrontOfficeFormCheckIn                from '../emr/front_office/forms/CheckIn.vue';
+    import EMRFrontOfficeFormServiceGetter          from '../emr/front_office/forms/ServiceGetter.vue'
+    import EMRFrontOfficeFormPatientService         from '../emr/front_office/forms/PatientService.vue';
 
 import EMRInsuranceClaims                       from '../emr/insurance/Claims.vue';
 import EMRInsuranceDashboard                    from '../emr/insurance/Dashboard.vue';
 
+import EMRLaboratoryAnalytes                    from '../emr/laboratory/Analytes.vue';
+import EMRLaboratoryAnalyte                     from '../emr/laboratory/Analyte.vue';
+import EMRLaboratoryBottles                     from '../emr/laboratory/Bottles.vue';
+import EMRLaboratoryDashboard                   from '../emr/laboratory/Dashboard.vue';
+import EMRLaboratoryInsurance                   from '../emr/laboratory/Insurance.vue';
+import EMRLaboratoryPOS                         from '../emr/laboratory/POS.vue';
+import EMRLaboratoryPanelInvestigations         from '../emr/laboratory/PanelInvestigations.vue';
+import EMRLaboratoryQueue                       from '../emr/laboratory/Queue.vue';
+import EMRLaboratoryReferredIn                  from '../emr/laboratory/ReferredIn.vue';
+import EMRLaboratoryReferredOut                 from '../emr/laboratory/ReferredOut.vue';
+import EMRLaboratoryReports                     from '../emr/laboratory/Reports.vue';
+import EMRLaboratoryResultTemplates             from '../emr/laboratory/ResultTemplates.vue';
+import EMRLaboratoryServices                    from '../emr/laboratory/Services.vue';
+import EMRLaboratoryService                     from '../emr/laboratory/Service.vue';
+import EMRLaboratorySpecimens                   from '../emr/laboratory/Specimens.vue';
+import EMRLaboratorySpecimenTypes               from '../emr/laboratory/SpecimenTypes.vue';
+
+    import EMRLaboratoryDetailReferenceRangeList    from '../emr/laboratory/details/ReferenceRangeList.vue';
+    import EMRLaboratoryDetailRequest               from '../emr/laboratory/details/Request.vue';
+    import EMRLaboratoryDetailRequestList           from '../emr/laboratory/details/RequestList.vue';
+    import EMRLaboratoryDetailResultTemplatePreview from '../emr/laboratory/details/ResultTemplatePreview.vue';
+    import EMRLaboratoryDetailService               from '../emr/laboratory/details/Service.vue';
+    
+    import EMRLaboratoryFormAnalyte                 from '../emr/laboratory/forms/Analyte.vue';
+    import EMRLaboratoryFormBottle                  from '../emr/laboratory/forms/Bottle.vue';
+    import EMRLaboratoryFormCollect                 from '../emr/laboratory/forms/Collect.vue';
+    import EMRLaboratoryFormReferenceRange          from '../emr/laboratory/forms/ReferenceRange.vue';
+    import EMRLaboratoryFormResultTemplate          from '../emr/laboratory/forms/ResultTemplate.vue';
+    import EMRLaboratoryFormService                 from '../emr/laboratory/forms/Service.vue';
+    import EMRLaboratoryFormSpecimenType            from '../emr/laboratory/forms/SpecimenType.vue';
+
+
+// EMRPatientFormRegistration
+
+import EMRNursingAdmissionRequests              from '../emr/nursing/AdmissionRequests.vue';
+import EMRNursingDashboard                      from '../emr/nursing/Dashboard.vue';
+import EMRNursingVitals                         from '../emr/nursing/Vitals.vue';
+
+//import EMROperationsDashboard                   from '../emr/operations/Dashboard.vue';
+import EMROperationsBranch                      from '../emr/operations/Branch.vue';      
+import EMROperationsBranches                    from '../emr/operations/Branches.vue'; 
+import EMROperationsBranchPriceList             from '../emr/operations/BranchPriceLists.vue';    
+import EMROperationsDashboard                   from '../emr/operations/Dashboard.vue';   
+import EMROperationsDepartments                 from '../emr/operations/Departments.vue'; 
+import EMROperationsPricelist                   from '../emr/operations/Pricelist.vue';   
+import EMROperationsPricelists                  from '../emr/operations/Pricelists.vue';  
+import EMROperationsService                     from '../emr/operations/Service.vue';     
+import EMROperationsServices                    from '../emr/operations/Services.vue';    
+import EMROperationsServiceTypes                from '../emr/operations/ServiceTypes.vue';
 
 import EMRPatientAll                            from '../emr/patients/All.vue';
 import EMRPatientAllergies                      from '../emr/patients/Allergies.vue';  
@@ -155,32 +248,10 @@ import EMRPatientVitals                         from '../emr/patients/Vitals.vue
     import EMRPatientFormPassword                       from '../emr/patients/forms/Password.vue';
     import EMRPatientFormPatient                        from '../emr/patients/forms/Patient.vue';   
     import EMRPatientFormPrescription                   from '../emr/patients/forms/Prescription.vue';
-    import EMRPatientFormRegistration                   from '../emr/patients/forms/Registration.vue';
+    import EMRPatientFormRegistration                   from '../emr/patients/forms/Register.vue';
     import EMRPatientFormSearch                         from '../emr/patients/forms/Search.vue';
     import EMRPatientFormVital                          from '../emr/patients/forms/Vital.vue';
 
-
-// EMRPatientFormRegistration
-import EMRLaboratoryCollect                    from '../emr/laboratory/Collect.vue';
-import EMRLaboratoryDashboard                  from '../emr/laboratory/Dashboard.vue';
-import EMRLaboratoryPOS                        from '../emr/laboratory/POS.vue';
-import EMRLaboratoryQueue                      from '../emr/laboratory/Queue.vue';
-
-import EMRNursingAdmissionRequests              from '../emr/nursing/AdmissionRequests.vue';
-import EMRNursingDashboard                      from '../emr/nursing/Dashboard.vue';
-import EMRNursingVitals                         from '../emr/nursing/Vitals.vue';
-
-//import EMROperationsDashboard                   from '../emr/operations/Dashboard.vue';
-import EMROperationsBranch                      from '../emr/operations/Branch.vue';      
-import EMROperationsBranches                    from '../emr/operations/Branches.vue'; 
-import EMROperationsBranchPriceList             from '../emr/operations/BranchPriceLists.vue';    
-import EMROperationsDashboard                   from '../emr/operations/Dashboard.vue';   
-import EMROperationsDepartments                 from '../emr/operations/Departments.vue'; 
-import EMROperationsPricelist                   from '../emr/operations/Pricelist.vue';   
-import EMROperationsPricelists                  from '../emr/operations/Pricelists.vue';  
-import EMROperationsService                     from '../emr/operations/Service.vue';     
-import EMROperationsServices                    from '../emr/operations/Services.vue';    
-import EMROperationsServiceTypes                from '../emr/operations/ServiceTypes.vue';
 
 import EMRRadiologyDashboard                    from '../emr/radiology/Dashboard.vue';
 import EMRRadiologyInsurance                    from '../emr/radiology/Insurance.vue'
@@ -193,7 +264,6 @@ import EMRRadiologyReferredOut                  from '../emr/radiology/ReferredO
 
     import EMRVisitDetailList                   from '../emr/visitations/details/List.vue';
     import EMRVisitDetailSummary                from '../emr/visitations/details/Summary.vue';
-
 
 import EquipmentAsset                           from '../equipments/Asset.vue';
 import EquipmentAssets                          from '../equipments/Assets.vue';
@@ -560,6 +630,7 @@ import InventoryUserStore           from '../inventory/UserStore.vue';
     import InventoryFormFulfillment             from '../inventory/forms/Fulfillment.vue';
     import InventoryFormItem                    from '../inventory/forms/Item.vue';
     import InventoryFormItemBulk                from '../inventory/forms/ItemBulk.vue';
+    import InventoryFormItemGetter              from '../emr/front_office/forms/ServiceGetter.vue';
     import InventoryFormItemImport              from '../inventory/forms/ItemImport.vue';
     import InventoryFormItemSearch              from '../inventory/forms/ItemSearch.vue';
     import InventoryFormItemType                from '../inventory/forms/ItemType.vue';
@@ -857,6 +928,26 @@ const routes = [
     {path: '/contacts/:id',                                     component: UmsContact},
     {path: '/dashboard',                                        component: DashboardMain},
 
+    {path: '/emr/admission',                                    component: EMRAdmissionDashboard},
+    {path: '/emr/admission/categories',                         component: EMRAdmissionCategories},
+    {path: '/emr/admission/requests',                           component: EMRAdmissionRequests},
+    {path: '/emr/admission/requests/:id',                       component: EMRAdmissionRequest},
+    {path: '/emr/admission/rooms/:id',                          component: EMRAdmissionRoom},
+    {path: '/emr/admission/room_types',                         component: EMRAdmissionRoomTypes},
+    {path: '/emr/admission/room_types/:id',                     component: EMRAdmissionRoomType},
+    {path: '/emr/admission/services',                           component: EMRAdmissionServices},
+    {path: '/emr/admission/wards',                              component: EMRAdmissionWards},
+    {path: '/emr/admission/wards/:id',                          component: EMRAdmissionWard},
+
+    {path: '/emr/anesthesist',                                  component: EMRAnesthesistDashboard},
+    {path: '/emr/anesthesist/cases',                            component: EMRAnesthesistCases},
+    {path: '/emr/anesthesist/cases/:id',                        component: EMRAnesthesistCase},
+    
+
+    {path: '/emr/billings',                                     component: EMRFinanceDashboard},
+    {path: '/emr/billings/patient',                             component: EMRFinancePatient},
+    {path: '/emr/billings/transactions',                        component: EMRFinanceDashboard},    
+    
     {path: '/emr/consultations',                                component: EMRConsultantDashboard},
     {path: '/emr/consultations/dashboard',                      component: EMRConsultantDashboard},
     {path: '/emr/consultations/detailed/:id',                   component: EMRConsultantDetailConsultation},
@@ -865,10 +956,6 @@ const routes = [
     {path: '/emr/consultations/my_previous_consultations',      component: EMRConsultantMyPastConsultations},
     {path: '/emr/consultations/my_queue',                       component: EMRConsultantQueueMy},
     {path: '/emr/consultations/start/:id',                      component: EMRConsultantConsultation},
-    
-
-    {path: '/emr/billings',                                     component: EMRFinanceDashboard},
-    {path: '/emr/billings/transactions',                        component: EMRFinanceDashboard},    
     
     {path: '/emr/front_office',                                 component: EMRFrontOfficeDashboard},
     {path: '/emr/front_office/appointments',                    component: EMRFrontOfficeAppointments},
@@ -879,6 +966,22 @@ const routes = [
     {path: '/emr/front_office/visits',                          component: EMRFrontOfficeVisits},
     {path: '/emr/front_office/visits/:id',                      component: EMRFrontOfficeVisit},
 
+    {path: '/emr/laboratory',                                   component: EMRLaboratoryDashboard},
+    {path: '/emr/laboratory/dashboard',                         component: EMRLaboratoryDashboard},
+    {path: '/emr/laboratory/insurance',                         component: EMRLaboratoryInsurance},
+    {path: '/emr/laboratory/point_of_sale',                     component: EMRLaboratoryPOS},
+    {path: '/emr/laboratory/queues',                            component: EMRLaboratoryQueue},
+    {path: '/emr/laboratory/referred_in',                       component: EMRLaboratoryReferredIn},
+    {path: '/emr/laboratory/referred_out',                      component: EMRLaboratoryReferredOut},
+    {path: '/emr/laboratory/specimens',                         component: EMRLaboratorySpecimens},
+    {path: '/emr/laboratory/settings/analytes',                 component: EMRLaboratoryAnalytes},
+    {path: '/emr/laboratory/settings/analytes/:id',             component: EMRLaboratoryAnalyte},
+    {path: '/emr/laboratory/settings/bottles',                  component: EMRLaboratoryBottles},
+    {path: '/emr/laboratory/settings/result_templates',         component: EMRLaboratoryResultTemplates},
+    {path: '/emr/laboratory/settings/services',                 component: EMRLaboratoryServices},
+    {path: '/emr/laboratory/settings/services/:id',             component: EMRLaboratoryService},
+    {path: '/emr/laboratory/settings/specimen_types',           component: EMRLaboratorySpecimenTypes},
+    
     {path: '/emr/insurance',                                    component: InsuranceDashboard},
     {path: '/emr/insurance/dashboard',                          component: InsuranceDashboard},
     {path: '/emr/insurance/claims',                             component: InsuranceClaims},
@@ -1209,6 +1312,43 @@ export function registerGlobalComponents(app) {
 
     app.component('DashboardMain',                          DashboardMain);
 
+    app.component('EMRAdmissionCategories',                     EMRAdmissionCategories);
+    app.component('EMRAdmissionDashboard',                      EMRAdmissionDashboard);
+    app.component('EMRAdmissionRoom',                           EMRAdmissionRoom);
+    app.component('EMRAdmissionRoomType',                       EMRAdmissionRoomType);
+    app.component('EMRAdmissionRoomTypes',                      EMRAdmissionRoomTypes);
+    app.component('EMRAdmissionServices',                       EMRAdmissionServices);
+    app.component('EMRAdmissionWard',                           EMRAdmissionWard);
+    app.component('EMRAdmissionWards',                          EMRAdmissionWards);
+
+        app.component('EMRAdmissionDetailBed',                       EMRAdmissionDetailBed);
+        app.component('EMRAdmissionDetailRequest',                   EMRAdmissionDetailRequest);
+        app.component('EMRAdmissionDetailRequestList',               EMRAdmissionDetailRequestList);
+        app.component('EMRAdmissionDetailRoom',                      EMRAdmissionDetailRoom);
+        app.component('EMRAdmissionDetailRoomList',                  EMRAdmissionDetailRoomList);
+        app.component('EMRAdmissionDetailRoomType',                  EMRAdmissionDetailRoomType);
+        app.component('EMRAdmissionDetailRoomTypeList',              EMRAdmissionDetailRoomTypeList);
+        app.component('EMRAdmissionDetailService',                   EMRAdmissionDetailService);
+        app.component('EMRAdmissionDetailServiceList',               EMRAdmissionDetailServiceList);
+        app.component('EMRAdmissionDetailWard',                      EMRAdmissionDetailWard);
+        app.component('EMRAdmissionDetailWardList',                  EMRAdmissionDetailWardList);
+
+        app.component('EMRAdmissionFormBed',                         EMRAdmissionFormBed);
+        app.component('EMRAdmissionFormBedAssignment',               EMRAdmissionFormBedAssignment);
+        app.component('EMRAdmissionFormCategory',                    EMRAdmissionFormCategory);
+        app.component('EMRAdmissionFormPrecheck',                    EMRAdmissionFormPrecheck);
+        app.component('EMRAdmissionFormRequest',                     EMRAdmissionFormRequest);
+        app.component('EMRAdmissionFormRoom',                        EMRAdmissionFormRoom);
+        app.component('EMRAdmissionFormRoomType',                    EMRAdmissionFormRoomType);
+        app.component('EMRAdmissionFormService',                     EMRAdmissionFormService);
+        app.component('EMRAdmissionFormWard',                        EMRAdmissionFormWard);
+    
+    app.component('EMRAnesthesistCase',                     EMRAnesthesistCase);
+    app.component('EMRAnesthesistCases',                    EMRAnesthesistCases);
+    app.component('EMRAnesthesistDashboard',                EMRAnesthesistDashboard);
+
+        app.component('EMRAnesthesistDetailCaseList',           EMRAnesthesistDetailCaseList);
+
     app.component('EMRConsultantConsultation',              EMRConsultantConsultation);
     app.component('EMRConsultantMyPastConsultations',       EMRConsultantMyPastConsultations);
     app.component('EMRConsultantQueue',                     EMRConsultantQueue);
@@ -1231,10 +1371,12 @@ export function registerGlobalComponents(app) {
 
     app.component('EMRFinanceCashRegister',             EMRFinanceCashRegister);
     app.component('EMRFinanceDashboard',                EMRFinanceDashboard);
+    app.component('EMRFinancePatient',                  EMRFinancePatient);
     app.component('EMRFinancePayments',                 EMRFinancePayments);
+    app.component('EMRFinanceReport',                   EMRFinanceReport);
     app.component('EMRFinanceTransaction',              EMRFinanceTransaction);
     app.component('EMRFinanceTransactions',             EMRFinanceTransactions);
-
+    
         app.component('EMRFinanceDetailPatientTransaction',     EMRFinanceDetailPatientTransaction);
         app.component('EMRFinanceDetailPatientTransactions',    EMRFinanceDetailPatientTransactions);
 
@@ -1248,21 +1390,42 @@ export function registerGlobalComponents(app) {
     app.component('EMRFrontOfficeVisitBill',                EMRFrontOfficeVisitBill),
     app.component('EMRFrontOfficeVisits',                   EMRFrontOfficeVisits),
     
-
         app.component('EMRFrontOfficeDetailAppointmentList',    EMRFrontOfficeDetailAppointmentList);
         app.component('EMRFrontOfficeDetailVisit',              EMRFrontOfficeDetailVisit);
         app.component('EMRFrontOfficeDetailVisitList',          EMRFrontOfficeDetailVisitList);    
 
         app.component('EMRFrontOfficeFormAppointment',          EMRFrontOfficeFormAppointment);
         app.component('EMRFrontOfficeFormCheckIn',              EMRFrontOfficeFormCheckIn);
+        app.component('EMRFrontOfficeFormServiceGetter',        EMRFrontOfficeFormServiceGetter);
+        app.component('EMRFrontOfficeFormPatientService',       EMRFrontOfficeFormPatientService); 
     
+    app.component('EMRLaboratoryAnalyte',                   EMRLaboratoryAnalyte);
+    app.component('EMRLaboratoryAnalytes',                  EMRLaboratoryAnalytes);
+    app.component('EMRLaboratoryBottles',                   EMRLaboratoryBottles);
     app.component('EMRLaboratoryDashboard',                 EMRLaboratoryDashboard);
+    app.component('EMRLaboratoryInsurance',                 EMRLaboratoryInsurance);
+    app.component('EMRLaboratoryPanelInvestigations',       EMRLaboratoryPanelInvestigations);
+    app.component('EMRLaboratoryPOS',                       EMRLaboratoryPOS);
+    app.component('EMRLaboratoryResultTemplates',           EMRLaboratoryResultTemplates);
+    app.component('EMRLaboratoryService',                   EMRLaboratoryService);
+    app.component('EMRLaboratoryServices',                  EMRLaboratoryServices);
+    app.component('EMRLaboratorySpecimenTypes',             EMRLaboratorySpecimenTypes);
 
-    //app.component('EMRDashboard',                                       EMRDashboard);
-    //app.component('EMRQueueDoctor',                                     EMRQueueDoctor);
-    
+        app.component('EMRLaboratoryDetailReferenceRangeList',      EMRLaboratoryDetailReferenceRangeList);
+        app.component('EMRLaboratoryDetailRequest',                 EMRLaboratoryDetailRequest);
+        app.component('EMRLaboratoryDetailRequestList',             EMRLaboratoryDetailRequestList);
+        app.component('EMRLaboratoryDetailResultTemplatePreview',   EMRLaboratoryDetailResultTemplatePreview);
+        app.component('EMRLaboratoryDetailService',                 EMRLaboratoryDetailService);
+        
+        app.component('EMRLaboratoryFormAnalyte',                   EMRLaboratoryFormAnalyte);
+        app.component('EMRLaboratoryFormBottle',                    EMRLaboratoryFormBottle);
+        app.component('EMRLaboratoryFormCollect',                   EMRLaboratoryFormCollect);
+        app.component('EMRLaboratoryFormReferenceRange',            EMRLaboratoryFormReferenceRange);
+        app.component('EMRLaboratoryFormResultTemplate',            EMRLaboratoryFormResultTemplate);
+        app.component('EMRLaboratoryFormService',                   EMRLaboratoryFormService);
+        app.component('EMRLaboratoryFormSpecimenType',              EMRLaboratoryFormSpecimenType);
 
-    app.component('EMRNursingDashboard',                       EMRNursingDashboard);
+    app.component('EMRNursingDashboard',                    EMRNursingDashboard);
 
     app.component('EMROperationsBranch',                        EMROperationsBranch);
     app.component('EMROperationsBranches',                      EMROperationsBranches);

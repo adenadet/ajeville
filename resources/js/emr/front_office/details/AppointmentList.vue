@@ -141,9 +141,7 @@ export default {
         }
 
     },
-    mounted() {
-        //this.getAllInitials()
-    },
+    mounted() {},
     props:{
         appointments: Array,
     }

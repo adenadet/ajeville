@@ -1,73 +1,140 @@
 <template>
-    <section class="row">
-        <form class="card" @submit.prevent="editMode ? updateService() : createService()">
-            <div class="card-body">
+<section class="overlay-wrapper p-0">
+    <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>                  
+    <form @submit.prevent="editMode ? updateService() : createService()">
+        <div class="row">
+            <div class="col-md-12">
                 <div class="form-group">
-                    <label>Bottle Name</label>
-                    <input type="text" class="form-control" id="name" placeholder="Enter name" v-model="bottleForm.name">
-                </div>
-                <div class="form-group">
-                    <label>Bottle Colour</label>
-                    <input type="text" class="form-control" id="colour" placeholder="Enter colour" v-model="bottleForm.colour">
-                </div>
-                <div class="form-group">
-                    <label>Bottle Size</label>
-                    <input type="text" class="form-control" id="size" placeholder="Enter Size" v-model="bottleForm.size">
+                    <label>Name</label>
+                    <input type="text" class="form-control" id="name" placeholder="Enter name" v-model="serviceForm.name">
                 </div>
             </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-primary" >Submit</button>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="form-control" name="category_id" id="category_id" v-model="serviceForm.category_id">
+                        <option value="">--Select Category--</option>
+                        <option  v-for="category in categories" :value="category.id">{{ category.name }}</option>
+                    </select>
+                </div>
             </div>
-        </form>
-    </section>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Result Template</label>
+                    <select class="form-control" name="category_id" id="category_id" v-model="serviceForm.result_template_id">
+                        <option value="">--Select Result Template--</option>
+                        <option  v-for="result_template in result_templates" :value="result_template.id">{{ result_template.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Bottle Type</label>
+                    <select class="form-control" name="bottle_type_id" id="bottle_type_id" v-model="serviceForm.bottle_type_id">
+                        <option value="">--Select Bottle Type--</option>
+                        <option  v-for="bottle_type in bottle_types" :value="bottle_type.id">{{ bottle_type.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Specimen Type</label>
+                    <select class="form-control" name="specimen_type_id" id="specimen_type_id" v-model="serviceForm.specimen_type_id">
+                        <option value="">--Specimen Type--</option>
+                        <option  v-for="specimen in specimen_types" :value="specimen.id">{{ specimen.name }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Description</label>
+                    <QuillEditor class="form-control" theme="snow" content-type="html" name="description" id="description" v-model:content="serviceForm.description" />
+                </div>
+            </div>
+        </div>    
+        <button type="submit" class="btn btn-primary" >Submit</button>
+    </form>
+</section>
 </template>
 <script>
 export default {
     data() {
         return {
-            request: {},
-            requests: {},
-            bottleForm: new Form({
+            bottle_types: [],
+            categories: [],
+            loading: false,
+            result_templates: [],
+            specimen_types: [],
+            serviceForm: new Form({
+                bottle_type_id: '',
+                category_id: '',
+                description: '',
                 name: '',
-                colour: '',
-                size: '',
+                result_template_id: '',
+                specimen_type_id: '',
                 id: '',
             }),
         }
     },
+    emits:['refreshServiceForm'],
+    methods: {
+        createService(){
+            this.loading = true;
+            this.serviceForm.post('/api/emr/laboratory/services')
+            .then(response => {
+                this.$emit('refreshServiceForm');
+            })
+            .catch(() => {
+                this.$toast.fire({icon: 'error', title: 'Service form did not load successfully',});
+            })
+            .finally(()=> {
+                this.loading = false;
+            });
+        },
+        getInitials() {
+            axios.get('/api/emr/laboratory/services/initials')
+            .then(response => {
+                this.refreshPage(response)
+            })
+            .catch(() => {
+                this.$toast.fire({icon: 'error', title: 'Service form did not load successfully',});
+            });
+        },
+        refreshPage(response) {
+            this.bottle_types = response.data.bottle_types;
+            this.categories = response.data.categories;
+            this.result_templates = response.data.result_templates;
+            this.specimen_types = response.data.specimen_types;
+        },
+        updateService(){
+            this.loading = true;
+            this.serviceForm.put('/api/emr/laboratory/services/'+this.serviceForm.id)
+            .then(response => {
+                this.$emit('refreshServiceForm');
+            })
+            .catch(() => {
+                this.$toast.fire({icon: 'error', title: 'Service form did not load successfully',});
+            })
+            .finally(()=> {
+                this.loading = false;
+            });
+        },
+    },
     mounted() {
         this.getInitials();
     },
-    methods: {
-        createBottle(){
-            this.bottleForm.post('/api/emr/laboratory/services')
-            .then(response => {
-                this.refreshQueue(response)
-            })
-        },
-        getInitials(page=1) {
-            axios.get('/api/emr/laboratory/services/initials')
-            .then(response => {
-                this.refreshQueue(response)
-            })
-            .catch(() => {
-                this.$Progress.fail();
-                toast.fire({
-                    icon: 'error',
-                    title: 'Your appointments did not loaded successfully',
-                })
-            });
-        },
-        refreshQueue(response) {
-            this.requests = response.data.requests;
-            this.request = response.data.requests.data[0]
-        },
-        updateRequest(request){
-            this.request = request;
-        }
-    },
     props: {
         editMode: Boolean,
+        service: Object,
+    },
+    watch:{
+        service(){
+            this.serviceForm.fill(this.service);
+
+            this.serviceForm.name = this.service?.service?.item?.name || '';
+        }
     }
 }
 </script>

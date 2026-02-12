@@ -1,8 +1,8 @@
 <template>
     <section class="overlay-wrapper">
         <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
-        <div class="modal fade" id="pay_outFormModal">
-            <div class="modal-dialog">
+        <div class="modal fade" id="payOutFormModal">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header bg-dark">
                         <h4 class="modal-title">Pay Out Form</h4>
@@ -41,7 +41,7 @@
                         <th>Amount</th>
                         <th>Paying Account</th>
                         <th>Status</th>
-                        <th></th>
+                        <th><button type="button" class="btn btn-primary btn-xs ml-1" @click="addPayOut"><i class="fas fa-plus"></i></button></th>
                     </tr>
                 </thead>
                 <tbody v-if="pay_outs.length != 0">
@@ -93,6 +93,13 @@ export default {
         //this.getInitials();
     },
     methods: {
+        addPayOut(){
+            this.loading = true;
+            this.editMode = false;
+            this.expense = {};
+            $('#payOutFormModal').modal('show');
+            this.loading = false;
+        },
         confirmPayOut(pay_out){
             this.$swal.fire({
                 title: 'Are you sure?',
@@ -142,7 +149,7 @@ export default {
             this.loading = true;
             this.editMode = true;
             this.pay_out = pay_out;
-            $('#pay_outFormModal').modal('show');
+            $('#payOutFormModal').modal('show');
             this.loading = false;
         },
         viaWallet(transaction){

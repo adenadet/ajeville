@@ -2,16 +2,16 @@
 <div class="row">
     <div class="col-md-6">
         <label class="form-label">Type</label>
-        <select v-model="model.type" class="form-control">
+        <select v-model="model.investigation_type_id" class="form-control">
             <option value="">-- Select --</option>
-            <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in radiology_types" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
     </div>
     <div class="col-md-6">
         <label class="form-label">Body Part</label>
-        <select v-model="model.body_part" class="form-control">
+        <select v-model="model.location_id" class="form-control">
             <option value="">-- Select --</option>
-            <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in locations" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
     </div>
 </div>
@@ -19,16 +19,12 @@
 
 <script>
 export default {
-    props:{
-        modelValue:{
-            type: Object,
-            default: () => ({})
-        }},
     emits: ['update:modelValue'],
 
     data() {
         return {
-            types: ['CT-Scan', 'X-ray', 'Ultrasound', 'Others']
+            locations: [],
+            radiology_types: [],
         }
     },
 
@@ -37,6 +33,31 @@ export default {
             get() { return this.modelValue },
             set(v) { this.$emit('update:modelValue', v) }
         }
-    }
+    },
+    methods:{
+        getInitials() {
+            axios.get('/api/emr/radiology/services/initials')
+            .then(response => {
+                this.refreshPage(response)
+            })
+            .catch(() => {
+                this.$toast.fire({icon: 'error', title: 'Service form did not load successfully',});
+            });
+        },
+        refreshPage(response) {
+            this.locations          = response.data.locations;
+            this.radiology_types    = response.data.radiology_types;
+        },
+    },
+    mounted(){
+        this.getInitials();
+    },
+    props:{
+        modelValue:{
+            type: Object,
+            default: () => ({})
+        }
+    },
+    
 }
 </script>

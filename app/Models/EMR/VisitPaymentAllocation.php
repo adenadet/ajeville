@@ -12,7 +12,7 @@ class VisitPaymentAllocation extends Structure
 
     protected $table = 'visit_payment_allocations';
 
-    protected $fillable = ['visit_payment_id', 'visit_transaction_id', 'amount', 'created_at', 'updated_at', 'deleted_at',];
+    protected $fillable = ['visit_id', 'visit_payment_id', 'visit_transaction_id', 'amount', 'created_at', 'updated_at', 'deleted_at',];
 
     public function payment()
     {

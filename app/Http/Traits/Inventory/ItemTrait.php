@@ -14,6 +14,11 @@ use App\Models\Inventory\ItemType;
 use App\Models\Inventory\PackageItem as InventoryPackageItem;
 use App\Models\Inventory\Package as InventoryPackage;
 use App\Models\Operations\Branch;
+
+use App\Models\EMR\Service as EMRService;
+use App\Models\EMR\Admission\Service as AdmissionService;
+use App\Models\EMR\Laboratory\Service as LaboratoryService;
+use App\Models\EMR\Radiology\Service as RadiologyService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +52,6 @@ trait ItemTrait {
                 else{
                     return $prefix.'-'.$code;
                 }
-            
         }   
         
     }
@@ -78,6 +82,8 @@ trait ItemTrait {
             if ($data['is_package']){
 
             }
+
+            
             $this->log_user_activity('Item Create', $query->id, true);
             DB::commit();
             return $query;
@@ -115,6 +121,9 @@ trait ItemTrait {
             case 'active':
                 $query = $query->where('status', '=', 'active');
             break;
+            case 'admission':
+                $query = $query->where('category_id', '=', 15);
+            break;
             case 'all':
                 $query = $query->withTrashed();
             break;
@@ -128,16 +137,14 @@ trait ItemTrait {
                 $classification = Classification::where('name', '=', $specific)->pluck('id')->first();
                 $query = $query->where('classification_id', '=', $classification);
             break;
-            case 'emr_services':
-                //$service_types = ServiceType::where('queueable', '=', 1)->pluck('id');
-                //$query = $query->whereIn('classification_id', $service_types);
-                $query = $query->whereNull('classification_id');
-            break;
             case 'consumable':
                 $query = $query->where('consumable', '=', 1);
             break;
             case 'deleted':
                 $query = $query->withTrashed()->where('status', '=', 0);
+            break;
+            case 'emr_services':
+                $query = $query->whereNotNull('service_id');
             break;
             case 'inactive':
                 $query = $query->where('status', '=', 'inactive');
@@ -173,28 +180,33 @@ trait ItemTrait {
         }
 
         $query = $query->orderBy('name', 'ASC');
-        $query = $detailed ? $query->with(['brand', 'category', 'classification', 'item_type', 'service']) : $query->select('id', 'name', 'unique_id');
+        $query = $detailed ? $query->with(['brand', 'category', 'classification', 'item_type', 'service.reference']) : $query->select('id', 'name', 'service_id', 'unique_id');
         $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
     }
 
     public function inventory_item_get_by($type, $specific, $detailed){
-        switch($type){
-            case 'id':
-                $query =  Item::where('id', $specific);
-            break;
-            case 'name':
-                $query = Item::where('name', $specific);
-            break;
-            case 'unique_id':
-                $query = Item::where('unique_id', $specific);
-            break;
+        try{
+            $query = Item::query();
+
+            switch($type){
+                case 'id':
+                    $query =  $query->where('id', '=', $specific);
+                break;
+                case 'name':
+                    $query = $query->where('name', '=', $specific);
+                break;
+                case 'unique_id':
+                    $query = $query->where('unique_id', '=', $specific);
+                break;
+            }
+            $query = $detailed ? $query->with(['category', 'classification', 'item_type', 'service.reference', 'service.service_type']) : $query;
+            return $query->firstOrFail();
         }
-
-        $query = $detailed ? $query->with(['category', 'classification', 'item_type', 'service'])->first() : $query->first();
-
-        return $query;
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function inventory_item_search($query, $type, $branch_id, $price_list_id){
@@ -219,22 +231,164 @@ trait ItemTrait {
         DB::beginTransaction();
 
         try{
-            $item = Item::where('id', '=', $id)->first();
+            $item = Item::where('id', '=', $id)->orWhere('unique_id', '=', $id)->first();
             
-            $item->name                 = $data['name'];
-            $item->average_landing_cost = $data['average_landing_cost'];
-            $item->barcode              = $data['barcode'];
-            $item->brand_id             = $data['brand_id'];
-            $item->category_id          = $data['category_id'];
-            $item->classification_id    = $data['classification_id'];
-            $item->description          = $data['description'];
-            $item->last_landing_cost    = $data['last_landing_cost'];
+            $item->name                 = $data['name'] ?? $item->name;
+            $item->unique_id            = is_null($item->unique_id) ? $this->inventory_generate_unique_id('item') : $item->unique_id;
+            $item->average_landing_cost = $data['average_landing_cost']  ?? $item->average_landing_cost;
+            $item->barcode              = $data['barcode'] ?? $item->barcode;
+            $item->brand_id             = $data['brand_id'] ?? $item->brand_id;
+            $item->category_id          = $data['category_id'] ?? $item->category_id;
+            $item->classification_id    = $data['classification_id'] ?? $item->classification_id;
+            $item->description          = $data['description'] ?? $item->description;
+            $item->last_landing_cost    = $data['last_landing_cost'] ?? $item->last_landing_cost;
             $item->status               = $data['status'] ?? "active";
-            $item->type_id              = $data['type_id'];
-            $item->unique_id            = $data['unique_id'];
+            $item->type_id              = $data['type_id'] ?? $item->type_id;
             $item->updated_by           = auth('api')->id();
             
             $item->save();
+
+            if ($item->type_id == 2){
+
+                switch($data['service']['service_type_id']){
+                    case 3:
+                        $reference_type = 'App\Models\EMR\Admission';
+                    break;
+                    case 6:
+                        $reference_type = 'App\Models\EMR\Laboratory\Service';
+                    break;
+                    case 7:
+                        $reference_type = 'App\Models\EMR\Radiology\Service';
+                    break;
+                    case 9:
+                        $reference_type = 'App\Models\EMR\Procedure\Service';
+                    break;
+                }
+
+                if(empty($data['service']['referenceable']['service_id'])){
+                    $emr_service = EMRService::create([
+                        'item_id' => $item->id,
+                        'service_type_id' => $data['service']['service_type_id'],
+                        'referenceable_type' => $reference_type,
+                        'referenceable_id' => null,
+                        'description' => $item->description,
+                        'status' => $item->status == 'active' ? EMRService::StatusActive : EMRService::StatusInactive,
+                        'created_by' =>  Auth::id() ?? auth('api')->id(),
+                        'updated_by' =>  Auth::id() ?? auth('api')->id(),
+                    ]);
+
+                    $item->service_id = $emr_service->id;
+                    $item->save();
+                }
+                else{
+                    $emr_service = EMRService::findOrFail($data['service']['referenceable']['service_id']);
+                    
+                    $emr_service->item_id = $item->id;
+                    $emr_service->service_type_id = $data['service']['service_type_id'] ?? 6;
+                    $emr_service->referenceable_type = $reference_type;
+                    $emr_service->description = $data['description'];
+                    $emr_service->status = ($item->status == 'active') ? EMRService::StatusActive : EMRService::StatusInactive;
+                    $emr_service->updated_by =  Auth::id() ?? auth('api')->id();
+                    $emr_service->save();
+                }
+
+                switch($data['service']['service_type_id']){
+                    case 3: //If it is a Admission issue
+                        
+                        if(empty($emr_service->referenceable_id)){
+                            $admission_service = AdmissionService::create([
+                                'service_id' => $emr_service->id,
+                                'status' => $data['status'] == 'active' ? 1 : 0,
+                                'created_by' => Auth::id() ?? auth('api')->id(),
+                                'updated_by' => Auth::id() ?? auth('api')->id(),
+                            ]);
+                        }
+                        else{
+
+                        }
+
+                    break;
+                    case 6: //If it is a Laboratory Item 
+                        if(empty($emr_service->referenceable_id)){
+                            $laboratory_service = LaboratoryService::create([
+                                'service_id' => $emr_service->id,
+                                'category_id' => $data['service']['referenceable']['category_id'],
+                                'bottle_type_id' => $data['service']['referenceable']['bottle_type_id'],
+                                'specimen_type_id' => $data['service']['referenceable']['specimen_type_id'],
+                                'result_template_id' => $data['service']['referenceable']['result_template_id'],
+                                'status' => $data['status'] == 'active' ? 1 : 0,
+                                'created_by' => Auth::id() ?? auth('api')->id(),
+                                'updated_by' => Auth::id() ?? auth('api')->id(),
+                            ]);
+                        
+                            $emr_service->referenceable_id = $laboratory_service->id;
+                            $emr_service->save();
+                        }
+                        else{
+                            $laboratory_service = LaboratoryService::where('id', '=', $emr_service->reference_id)->firstOrFail();
+                            $laboratory_service->service_id = $emr_service->id;
+                            $laboratory_service->category_id = $data['service']['referenceable']['category_id'];
+                            $laboratory_service->bottle_type_id = $data['service']['referenceable']['bottle_type_id'];
+                            $laboratory_service->specimen_type_id = $data['service']['referenceable']['specimen_type_id'];
+                            $laboratory_service->result_template_id = $data['service']['referenceable']['result_template_id'];
+                            $laboratory_service->status = $data['status'] == 'active' ? 1 : 0;
+                            $laboratory_service->updated_by = Auth::id() ?? auth('api')->id();
+                        
+                            $laboratory_service->save();
+                        }
+                    break;
+                    case 7: //If it is a Laboratory Item 
+                        if(empty($emr_service->referenceable_id)){
+                            $radiology_service = RadiologyService::create([
+                                'service_id' => $emr_service->id,
+                                'investigation_type_id' => $data['service']['referenceable']['investigation_type_id'] ?? null,
+                                'location_id' => $data['service']['referenceable']['location_id'] ?? null,
+                                'status' => $data['status'] == 'active' ? 1 : 0,
+                                'created_by' => Auth::id() ?? auth('api')->id(),
+                                'updated_by' => Auth::id() ?? auth('api')->id(),
+                            ]);
+                        
+                            $emr_service->referenceable_id = $radiology_service->id;
+                            $emr_service->save();
+                        }
+                        else{
+                            $radiology_service = RadiologyService::where('id', '=', $emr_service->referenceable_id)->firstOrFail();
+                            $radiology_service->service_id = $emr_service->id;
+                            $radiology_service->investigation_type_id = $data['service']['referenceable']['investigation_type_id'] ?? $radiology_service->investigation_type_id;
+                            $radiology_service->location_id = $data['service']['referenceable']['location_id'] ?? $radiology_service->location_id;
+                            $radiology_service->status = $data['status'] == 'active' ? 1 : 0;
+                            $radiology_service->updated_by = Auth::id() ?? auth('api')->id();
+                        
+                            $radiology_service->save();
+                        }
+                    break;
+                    case 9: //If it is a Radiology Item 
+                        if(empty($emr_service->referenceable_id)){
+                            $radiology_service = RadiologyService::create([
+                                'service_id' => $emr_service->id,
+                                'investigation_type_id' => $data['service']['referenceable']['investigation_type_id'] ?? null,
+                                'location_id' => $data['service']['referenceable']['location_id'] ?? null,
+                                'status' => $data['status'] == 'active' ? 1 : 0,
+                                'created_by' => Auth::id() ?? auth('api')->id(),
+                                'updated_by' => Auth::id() ?? auth('api')->id(),
+                            ]);
+                        
+                            $emr_service->referenceable_id = $radiology_service->id;
+                            $emr_service->save();
+                        }
+                        else{
+                            $radiology_service = RadiologyService::where('id', '=', $emr_service->referenceable_id)->firstOrFail();
+                            $radiology_service->service_id = $emr_service->id;
+                            $radiology_service->investigation_type_id = $data['service']['referenceable']['investigation_type_id'] ?? $radiology_service->investigation_type_id;
+                            $radiology_service->location_id = $data['service']['referenceable']['location_id'] ?? $radiology_service->location_id;
+                            $radiology_service->status = $data['status'] == 'active' ? 1 : 0;
+                            $radiology_service->updated_by = Auth::id() ?? auth('api')->id();
+                        
+                            $radiology_service->save();
+                        }
+                    break;
+                }    
+            }
             DB::commit();
             $this->log_user_activity('Item Update', $id, true);
             return $item;

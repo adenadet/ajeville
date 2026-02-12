@@ -14,7 +14,11 @@ class Customer extends Structure
     protected $table = 'crm_customers';
     protected $fillable = array('uuid', 'name', 'balance', 'address', 'delivery_address', 'phone', 'email', 'category_id', 'tin', 'vatable', 'withholding_tax', 'website', 'description', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
-    public function category(){
+    public function bank_accounts(){
+    	return $this->hasMany('App\Models\CRM\CustomerAccount', 'customer_id', 'id');
+	}
+
+	public function category(){
     	return $this->belongsTo('App\Models\CRM\CustomerCategory', 'category_id', 'id');
 	}
 

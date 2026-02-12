@@ -14,9 +14,9 @@
             </thead>
             <tbody>
                 <tr v-for="(request, index) in requests" :key="index">
-                    <td>{{ index | addOne }}</td>
+                    <td>{{ addOne(index) }}</td>
                     <td>{{ request.date }}</td>
-                    <td v-if="request.patient != null">{{ request.patient | patientName }}</td>
+                    <td v-if="request.patient != null">{{ patientName(request.patient) }}</td>
                     <td v-else>{{request.patient_id}}</td>
                     <td>{{ (request.item != null && request.item.category != null) ? request.item.category.name : 'No Category Yet' }}</td>
                     <td>{{ request.item != null ? request.item.name : '' }}</td>

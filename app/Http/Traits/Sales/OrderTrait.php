@@ -1,13 +1,19 @@
 <?php
 namespace App\Http\Traits\Sales;
 
+use App\Http\Traits\CRM\CustomerTrait;
+use App\Http\Traits\Finance\ExpenseTrait;
 use App\Http\Traits\Finance\IncomeTrait;
 use App\Http\Traits\Finance\MainTransactionTrait;
 use App\Http\Traits\General\FileManagerTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Http\Traits\Inventory\StoreTrait;
+use App\Http\Traits\Procurement\PurchaseOrderTrait;
 use App\Models\CRM\Customer;
+use App\Models\Finance\Expense;
 use App\Models\Finance\Income;
+use App\Models\Finance\PriceList;
+use App\Models\Inventory\Item;
 use App\Models\Inventory\OrderFulfillment;
 use App\Models\Inventory\StoreItem;
 use App\Models\Inventory\StoreItemBatch;
@@ -34,7 +40,7 @@ use Illuminate\Support\Str;
 
 
 trait OrderTrait {
-    use FileManagerTrait, IncomeTrait, MainTransactionTrait, LogTrait, StoreTrait; 
+    use CustomerTrait, ExpenseTrait, FileManagerTrait, IncomeTrait, MainTransactionTrait, LogTrait, PurchaseOrderTrait, StoreTrait; 
     //use IncomeTrait;
 
     private function sales_generateRandomString($length = 10){
@@ -96,7 +102,7 @@ trait OrderTrait {
                 $prefix = 'RTN';   
                 $query = OrderReturn::where('unique_id', '=', $prefix.'-'.$code)->first();
                 if($query){
-                    return $this->sales_return_generate_unique_id('return');
+                    return $this->sales_generate_unique_id('return');
                 }else{
                     return $code;
                 }
@@ -104,7 +110,7 @@ trait OrderTrait {
                 $prefix = 'RTI';
                 $query = OrderReturnItem::where('uuid', '=', $prefix.'-'.$code)->first();
                 if($query){
-                    return $this->sales_return_generate_unique_id('quotation');
+                    return $this->sales_generate_unique_id('return_item');
                 }else{
                     return $code;
                 }   
@@ -116,6 +122,7 @@ trait OrderTrait {
     Sales Fulfillment Functions
     -----------------------------------------------------------------------------------------------
     */ 
+
     public function sales_order_item_fulfill($data, $type = 'sales'){
         try{
             $fulfillment = OrderFulfillment::create([
@@ -1003,6 +1010,7 @@ trait OrderTrait {
     Sales Returns Functions
     -----------------------------------------------------------------------------------------------
     */
+    /*
     public function sales_return_create($data){
         DB::beginTransaction();
 
@@ -1128,67 +1136,6 @@ trait OrderTrait {
         }
     }
 
-    public function sales_return_get_all($type, $specific, $detailed, $paginated, $page){
-        $query = OrderReturn::query();
-        switch($type){
-            case 'all':
-                $query = OrderReturn::withTrashed();
-            break;
-            case 'approved':
-                $query = OrderReturn::where('status', '>=', OrderReturn::STATUS_CONFIRMED);
-            break;
-            case 'active':
-                $query = OrderReturn::where('status', '>=', 1)->where('status', '<', OrderReturn::STATUS_REJECTED);
-            break;
-            case 'cancelled':
-                $query = OrderReturn::where('status', '>=', OrderReturn::STATUS_REJECTED)->withTrashed();
-            break;
-            case 'unapproved':
-                $query = OrderReturn::where('status', '=', OrderReturn::STATUS_CREATED);
-            break;
-        }
-
-        if (isset($specific['status'])){
-            if ($specific['status'] == 'all'){
-                $query = $query->whereNotNull('status');
-            }
-            else{
-                $query = $query->where('status', '=', $specific['status']);
-            }
-        }
-        $query = $query->latest();
-        $query = $detailed ? $query->with(['store', 'customer', 'returnItems']) : $query->select('id', 'unique_id');
-        
-        $orders = $paginated ? $query->paginate(50) : $query->get();
-        
-        /*$orders->each(function ($order) {
-            $order->append('grand_amount');
-        });*/
-        return $orders;
-    }
-
-    public function sales_return_get_by($type, $id, $detailed){
-        try{
-            $query = OrderReturn::query();
-            switch($type){
-                case 'id':
-                    $query = OrderReturn::where('id', '=', $id);
-                break;
-                case 'unique_id':
-                    $query = OrderReturn::where('uuid', '=', $id);
-                break;
-            }
-
-            $query = $query->where('id', '=', $id)->orWhere('unique_id', '=', $id);
-
-            $query = $detailed ? $query->with(['customer', 'creator', 'deleter', 'returnItems', 'store', 'updater']) : $query->select('id', 'name', 'unique_id');
-            return $query->firstOrFail();
-        }
-        catch (Exception $e){
-            return $e->getMessage();
-        }
-    }
-
     public function sales_return_update($data, $id){
         DB::beginTransaction();
         try{
@@ -1248,6 +1195,7 @@ trait OrderTrait {
             return $e->getMessage();
         }
     }
+    */
 
     /*
     -----------------------------------------------------------------------------------------------
@@ -1265,7 +1213,8 @@ trait OrderTrait {
                 'quote_date' => $data['quote_date'] ?? date('Y-m-d'),
                 'payment_term_id' => $data['payment_term_id'] ?? null,
                 'store_id' => $data['store_id'] ?? null,
-                'expiry_date' => $data['expiry_date'] ?? date('Y-m-d', strtotime("+30 days")),
+                'expiry_date' => $data['expiry_date'] ?? date('Y-m-d',
+                strtotime("+30 days")),
                 'status'=> $data['status'] ?? 'draft',
                 'logistics' => $data['logistics'] ?? 0.00,
                 'discount' => $data['discount'] ?? 0.00,
@@ -1435,4 +1384,344 @@ trait OrderTrait {
             return $e->getMessage();
         }
     }
+
+        
+    /*
+    |--------------------------------------------------------------------------
+    | RETURN VALUATION
+    |--------------------------------------------------------------------------
+    */
+
+    protected function sales_return_calculate_amount($id): float
+    {
+        $total = 0;
+        $return = $this->sales_return_get_by('id', $id, true);
+        foreach ($return->return_items as $item) {
+
+            /*
+             * Priority:
+             * 1. Sales order price
+             * 2. Price list price
+             */
+            //$price_list = PriceList
+            if ($return->sales_order_id) {
+                $price = $item->sales_order_item->price ?? 0;
+            } 
+            else {
+                $price = $item->unit_price ??0.00;
+            }
+            $total += ($price * $item->quantity);
+        }
+
+        return $total;
+    }
+
+    public function sales_return_confirm($data, $id)
+    {
+        return DB::transaction(function () use ($id) {
+
+            $userId = auth('api')->id() ?? Auth::id();
+
+            $return = OrderReturn::with(['return_items.return_batches'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            if ($return->confirmed_at) {
+                throw new \RuntimeException('Sales Return already confirmed.');
+            }
+
+            foreach ($return->return_items as $returnItem) {
+
+                $storeItem = StoreItem::where('store_id', $return->store_id)
+                    ->where('item_id', $returnItem->item_id)
+                    ->first();
+
+                if (!$storeItem) {
+                    throw new \RuntimeException(
+                        "StoreItem missing for item_id {$returnItem->item_id} in store {$return->store_id}"
+                    );
+                }
+
+                if ($return->legacy_return || is_null($return->sales_order_id)) {
+
+                    $batch = Batch::create([
+                        'unique_id'        => $this->procurement_unique_id('goods_received'),
+                        'item_id'          => $returnItem->item_id,
+                        'package_id'       => 1,
+                        'package_quantity' => $returnItem->quantity,
+                        'batch_number'     => 'LEGACY-' . sprintf('%07d', $returnItem->item_id),
+                        'expiry_date'      => null,
+                        'quantity'         => $returnItem->quantity,
+                        'total_quantity'   => $returnItem->quantity,
+                        'status'           => Batch::StatusConfirmed,
+                        'confirmed_by'     => $userId,
+                        'confirmed_at'     => now(),
+                        'created_by'       => $userId,
+                        'updated_by'       => $userId,
+                    ]);
+
+                    StoreItemBatch::create([
+                        'store_item_id' => $storeItem->id,
+                        'batch_id'      => $batch->id,
+                        'balance'       => $returnItem->quantity,
+                        'received'      => $returnItem->quantity,
+                        'sold'          => 0,
+                        'issued'        => 0,
+                        'transferred'   => 0,
+                        'status'        => 1,
+                        'created_by'    => $userId,
+                        'updated_by'    => $userId,
+                    ]);
+
+                }
+                else {
+
+                    foreach ($returnItem->return_batches as $returnBatch) {
+
+                        $storeItemBatch = StoreItemBatch::where('store_item_id', $storeItem->id)
+                            ->where('batch_id', $returnBatch->id)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$storeItemBatch) {
+                            throw new \RuntimeException(
+                                "StoreItemBatch missing for batch {$returnBatch->id}"
+                            );
+                        }
+                        $storeItemBatch->update([
+                            'balance'    => $storeItemBatch->balance + $returnBatch->quantity,
+                            'sold'       => $storeItemBatch->sold - $returnBatch->sold,
+                            'updated_by' => $userId,
+                        ]);
+                    }
+                }
+            }
+
+            $amount = $this->sales_return_calculate_amount($return->id);
+
+            if ($amount > 0) {
+                $customer = Customer::lockForUpdate()->findOrFail($return->customer_id);
+                $customer->update([
+                    'balance'    => $customer->balance - $amount,
+                    'updated_by' => $userId,
+                ]);
+
+                $expense = $this->finance_expense_create([
+                    'expenseable_id'   => $return->id,
+                    'expenseable_type' => OrderReturn::class,
+                    'classification_id'=> null,
+                    'amount'           => $amount,
+                    'date'             => now()->toDateString(),
+                    'due_date'         => now()->toDateString(),
+                    'account_id'       => null,
+                    'vendor_id'        => null,
+                    'staff_id'         => null,
+                    'customer_id'      => $return->customer_id,
+                    'description'      => 'Customer Return',
+                    'status'           => Expense::StatusConfirmed,
+                ]);
+
+                if (is_string($expense)) {
+                    throw new \RuntimeException($expense);
+                }
+            }
+            $return->update([
+                'status'       => OrderReturn::STATUS_CONFIRMED,
+                'confirmed_by' => $userId,
+                'confirmed_at' => now(),
+            ]);
+            $this->log_user_activity('Sales Return Confirm', $id, true);
+            return $return;
+        });
+    }
+
+
+    public function sales_return_create($data)
+    {
+        DB::beginTransaction();
+
+        try {
+            $return = OrderReturn::create([
+                'sales_order_id'    => $data['sales_order_id'] ?? null,
+                'unique_id'         => $this->sales_generate_unique_id('return'),
+                'date' => $data['date'] ?? date('Y-m-d'),
+                'customer_id'       => $data['customer_id'],
+                'store_id'          => $data['store_id'],
+                'price_list_id'     => $data['price_list_id'] ?? null,
+                'reason'            => $data['reason'] ?? null,
+                'status'            => OrderReturn::STATUS_CREATED,
+                'is_legacy_return'  => empty($data['sales_order_id']),
+                'created_by'        => auth('api')->id() ?? Auth::id(),
+                'updated_by'        => auth('api')->id() ?? Auth::id(),
+            ]);
+
+            foreach ($data['return_items'] as $item) {
+                $detailed_item = Item::find($item['item_id']);
+                $returnItem = OrderReturnItem::create([
+                    'return_id'       => $return->id,
+                    'item_id'         => $item['item_id'],
+                    'item_name'       => $item['item_name'] ??$detailed_item->name ?? 'Old Stock Item',
+                    'unit_price'      => $item['unit_price'] ?? 0.00,
+                    'quantity'        => $item['quantity'],
+                    'reason'          => $item['reason'] ?? null,
+                    'status'          => OrderReturnItem::STATUS_CREATED,
+                ]);
+
+                if (!$return->is_legacy_return && !empty($item['batches'])) {
+                    foreach ($item['batches'] as $batch) {
+                        $returnItem->return_batches()->create([
+                            'batch_id' => $batch['batch_id'],
+                            'quantity' => $batch['quantity'],
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            $this->log_user_activity('Sales Return Create', $return->id, true);
+            return $return;
+
+        } 
+        catch (Exception $e) {
+            DB::rollBack();
+            $this->log_user_activity('Sales Return Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function sales_return_delete($id)
+    {
+        DB::beginTransaction();
+        try {
+            $return = OrderReturn::where('id', '=', $id)->orWhere('unique_id', '=', $id)->first();
+            if ($return->confirmed_at) {
+                return 'Sales Return already confirmed.';
+            }
+
+            else{
+                $return->status = OrderReturn::STATUS_REJECTED;
+                $return->deleted_by = auth('api')->id() ?? Auth::id();
+                $return->deleted_at = date('Y-m-d H:i:s');
+                $return->save();
+            }
+        
+            DB::commit();
+            $this->log_user_activity('Sales Return Delete', $id, true);
+            return $return;
+
+        } 
+        catch (Exception $e) {
+            DB::rollBack();
+            $this->log_user_activity('Sales Return Delete', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function sales_return_get_all($type, $specific, $detailed, $paginated, $page){
+        $query = OrderReturn::query();
+        switch($type){
+            case 'all':
+                $query = OrderReturn::withTrashed();
+            break;
+            case 'approved':
+                $query = OrderReturn::where('status', '>=', OrderReturn::STATUS_CONFIRMED);
+            break;
+            case 'active':
+                $query = OrderReturn::where('status', '>=', 1)->where('status', '<', OrderReturn::STATUS_REJECTED);
+            break;
+            case 'cancelled':
+                $query = OrderReturn::where('status', '>=', OrderReturn::STATUS_REJECTED)->withTrashed();
+            break;
+            case 'unapproved':
+                $query = OrderReturn::where('status', '=', OrderReturn::STATUS_CREATED);
+            break;
+        }
+
+        if (isset($specific['status'])){
+            if ($specific['status'] == 'all'){
+                $query = $query->whereNotNull('status');
+            }
+            else{
+                $query = $query->where('status', '=', $specific['status']);
+            }
+        }
+        $query = $query->latest();
+        $query = $detailed ? $query->with(['store', 'customer', 'returnItems']) : $query->select('id', 'unique_id');
+        
+        $orders = $paginated ? $query->paginate(50) : $query->get();
+        
+        
+        return $orders;
+    }
+
+    public function sales_return_get_by($type, $id, $detailed){
+        try{
+            $query = OrderReturn::query();
+            switch($type){
+                case 'id':
+                    $query = OrderReturn::where('id', '=', $id);
+                break;
+                case 'unique_id':
+                    $query = OrderReturn::where('uuid', '=', $id);
+                break;
+            }
+
+            $query = $query->where('id', '=', $id)->orWhere('unique_id', '=', $id);
+
+            $query = $detailed ? $query->with(['customer', 'creator', 'deleter', 'return_items', 'store', 'updater']) : $query->select('id', 'name', 'unique_id');
+            return $query->firstOrFail();
+        }
+        catch (Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function sales_return_update($data, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+        /*    
+            $return = OrderReturn::where('unique_id', '=', $id)->orWhere('id', '=', $id)->first();
+                'sales_order_id'    => $data['sales_order_id'] ?? null,
+                'customer_id'       => $data['customer_id'],
+                'store_id'          => $data['store_id'],
+                'price_list_id'     => $data['price_list_id'] ?? null,
+                'reason'            => $data['reason'] ?? null,
+                'status'            => OrderReturn::STATUS_CREATED,
+                'is_legacy_return'  => empty($data['sales_order_id']),
+                'created_by'        => auth('api')->id() ?? Auth::id(),
+                'updated_by'        => auth('api')->id() ?? Auth::id(),
+            ]);
+
+            foreach ($data['items'] as $item) {
+                $returnItem = OrderReturnItem::create([
+                    'order_return_id' => $return->id,
+                    'item_id'         => $item['item_id'],
+                    'quantity'        => $item['quantity'],
+                    'reason'          => $item['reason'] ?? null,
+                ]);
+
+                if (!$return->is_legacy_return && !empty($item['batches'])) {
+                    foreach ($item['batches'] as $batch) {
+                        $returnItem->return_batches()->create([
+                            'batch_id' => $batch['batch_id'],
+                            'quantity' => $batch['quantity'],
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            $this->log_user_activity('Sales Return Create', $return->id, true);
+            return $return;
+        */
+        } 
+        catch (Exception $e) {
+            DB::rollBack();
+            $this->log_user_activity('Sales Return Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
 }

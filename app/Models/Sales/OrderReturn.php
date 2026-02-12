@@ -56,6 +56,11 @@ class OrderReturn extends Structure
         );
     }
     
+    public function return_items()
+    {
+        return $this->hasMany('App\Models\Sales\OrderReturnItem', 'return_id', 'id');
+    }
+
     public function returnItems()
     {
         return $this->hasMany('App\Models\Sales\OrderReturnItem', 'return_id', 'id');

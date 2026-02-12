@@ -8,11 +8,13 @@ use App\Http\Traits\Inventory\ItemTrait;
 use App\Http\Traits\Inventory\SettingsTrait;
 use App\Imports\Inventory\ItemImport;
 use App\Models\EMR\Settings\ServiceType;
+
+use App\Models\Inventory\StoreItem;
 use App\Models\Inventory\StoreItemBatch;
 use App\Models\Inventory\Classification;
 use App\Models\Inventory\Item;
-
 use App\Models\Inventory\TransferOrderItem;
+
 use App\Models\Operations\Branch;
 use App\Models\Procurement\Batch;
 use App\Models\Procurement\PackageType;
@@ -287,14 +289,14 @@ class ItemController extends Controller
 
     public function show($id)
     {
+        $item = $this->inventory_item_get_by('id', $id, true);
         $purchase_orders = PurchaseOrderItem::where('item_id', '=', $id)->with(['purchase_order'])->latest()->limit(10);
         $transfer_orders = TransferOrderItem::where('item_id', '=', $id)->with(['transfer_order'])->latest()->limit(10);
-        $locations = StoreItemBatch::groupBy('store_id', 'item_id')
-                    ->select(DB::raw("SUM(`balance`) as `balance`"), 'item_id', 'store_id')->with('store')
-                    ->where('item_id', '=', $id)->get();
+        $store_items = StoreItem::where('item_id', '=', $item->id)->pluck('id');
+        $locations = StoreItemBatch::groupBy('store_item_id')->select(DB::raw("SUM(`balance`) as `balance`"),  'store_item_id')->with('store_item.store')->whereIn('store_item_id', $store_items)->get();
 
         return response()->json([
-            'item' => $this->inventory_item_get_by('id', $id, true),
+            'item' => $item,
             'purchase_orders' => $purchase_orders,
             'transfer_orders' => $transfer_orders,
             'locations' => $locations,

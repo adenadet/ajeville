@@ -95,8 +95,8 @@ class AppointmentController extends Controller
         
         return response()->json([
             'appointments' => $appointments,
-            'branch' => $this->operation_branch_get_by(null, request()->cookie('branch'), true),
-            'service_types' => $this-> operation_service_type_get_all('queueable', null, false, false),
+            'branch' => $this->operation_branch_get_branch_by_id(null, request()->cookie('branch')),
+            'service_types' => $this->operation_service_type_get_all('queueable', null, false, false),
             'specialties' => $this->emr_specialty_get_all('active', null, true, false),
         ], is_string($appointments) ? 500 : 200);
     }

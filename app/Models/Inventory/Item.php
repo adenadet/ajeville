@@ -10,6 +10,9 @@ class Item extends Structure
 {
     use HasFactory;
 
+    const StatusActive = "active";
+    const StatusInactive = "inactive";
+    
     protected $primaryKey = 'id';
     protected $table = 'inventory_items';
     protected $fillable = array('name', 'type_id', 'classification_id', 'category_id', 'unique_id', 'service_id', 'specific_id', 'brand_id', 'image', 'barcode', 'last_landing_cost', 'average_landing_cost', 'description', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');

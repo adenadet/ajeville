@@ -10,7 +10,7 @@
                 <div class="widget-user-image">
                     <img class="img-circle elevation-2" :src="patient != null && patient.user != null ? '/img/profile/'+patient.user.image : '/img/profile/default.png'" alt="User Avatar">
                 </div>
-                <h3 class="widget-user-username">{{ patient | patientName}}</h3>
+                <h3 class="widget-user-username">{{ patientName(patient)}}</h3>
                 <h5 class="widget-user-desc">{{patient.insurances != null && patient.insurances.length != 0 ? 'Insurance' : 'Cash' }} </h5>
             </div>
             <div class="card-body table-responsive p-0">
@@ -79,25 +79,17 @@ export default {
     data() {
         return {
             loading: true,
-            transaction: {},
         }
     },
-    mounted() {
-        Fire.$on('viewTransaction', transaction => {
-            this.loading = true;
-            axios.get('/api/finance/transactions/'+transaction.id)
-            .then(response => {
-                this.refreshPage(response);    
-            })
-
-        });
-    },
+    mounted() {},
     methods: {
         refreshPage(response) {
             this.transaction = response.data.transaction;
             this.loading = false;
         },
     },
-    props: {}
+    props: {
+        transaction:Object,
+    }
 }
 </script>

@@ -26,15 +26,18 @@ use App\Models\User;
 
 use App\Http\Traits\EMR\InsuranceTrait;
 use App\Http\Traits\EMR\PatientTrait;
+use App\Http\Traits\EMR\VisitTrait;
 use App\Http\Traits\General\SettingsTrait;
 use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\Inventory\ItemTrait;
 use App\Http\Traits\UMS\UserTrait;
+use App\Models\EMR\Visit;
+use App\Models\EMR\VisitTransaction;
 use App\Models\Operations\Branch;
 
 class PatientController extends Controller
 {
-    use InsuranceTrait, ItemTrait, PatientTrait, SettingsTrait, TransactionTrait, UserTrait;
+    use InsuranceTrait, ItemTrait, PatientTrait, SettingsTrait, TransactionTrait, UserTrait, VisitTrait;
 
     public function all()
     {
@@ -51,10 +54,10 @@ class PatientController extends Controller
     public function get_cookie()
     {
         $patient_id = request()->cookie('current_patient');
-        $patient = $this->emr_patient_get_by_id(null, request()->cookie('current_patient'), true);
+        $patient = !empty($patient_id) ? $this->emr_patient_get_by_id(null, request()->cookie('current_patient'), true) : null;
         return response()->json([
             'patient' => $patient,
-        ], is_string($patient) ? 500 : 200);
+        ], is_null($patient) ? 404 : 200);
     }
 
     public function index()
@@ -83,14 +86,23 @@ class PatientController extends Controller
     {
         $patient = $request->input('patient');
         $cookie = cookie('current_patient', $patient['id'], 3600);
-        return response('Cookie has been set')->cookie($cookie);
+        return response('Cookie has been set '.$patient['id'])->cookie($cookie);
     }
 
     public function show($id)
     {
+        $patient = $this->emr_patient_get_by_id(null, $id, true);
+        if (is_string($patient)){
+            return response()->json([
+                'patient' => $patient,
+            ], 404);    
+        }
+        $visit = Visit::where('patient_id', '=', $patient->id)->whereNotIn('status', [Visit::StatusClosed, Visit::StatusBooked])->latest()->with(['branch', 'patient.user', 'price_list'])->first();
         return response()->json([
-            'patient' => $this->emr_patient_get_by_id(null, $id, true),
-            'transactions' => Transaction::where('patient_id', '=', $id)->latest()->paginate(10),     
+            'patient' => $patient,
+            'transactions' => $this->emr_visit_transaction_get_all(null, ['patient_id' => $patient->id, 'visit_id' => $visit->id], true, true),
+            'pending_transactions' => $this->emr_visit_transaction_get_all('pending', ['patient_id' => $patient->id, 'visit_id' => $visit->id], true, true), 
+            'visit' => $visit,    
         ]);
     }
 

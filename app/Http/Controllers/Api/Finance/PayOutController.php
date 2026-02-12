@@ -7,6 +7,7 @@ use App\Http\Traits\CRM\CustomerTrait;
 use App\Http\Traits\Finance\ExpenseTrait;
 use App\Http\Traits\Hrms\EmployeeTrait;
 use App\Http\Traits\Procurement\VendorTrait;
+use App\Models\CRM\Customer;
 use App\Models\Finance\Bank;
 use App\Models\Finance\BranchBank;
 use App\Models\Finance\PaymentMode;
@@ -48,7 +49,7 @@ class PayOutController extends Controller
         return response()->json([
             'accounts' => BranchBank::where('status', '=', 1)->with(['bank'])->orderBy('account_name', 'ASC')->get(),
             'banks' => Bank::select('id', 'bank_name')->where('status', '=', 1)->get(),
-            'customers' => $this->crm_customer_get_all('active', null, false, false, null),
+            'customers' => Customer::where('status', '=', 'active')->with(['bank_accounts'])->orderBy('name', 'ASC')->get(),
             'staffs' => $this->hrms_employee_get_all_active_users('all', null, false, false),
             'vendors' => $this->procurement_vendor_get_all('active', null, false, false, null),
         ]);

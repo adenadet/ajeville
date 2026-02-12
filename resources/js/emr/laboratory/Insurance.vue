@@ -4,11 +4,9 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">
-                            Insurance Desk
-                        </h3>
+                        <h3 class="card-title">Insurance Desk</h3>
                     </div>
-                    <div class="card-body table-responsive p-0">
+                    <div class="card-body table-responsive p-0" style="height:600px;">
                         <table class="table table-hover table-striped text-nowrap">
                             <thead>
                                 <tr>
@@ -22,8 +20,8 @@
                             </thead>
                             <tbody>
                                 <tr v-for="request in requests.data" :key="request.id"  :class="request.special != null ? 'bg-danger' : ''" @click="updateRequest(request)">
-                                    <td>{{ request.date | excelDate }}</td>
-                                    <td>{{ request.patient | patientName }}</td>
+                                    <td>{{ excelDate(request.date) }}</td>
+                                    <td>{{ patientName(request.patient) }}</td>
                                     <td>{{ request.item.category != null ? request.item.category.name : 'No Category Yet' }}</td>
                                     <td>{{ request.item.name }}</td>
                                     <td>{{ request.status }}</td>
@@ -41,10 +39,9 @@
                         </table>
                     </div>
                     <div class="card-footer">
-                        <pagination :data="users" @pagination-change-page="getUser">
-                            <span slot="prev-nav">&lt; Previous </span>
-                            <span slot="next-nav">Next &gt;</span>
-                        </pagination>
+                        <div class="col-12">
+                            <pagination v-model="current_page" @paginate="getInitials" :per-page="requests.per_page != null ? requests.per_page : 52" :records="requests.total != null ? requests.total : 550" ></pagination>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -55,6 +52,7 @@
 export default {
     data() {
         return {
+            current_page: 1,
             request: {},
             requests: {},
             editMode: true,

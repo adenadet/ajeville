@@ -6,40 +6,14 @@
             <form @submit.prevent="submitForm">
                 <div class="form-group mb-3">
                     <label class="form-label">Consultants</label>
-                    <multiselect
-                        v-model="form.consultants"
-                        :options="users"
-                        :multiple="true"
-                        :close-on-select="false"
-                        :clear-on-select="false"
-                        :preserve-search="true"
-                        label="name"
-                        track-by="id"
-                        placeholder="Select consultants"
-                    />
+                    <multiselect v-model="form.consultants" :options="users" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" label="name" track-by="id" placeholder="Select consultants"/>
                 </div>
-
-                <!-- Specialty -->
                 <div class="form-group mb-3">
                     <label class="form-label">Specialty</label>
-                    <multiselect
-                        v-model="form.specialty"
-                        :options="specialties"
-                        :multiple="false"
-                        label="name"
-                        track-by="id"
-                        placeholder="Select specialty"
-                    />
+                    <multiselect v-model="form.specialty" :options="specialties" :multiple="false" label="name" track-by="id" placeholder="Select specialty"/>
                 </div>
-
                 <div class="text-end">
-                    <button
-                        class="btn btn-primary"
-                        type="submit"
-                        :disabled="loading"
-                    >
-                        {{ loading ? 'Saving...' : 'Assign Specialty' }}
-                    </button>
+                    <button class="btn btn-primary" type="submit" :disabled="loading">{{ loading ? 'Saving...' : 'Assign Specialty' }}</button>
                 </div>
             </form>
         </div>

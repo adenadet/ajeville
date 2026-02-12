@@ -24,6 +24,7 @@
         <li class="nav-item has-treeview">
             <a href="#" class="nav-link"><i class="nav-icon fas fa-clinic-medical"></i><p>EMR <i class="right fas fa-angle-left"></i></p></a>
             <ul class="nav nav-treeview">
+                <?php if(Auth::user()->hasRole('EMR Admission') || Auth::user()->hasRole('Super Admin')): ?><li class="nav-item"><a href="/emr/admission" class="nav-link"><i class="mr-1 fas fa-bed"></i><p> Admission</p></a></li><?php endif; ?>
                 <?php if(Auth::user()->hasRole('EMR Consultant') || Auth::user()->hasRole('Super Admin')): ?><li class="nav-item"><a href="/emr/consultations" class="nav-link"><i class="mr-1 fas fa-user-md"></i><p> Consultation</p></a></li><?php endif; ?>
                 <?php if(Auth::user()->hasRole('EMR Front Office') || Auth::user()->hasRole('Super Admin')): ?><li class="nav-item"><a href="/emr/front_office" class="nav-link"><i class="mr-1 fas fa-laptop-house"></i><p> Front Office</p></a></li><?php endif; ?>
                 <?php if(Auth::user()->hasRole('EMR Laboratory') || Auth::user()->hasRole('Super Admin')): ?><li class="nav-item"><a href="/emr/laboratory" class="nav-link"><i class="mr-1 fas fa-flask"></i><p> Laboratory</p></a></li><?php endif; ?>

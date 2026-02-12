@@ -4,8 +4,11 @@
         <span class="brand-text font-weight-light text-white"><?php echo e(config('app.name_short')); ?></span>
     </a>
     <div class="sidebar mb-5">
-        <?php if($page_title == 'Approvals'): ?> <?php echo $__env->make('partials.lte.asides.approvals', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        <?php if($page_title == 'Admission'): ?> <?php echo $__env->make('partials.lte.asides.admission', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        <?php elseif($page_title == 'Anesthesist'): ?> <?php echo $__env->make('partials.lte.asides.anesthesia', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        <?php elseif($page_title == 'Approvals'): ?> <?php echo $__env->make('partials.lte.asides.approvals', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Archives'): ?> <?php echo $__env->make('partials.lte.asides.archives', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        <?php elseif($page_title == 'Billings'): ?> <?php echo $__env->make('partials.lte.asides.billings', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Chats'): ?> <?php echo $__env->make('partials.lte.asides.chat', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Consultation'): ?> <?php echo $__env->make('partials.lte.asides.consultation', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Cooperative'): ?> <?php echo $__env->make('partials.lte.asides.cooperative', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>

@@ -4,8 +4,8 @@
             <h3 class="card-title">Make Deposit</h3>
         </div>
         <form>
-        <div class="card-body">
-            {{ DepositData.transactions}}
+        <div class="card-body overlay-wrapper">
+            <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
             <div class="row" v-if="source != null && source == 'third_party'">
                 <div class="col-sm-12">
                     <div class="form-group">
@@ -51,6 +51,7 @@
     </section>
 </template>
 <script>
+import { truncate } from 'lodash';
 import { ModelListSelect } from 'vue-search-select';
 export default {
     components: {ModelListSelect},
@@ -74,6 +75,7 @@ export default {
                 patient_id:'', 
                 transactions:[],
             }),
+            loading: false,
             modes: [],
             trans_sum: 0,
             twin: [],
@@ -81,6 +83,7 @@ export default {
     },
     created() {
         this.getInitials();
+        /*
         Fire.$on('getPatient', patient_id => {
             this.DepositData.patient_id = patient_id;
         });
@@ -89,10 +92,10 @@ export default {
             alert(user.transactions.length);
             if (user.transactions != null && user.transactions.length != 0){
                 for (let i = 0; i < user.transactions.length; i++){
-                    /*var trans = {d: }
+                    var trans = {d: }
                     trans['amount']= user.transactions[i]['amount'];
                     trans['id']= user.transactions[i]['id'];
-                    this.DepositData.transactions.push(trans);*/
+                    this.DepositData.transactions.push(trans);
                     console.log(this.DepositData.transactions);
                 }
                 this.updateTransSum(this.DepositData.transactions);
@@ -102,16 +105,15 @@ export default {
             this.DepositData.transactions = transactions;
             this.updateTransSum(this.DepositData.transactions)
         });
+        */
     },
     methods:{
         createDepositData(){
-            console.log(this.DepositData);
-            this.$Progress.start();
+            this.loading = truncate
             this.DepositData.post('/api/finance/deposits')
             .then(response =>{
-                this.$Progress.finish();
-                Fire.$emit('Reload', response);
-                Swal.fire({
+                //Fire.$emit('Reload', response);
+                this.$swal.fire({
                     icon: 'success',
                     title: 'The Deposit details has been captured',
                     showConfirmButton: false,
@@ -119,8 +121,10 @@ export default {
                     });
                 })
             .catch(()=>{
-                Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
-                this.$Progress.fail();
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loadibg = false;
             });
                     
         },

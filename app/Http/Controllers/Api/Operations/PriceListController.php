@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\Operations;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\Operations\FileTrait;
 use App\Http\Traits\Operations\PriceListTrait;
-use App\Http\Traits\Operations\ServiceTypeTrait;
-use App\Imports\ImportPriceList;
+use App\Http\Traits\Operations\ServiceTrait;
+use App\Imports\Finance\PriceListImport;
 use App\Models\Operations\Branch;
 use App\Models\EMR\Service;
 use App\Models\Finance\PriceList;
@@ -14,13 +14,13 @@ use App\Models\Finance\PriceListItem;
 use App\Models\Insurance\Plan;
 use App\Models\Insurance\ProviderType;
 use App\Models\Inventory\Item;
-use Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Excel;
 
 class PriceListController extends Controller
 {
-    use FileTrait, PriceListTrait, ServiceTypeTrait;
+    use FileTrait, PriceListTrait, ServiceTrait;
     public function destroy($id)
     {
         return response()->json([
@@ -32,7 +32,7 @@ class PriceListController extends Controller
     public function import(Request $request, $id)
     {
         $upload = $this->file_upload_by_type($request['uploaded_file'], 'xlsx', 'upload/price_lists', $id);
-        $price_list_items = Excel::import(new ImportPriceList($id), $upload);
+        $price_list_items = Excel::import(new PricelistImport($id), $upload);
 
         /*return response()->json([
             'branches' => Branch::orderBy('name', 'ASC')->get(),
@@ -89,7 +89,7 @@ class PriceListController extends Controller
     {
         return response()->json([
             'categories' => [],
-            'services' => $this->operation_service_type_get_all(false, true, null),
+            'services' => $this->operation_service_type_get_all('all', null, false, true),
             'price_list' => $this->operation_price_list_get_price_list_by_id($id, true),
             'price_list_items' => $this->operation_price_list_item_get_by_price_list_id($id, null, true),
         ]);

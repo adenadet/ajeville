@@ -5,8 +5,12 @@ namespace App\Http\Traits\EMR;
 use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\General\FileManagerTrait;
 use App\Http\Traits\General\LogTrait;
+use App\Models\EMR\Radiology\InvestigationType;
 use App\Models\EMR\Radiology\Referral;
 use App\Models\EMR\Radiology\Request as RadiologyRequest;
+use App\Models\EMR\Radiology\Service;
+use App\Models\EMR\Service as EMRService;
+use App\Models\Inventory\Item;
 use App\Models\Procurement\Vendor;
 
 use Exception;
@@ -76,6 +80,88 @@ trait RadiologyTrait{
         $query = $paginated ? $query->paginate(20) : $query->get();
 
         return $query;
+    }
+    
+    public function emr_radiology_investigation_type_create($data){
+        DB::beginTransaction();
+
+        try{
+            $query = InvestigationType::create([
+                'name' => $data['name'],
+                'status' => $data['status'],
+            ]);
+
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_radiology_investigation_type_deactivate($id){
+        DB::beginTransaction();
+
+        try{
+            $query = InvestigationType::where('id', '=', $id)->withTrashed()->firstOrFail();
+
+            if (!is_null($query->deleted_at)){
+                $query->deleted_at = null;
+            }
+            else{
+                $query->deleted_at = date('Y-m-d H:i:s');
+            }
+            $query->save();
+
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_radiology_investigation_type_get_all($type, $specific, $detailed, $paginated){
+        $query = InvestigationType::query();
+        $query = $detailed ? $query : $query->select('id', 'name');
+        $query = $query->orderBy('name', 'ASC');
+        $query = $paginated ? $query->paginate(20) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_radiology_investigation_type_get_by($type, $id, $detailed){
+        try{
+            $query = InvestigationType::where('id', '=', $id);
+            $query = $detailed ? $query : $query->select('id', 'name');
+            
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_radiology_investigation_type_update($data, $id){
+        DB::beginTransaction();
+
+        try{
+            $query = InvestigationType::where('id', '=', $id)->firstOrFail();
+
+            $query->name = $data['name'] ?? $query->name;
+            $query->status = $data['status'] ?? $query->status;
+            $query->save();
+
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
     }
 
     public function emr_radiology_request_approve_result($data, $id){
@@ -247,5 +333,66 @@ trait RadiologyTrait{
     public function emr_radiology_request_report_result($data, $id){
         //this is links to the HL7 project
     }
+
+    public function emr_radiology_service_create($data){
+        DB::beginTransaction();
+
+        try{
+            $emr_service = EMRService::create([
+                'item_id'           => null,
+                'service_type_id'   => $data['type_id'] ?? 6,
+                'reference_id'      => null,
+                'description'       => $data['description'],
+                'status'            => EMRService::StatusActive ?? 1,
+                'created_by'        => Auth::id() ?? auth('api')->id(),
+                'updated_by'        => Auth::id() ?? auth('api')->id(),
+            ]);
+
+            $service = Service::create([
+                'service_id'        => $emr_service->id,
+                'type_id'           => $data['radiology_type_id'],
+                'location_id'       => $data['location_id'] ?? null,
+                'status'            => 1,
+                'created_by'        => Auth::id() ?? auth('api')->id(),
+                'updated_by'        => Auth::id() ?? auth('api')->id(),
+            ]);
+
+            $item = Item::create([
+                'name'                  => $data['name'],
+                'type_id'               => $data['type_id'] ?? 7,
+                'unique_id'             => $this->inventory_generate_unique_id('item'),
+                'service_id'            => $emr_service->id,
+                'last_landing_cost'     => $data['landing_cost'] ?? 0.00,
+                'average_landing_cost'  => $data['landing_cost'] ?? 0.00,
+                'description'           => $data['description'] ?? null,
+                'status'                => 1,
+                'created_by'            => Auth::id() ?? auth('api')->id(),
+                'updated_by'            => Auth::id() ?? auth('api')->id(),
+            ]);
+
+            $emr_service->reference_id = $service->id;
+            $emr_service->item_id = $item->id;
+
+            $emr_service->save();
+
+            $this->log_user_activity('EMR Laboratory Service Create', $service->id, true);
+            DB::commit();
+            return $emr_service;
+
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Service Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_radiology_service_deactivae($id){}
+
+    public function emr_radiology_service_get_all($type, $specific, $detailed, $paginated){}
+
+    public function emr_radiology_service_get_by($type, $id, $detailed){}
+
+    public function emr_radiology_service_update($data, $id){}
     
 }

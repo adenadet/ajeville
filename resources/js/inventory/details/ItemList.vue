@@ -31,7 +31,7 @@
         <tbody v-if="items.length != 0 && items != null">
             <tr v-for="item in items" :key="item.id">
                 <td :title="item.name">{{ readMore(item.name, 50, '...') }}</td>
-                <td>{{ item.classification != null ? item.classification.name : 'Not Assigned' }}</td>
+                <td>{{ item.item_type != null ? item.item_type.name : 'Not Assigned' }}</td>
                 <td>{{ item.category != null ? item.category.name : 'Not Assigned' }}</td>
                 <td>{{ item.brand != null ? item.brand.name : 'Unbranded' }}</td>
                 <td>{{ currency(item.last_landing_cost) }}</td>
@@ -40,9 +40,9 @@
                 <td>
                     <button type="button" class="btn btn-tool text-dark" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-v"></i></button>
                     <div class="dropdown-menu">
-                        <button class="btn btn-block dropdown-item" @click="editItem(item)"><i class="fa fa-edit mr-1"></i> Edit Item</button>
-                        <router-link class="btn btn-block dropdown-item" :to="'./items/'+item.id"><i class="fa fa-boxes mr-1"></i> View</router-link>
-                        <button class="btn btn-block dropdown-item" @click="deactivateItem(item)"><i class="fa fa-circle-notch mr-1 text-danger"></i> Deactivate Item</button>
+                        <router-link class="btn btn-block dropdown-item" :to="'./items/'+item.id"><i class="fa fa-eye mr-1"></i> View</router-link>
+                        <button class="btn btn-block dropdown-item" @click="editItem(item)"><i class="fa fa-edit mr-1 text-primary"></i> Edit Item</button>
+                        <button class="btn btn-block dropdown-item" @click="deactivateItem(item)"><i class="fa fa-recycle mr-1 text-danger"></i> Deactivate Item</button>
                     </div>
                 </td>
             </tr>

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\LaboratoryTrait;
 use Illuminate\Http\Request;
 
-use App\Models\EMR\LaboratoryRequest;
+use App\Models\EMR\Laboratory\Request as LaboratoryRequest;
 use App\Models\EMR\Visit;
 use App\Models\Finance\Transaction;
 use App\Models\Inventory\Item;
@@ -49,8 +49,10 @@ class RequestController extends Controller
     
     public function index()
     {
+        $requests = $this->emr_laboratory_service_get_all($_GET['status'] ?? null, $_GET, true, true);
+        
         return response()->json([
-            'requests' => $this->laboratory_pending_requests(),
+            'requests' => $requests,
         ]);
     }
 
@@ -63,12 +65,10 @@ class RequestController extends Controller
 
     public function insurance()
     {
-        $active_request = LaboratoryRequest::where('status', '=', 0)->pluck('transaction_id');
-        // Get Insurable Transactions that are not in the active request list and have no related Lab Request yet
-        $transactions = Transaction::whereIn('id', $active_request)->whereIn('paid_by', [1, 3])->pluck('id');
+        $requests = $this->emr_laboratory_service_get_all('insurance', $_GET, true, true);
         
         return response()->json([
-            'requests' => LaboratoryRequest::whereIn('transaction_id', $transactions)->with(['patient.user', 'branch', 'creator', 'item', 'reporter', 'secondary_reporter', 'approver', 'collector'])->latest()->paginate(30),
+            'requests' => $requests,
         ]);
     }
 

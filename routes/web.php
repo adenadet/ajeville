@@ -85,8 +85,10 @@ Route::group(['namespace' => 'App\Http\Controllers', 'middleware' => ['auth','ro
 
 Route::group(['middleware' => ['auth', 'role:Staff'],'namespace' => 'App\Http\Controllers', 'name' => 'emr.', 'prefix' => '/emr'],function(){
     Route::get('/administrator',                            'ModulesController@administrator')->name('administrator');
-    Route::get('/consultations',                            'ModulesController@consultation')->name('consultation');
+    Route::get('/admission',                                'ModulesController@admission')->name('admission');
+    Route::get('/anesthesist',                              'ModulesController@anesthesist')->name('anesthesist');
     Route::get('/billings',                                 'ModulesController@billings')->name('billings');
+    Route::get('/consultations',                            'ModulesController@consultation')->name('consultation');
     Route::get('/front_office',                             'ModulesController@front_office')->name('front_office');
     Route::get('/laboratory',                               'ModulesController@laboratory')->name('laboratory');
     Route::get('/insurance',                                'ModulesController@insurance')->name('insurance');
@@ -95,7 +97,10 @@ Route::group(['middleware' => ['auth', 'role:Staff'],'namespace' => 'App\Http\Co
     Route::get('/physiotheraphy',                           'ModulesController@physiotheraphy')->name('physiotheraphy');
     Route::get('/radiology',                                'ModulesController@radiology')->name('radiology');
     
+    Route::get('/admission/{any}',                          'ModulesController@admission')->where('any', '.*');
     Route::get('/administrator/{any}',                      'ModulesController@administrator')->where('any', '.*');
+    Route::get('/anesthesist/{any}',                        'ModulesController@anesthesist')->where('any', '.*');
+    Route::get('/billings/{any}',                           'ModulesController@billings')->where('any', '.*');
     Route::get('/consultations/{any}',                      'ModulesController@consultation')->where('any', '.*');
     Route::get('/front_office/{any}',                       'ModulesController@front_office')->where('any', '.*');
     Route::get('/insurance/{any}',                          'ModulesController@insurance')->where('any', '.*');

@@ -84,6 +84,7 @@ const store = createStore({
         },
 
         async hydrateVisitContext({ commit }) {
+            console.log("Working");
             const [patientRes, visitRes] = await Promise.all([
                 axios.get('/api/emr/hims/patients/get_cookie'),
                 axios.get('/api/emr/hims/visits/get_cookie'),

@@ -173,22 +173,24 @@
 
             <div class="table-responsive">
                 <table class="table">
-                    <tr>
-                        <td style="width:50%">Subtotal:</td>
-                        <td>$250.30</td>
-                    </tr>
-                    <tr>
-                        <td>Tax (9.3%)</td>
-                        <td>$10.34</td>
-                    </tr>
-                    <tr>
-                        <td>Shipping:</td>
-                        <td>$5.80</td>
-                    </tr>
-                    <tr>
-                        <td>Total:</td>
-                        <td>$265.24</td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <td style="width:50%">Subtotal:</td>
+                            <td>$250.30</td>
+                        </tr>
+                        <tr>
+                            <td>Tax (9.3%)</td>
+                            <td>$10.34</td>
+                        </tr>
+                        <tr>
+                            <td>Shipping:</td>
+                            <td>$5.80</td>
+                        </tr>
+                        <tr>
+                            <td>Total:</td>
+                            <td>$265.24</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>

@@ -89,8 +89,7 @@ class VisitationController extends Controller
         $date = date('Y-m-d');
         //$branch_id = request()->cookie('current_branch');
         return response()->json([
-            'visits' => $this->visit_get_all('all', request()->cookie('current_branch'), null, true, true, $_GET['page'] ?? 1),
-            'visit_types' => $this->visit_types_get_all('queuable', null, false, false, null),
+            'visits' => $this->emr_visit_get_all('active', $_GET, true, true),
         ]);
     }
 
@@ -119,7 +118,7 @@ class VisitationController extends Controller
     {
         $visit = $request->input('visit');
         $cookie = cookie('current_visit', $visit['id'], 3600);
-        return response('Cookie has been set')->cookie($cookie);
+        return response('Cookie has been set'.$visit['id'])->cookie($cookie);
     }
 
     public function start(Request $request, $id)

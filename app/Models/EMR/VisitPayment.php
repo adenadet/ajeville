@@ -10,6 +10,7 @@ class VisitPayment extends Structure
 {
     use HasFactory;
 
+    const StatusConfirmed = 10;
     const StatusReceived    = 1;
     const StatusReversed    = 400;
     const StatusTransferred = 1000;

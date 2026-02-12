@@ -29,7 +29,7 @@ class Patient extends Structure
 	}
     
 	public function transactions(){
-    	return $this->hasMany('App\Models\Finance\Transaction', 'patient_id', 'id');
+    	return $this->hasMany('App\Models\EMR\VisitTransaction', 'patient_id', 'id');
 	}
     
     public function user(){

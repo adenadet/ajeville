@@ -8,7 +8,7 @@
                         <button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <PatientFormRegistration :editMode="editMode" :nations="nations" :patient="patient" /> 
+                        <EMRPatientFormRegistration :editMode="editMode" :nations="nations" :patient="patient" /> 
                     </div>
                 </div>
             </div>
@@ -20,7 +20,7 @@
                 <model-list-select class="form-control" :list="patients" v-model="patient_id" option-value="unique_id" :custom-text="codeAndNameAndDesc" placeholder="Select Applicant" />
                 <div class="input-group-append">
                     <button class="btn btn-sm bg-dark" @click="getPatient" type="button"><i class="fa fa-search mr-1"></i></button>
-                    <button class="btn btn-sm bg-primary" @click="newPatient" type="button"><i class="fa fa-user-plus mr-1"></i></button>
+                    <button v-if="no_show" class="btn btn-sm bg-primary" @click="newPatient" type="button"><i class="fa fa-user-plus mr-1"></i></button>
                 </div>
             </div>
         </div>
@@ -40,9 +40,7 @@ export default {
             patient_id: '',
         }
     },
-    mounted() {
-        this.getInitials();
-    },
+    emits:['getPatient'],
     methods: {
         closeModal(){
             $('#patientModal').modal('hide');
@@ -63,18 +61,18 @@ export default {
             axios.get('/api/emr/hims/patients/'+this.patient_id)
             .then(response => {
                 this.$store.dispatch('setPatient', response.data.patient);
+                this.$emit('getPatient', response);
             })
             .catch(() => {
                 this.loading = false;
                 toast.fire({icon: 'error', title: 'Your appointments did not loaded successfully',})
             });
-            Fire.$emit('getPatient', this.patient_id);
+            this.$emit('getPatient', this.patient_id);
             this.loading = false;
         },
         newPatient(){
             this.loading = true;
             this.editMode = false;
-            //Fire.$emit('ApplicantDataFill', {});
             this.patient = {};
             $('#patientModal').modal('show');
             this.loading = false;
@@ -83,7 +81,11 @@ export default {
             this.patients = response.data.patients;
         }
     },
+    mounted() {
+        this.getInitials();
+    },
     props: {
+        no_add: Boolean,
         source: String,
         showLabel: Boolean,
     },

@@ -8,7 +8,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <HimsFormPatientService :patient="patient" :visit="visit"/>
+                        <EMRFrontOfficeFormPatientService :patient="patient" :visit="visit"/>
                     </div>
                 </div>
             </div>
@@ -21,7 +21,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <FinanceDetailPatientTransaction :patient="patient"/>
+                        <EMRFinanceDetailPatientTransaction :patient="patient"/>
                     </div>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <FinanceFormDeposit :editMode="editMode"/>
+                        <EMRFinanceFormDeposit :editMode="editMode"/>
                     </div>
                 </div>
             </div>
@@ -66,8 +66,8 @@
                 </thead>
                 <tbody v-if="!(loading) && transactions != null && transactions.length != 0">
                     <tr v-for="(transaction, index) in transactions" :key="transaction.id" :class="transaction.status == 0 ? 'text-danger' : ''">
-                        <td>{{ index | addOne }}</td>
-                        <td>{{ transaction.date }}</td>
+                        <td>{{ addOne(index)  }}</td>
+                        <td>{{ ExcelDate(transaction.date) }}</td>
                         <td>{{ transaction.service_type.name}}</td>
                         <td>{{ transaction.item_name }}</td>
                         <td>{{ transaction.item_total }}</td>
@@ -118,14 +118,20 @@ export default {
             return visit;
         },
         transactions(){
-            if(this.source == 'visit'){return  this.visit.transactions;}
-            else{return this.patient.transactions;}
+            if(this.source == 'visit'){
+                return  this.visit?.transactions || [];
+            }
+            else{
+                return this.patient?.transactions || [];
+            }
         },
     },
     data() {
         return {
+            current_page: 1,
             editMode: false,
             form: new Form({}),
+            loading: false,
             patient_id: '',
         }
     },
@@ -167,33 +173,34 @@ export default {
             $('#serviceModal').modal('hide');  
             $('#transactionModal').modal('hide');  
         },
-        getInitials(page=1) {
-            axios.get('/api/finance/transactions/patients/'+this.patient.id+'/all?page='+page).then(response => {
+        getInitials() {
+            this.loading = true;
+            axios.get('/api/finance/transactions/patients/'+this.patient.id+'/all?page='+this.current_page).then(response => {
                 this.refreshPage(response);
             })
             .catch(() => {
-                this.$Progress.fail();
-                toast.fire({
+                this.$toast.fire({
                     icon: 'error',
                     title: 'Your Transactions did not loaded successfully',
                 })
+            })
+            .finally(()=>{
+                this.loading = false;
             });
         },
         makePayment(transaction){
-            this.$Progress.start();
             this.editMode = false;
             var transactions = []; 
             var trans = {id: transaction.id, amount:transaction.item_total};
             transactions.push(trans);
-            Fire.$emit('DepositDataFill', {patient_id: this.patient.id, transactions: transactions, amount: '', mode_id: '', bank_id: '',});
+            //Fire.$emit('DepositDataFill', {patient_id: this.patient.id, transactions: transactions, amount: '', mode_id: '', bank_id: '',});
             $('#paymentModal').modal('show');
-            this.$Progress.finish();
         },
         refreshPage(response) {
             this.transactions = response.data.transactions;
         },
         viaWallet(transaction){
-            Swal.fire({
+            this.$swal.fire({
                 title: 'Are you sure?',
                 text: "The patient's wallet would be debited for this transaction",
                 icon: 'warning',

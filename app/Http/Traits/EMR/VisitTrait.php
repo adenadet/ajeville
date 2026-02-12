@@ -22,10 +22,11 @@ use App\Models\Operations\Branch;
 use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Patient\Insurance;
 use App\Models\EMR\Visit;
+use App\Models\EMR\VisitTransaction;
 use App\Models\Inventory\Item;
 use App\Models\Operations\BranchPlanPriceList;
 use App\Models\Procurement\Vendor;
-
+use App\Models\User;
 use Exception;
 
 use Illuminate\Support\Facades\Auth;
@@ -59,28 +60,22 @@ trait VisitTrait{
 
         try {
 
-            /** ------------------------------
-             * 1. Load appointment
-             * ------------------------------ */
             $appointment = Appointment::where('id', '=', $id)->orWhere('unique_id','=', $id)->firstOrFail();
 
-            if ($appointment->visit_id) {throw new Exception('This appointment already has a visit.');}
+            if ($appointment->visit_id) {
+                throw new Exception('This appointment already has a visit.');
+            }
 
-            /** ------------------------------
-             * 2. Load patient
-             * ------------------------------ */
             $patient = Patient::findOrFail($appointment->patient_id);
 
-            /** ------------------------------
-             * 3. Ensure no active visit
-             * ------------------------------ */
             $activeVisitExists = Visit::where('patient_id', '=', $patient->id)->whereIn('status', [Visit::StatusOpen, Visit::StatusOngoing])->exists();
 
-            if ($activeVisitExists) {throw new Exception('Patient already has an active visit.');}
+            if ($activeVisitExists) {
+                throw new Exception('Patient already has an active visit.');
+            }
 
-            /** ------------------------------
-             * 4. Handle unregistered patient
-             * ------------------------------ */
+            // * 4. Handle unregistered patient
+
             $wasUnregistered = false;
 
             if ($patient->type == 2) {
@@ -107,17 +102,14 @@ trait VisitTrait{
 
             $appointment->update([
                 'visit_id'       => $visit->id,
+                'status'        => Appointment::StatusCheckedIn,
             ]);
 
             if ($wasUnregistered) {
                 $registrationServiceId = config('emr.registration_service_id');
-
                 $this->emr_visit_transaction_create($registrationServiceId, $patient->id, 1, true, $visit->id);
             }
 
-            /** ------------------------------
-             * 8. Consultation billing
-             * ------------------------------ */
             if ($appointment->service_type_id == 4) { // Consultation
                     $item_id = ConsultationService::resolveItemId($appointment->specialty_id,$appointment->consultant_id);
 
@@ -178,6 +170,7 @@ trait VisitTrait{
             return $e->getMessage();
         }
     }
+
 
     public function emr_appointment_get_all($type, $specific, $detailed, $paginated, $page){
         $query = Appointment::where('branch_id', '=', request()->cookie('current_branch'));
@@ -347,7 +340,57 @@ trait VisitTrait{
         }
     }
 
-    public function emr_visit_end($id){
+     public function emr_visit_end(int $id, bool $cancel = true){
+        return DB::transaction(function () use ($id, $cancel) {
+
+            $visit = Visit::lockForUpdate()->findOrFail($id);
+
+            $invalidTransactions = VisitTransaction::where('visit_id', $id)
+                ->where('status', VisitTransaction::StatusCompleted)
+                ->get()
+                ->filter(function ($transaction) {
+                    return (float) $transaction->outstanding_amount > 0;
+                });
+
+            if ($invalidTransactions->isNotEmpty()) {
+                return 'One or more completed transactions still have outstanding balances.';
+            }
+
+            $pendingTransactions = VisitTransaction::where('visit_id', $id)->where('status', VisitTransaction::StatusPending)->get();
+
+            if ($pendingTransactions->isNotEmpty()) {
+                $pendingTransactions->each(function ($transaction) use ($cancel) {
+                    $transaction->status = $cancel
+                        ? VisitTransaction::StatusCancelled
+                        : VisitTransaction::StatusDeferred;
+
+                    $transaction->save();
+                });
+            }
+
+            /*
+             |------------------------------------------------------------
+             | 3. Complete visit & appointments only if no pending txns
+             |------------------------------------------------------------
+             */
+            if ($pendingTransactions->isEmpty()) {
+
+                $visit->status = Visit::StatusClosed;
+                $visit->ended_at = now();
+                $visit->save();
+
+                Appointment::where('visit_id', $id)
+                    ->where('status', '!=', Appointment::StatusCompleted)
+                    ->update([
+                        'status' => Appointment::StatusCompleted,
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            return true;
+        });
+    }
+    public function emr_visit_end_old($id){
         DB::beginTransaction();
 
         try{
@@ -375,7 +418,7 @@ trait VisitTrait{
         }
     }
 
-    public function emr_visit_get_all($type, $specific, $detailed, $paginated, $page){
+    public function emr_visit_get_all($type, $specific, $detailed, $paginated){
         $query = Visit::where('branch_id', '=', request()->cookie('current_branch'));
     
         switch ($type){
@@ -388,6 +431,15 @@ trait VisitTrait{
             case 'finished':
                 $query = $query->where('status', '=', 2);
             break;
+        }
+
+        if(is_array($specific)){
+            if(!empty($specific['query'])){
+                $search = $specific['query'];
+                $users = User::where('first_name', 'like', "%$search%")->orWhere('last_name', 'like', "%$search%")->orWhere('middle_name', 'like', "%$search%")->pluck('id');
+                $patients = Patient::whereIn('user_id', $users)->oeWhere('unique_id', 'like', "%$search%")->pluck('id');
+                $query->whereIn('patient_id', $patients);
+            }
         }
 
         $query = $detailed ? $query->with(['patient.user', 'branch']) : $query->select('id', 'unique_id', 'patient_id')->with(['patient.user']);

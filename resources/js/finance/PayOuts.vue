@@ -31,7 +31,6 @@
                         <option value="pending">Pending</option>
                         <option value="unpaid">Unpaid</option>
                     </select>
-                    <button type="button" class="btn btn-primary ml-1" @click="addExpense"><i class="fas fa-plus"></i></button>
                     <button type="button" class="btn btn-success ml-1" @click="downloadExpense"><i class="fas fa-download"></i></button>
                 </div>
             </div>
@@ -60,13 +59,6 @@ export default {
         this.getAllInitials();
     },
     methods: {
-        addPayOut(){
-            this.loading = true;
-            this.editMode = false;
-            this.expense = {};
-            $('#payOutModal').modal('show');
-            this.loading = false;
-        },
         closeModals(){
             $('#payOutModal').modal('hide');
         },
