@@ -9,7 +9,6 @@ const store = createStore({
         patient: null,
         visit: null,
     },
-
     getters: {
         branch_modules: state => state.branch?.modules || [],
 
@@ -20,34 +19,13 @@ const store = createStore({
         hasRole: state => role => state.roles.includes(role),
         hasAnyRole: state => roles => roles.some(r => state.roles.includes(r)),
     },
-
     mutations: {
-        clearUser(state) {
-            state.user = null;
-            state.roles = [];
-        },
-
-        setUser(state, user) {
-            state.user = user;
-            state.roles = user?.roles || [];
-        },
-
-        updateBranch(state, branch) {
-            state.branch = branch;
-        },
-
-        updatePatient(state, patient) {
-            state.patient = patient;
-        },
-
-        updateVisit(state, visit) {
-            state.visit = visit;
-        },
-
-        clearVisitContext(state) {
-            state.patient = null;
-            state.visit = null;
-        },
+        clearUser(state) {state.user = null; state.roles = [];},
+        setUser(state, user) {state.user = user; state.roles = user?.roles || [];},
+        updateBranch(state, branch) {state.branch = branch;},
+        updatePatient(state, patient) {state.patient = patient;},
+        updateVisit(state, visit) {state.visit = visit;},
+        clearVisitContext(state) {state.patient = null; state.visit = null;},
     },
 
     actions: {

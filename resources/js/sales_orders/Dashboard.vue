@@ -148,8 +148,12 @@
 </template>
 <script>
 import VueApexCharts from "vue3-apexcharts";
+import SalesDetailDeliveryNoteList from '@/sales_orders/details/DeliveryNoteList.vue';
+import SalesDetailOrderList from '@/sales_orders/details/OrderList.vue';
+import SalesFormDeliveryNote from '@/sales_orders/forms/DeliveryNote.vue';
 export default {
     components: {
+        SalesDetailDeliveryNoteList, SalesDetailOrderList, SalesFormDeliveryNote, 
         apexchart: VueApexCharts,
     },
     data(){

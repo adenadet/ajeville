@@ -1,6 +1,5 @@
 <?php
-
-namespace App\Http\Controllers\Api\Finance;
+namespace App\Http\Controllers\Api\EMR\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\VisitTransactionTrait;
@@ -33,15 +32,6 @@ class PaymentController extends Controller
         ], is_string($deposits) ? 500 : 200);
     }
 
-    public function store(Request $request)
-    {
-        $deposit = $this->emr_visit_payment_create($request);
-    
-        return response()->json([
-            'deposit' => $deposit,
-        ], is_string($deposit) ? 500 : 201);
-    }
-
     public function show($id)
     {
         $deposit = $this->emr_visit_payment_get_by(null, $id, true);
@@ -49,6 +39,15 @@ class PaymentController extends Controller
         return response()->json([
             'deposit' => $deposit,
         ], is_string($deposit) ? 404 : 200);
+    }
+
+    public function store(Request $request)
+    {
+        $deposit = $this->emr_visit_payment_create($request);
+    
+        return response()->json([
+            'deposit' => $deposit,
+        ], is_string($deposit) ? 500 : 201);
     }
 
     public function update(Request $request, $id)
@@ -59,5 +58,4 @@ class PaymentController extends Controller
             'deposit' => $deposit,
         ], is_string($deposit) ? 404 : 200);
     }
-
 }

@@ -8,7 +8,10 @@ use App\Http\Traits\UMS\UserTrait;
 use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Patient\Contact as PatientContact;
 use App\Models\EMR\Patient\Insurance as PatientInsurance;
+use App\Models\EMR\Patient\Ledger as PatientLedger;
 use App\Models\EMR\Visit;
+use App\Models\EMR\VisitPaymentAllocation;
+use App\Models\EMR\VisitTransaction;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +25,7 @@ trait PatientTrait{
     Patient Basics
     ---------------------------------------------------------------------------------------------------
     */
+    
     public function emr_patient_create($data){
         DB::beginTransaction();
         try{

@@ -32,7 +32,12 @@
 </section>
 </template>
 <script>
+import SalesDetailReturn from '@/sales_orders/details/Return.vue';
+import SalesFormReturn from '@/sales_orders/forms/Return.vue';
 export default {
+    components: {
+        SalesDetailReturn, SalesFormReturn 
+    },
     data() {
         return {
             editMode: false,

@@ -6,20 +6,24 @@
                     <div class="card-header">
                         <h3 class="card-title">Laboratory Queue</h3>
                         <div class="card-tools">
-                            <div class="input-group" style="width: 650px;">
+                            <div class="input-group" style="width: 750px;">
                                 <input type="text" name="query" v-model="query" class="form-control float-right" placeholder="Search">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-default mr-1"><i class="fas fa-search"></i></button>
-                                    <select class="form-control mr-1" name="status" id="status" v-model="status">
-                                        <option value="unpaid">Unpaid</option>
-                                        <option value="uncollected">Uncollected</option>
-                                        <option value="awaiting">Awaiting Results</option>
-                                        <option value="reffered_out">Reffered Out</option>
-                                        <option value="reffered_in">Reffered In</option>
-                                        <option value="completed">Completed</option>
+                                    <select class="form-control mr-1" name="type" id="type" v-model="status">
+                                        <option value="">--Select Status--</option>
+                                        <option value="0">Unpaid</option>
+                                        <option value="1">Uncollected</option>
+                                        <option value="2">Awaiting Results</option>
+                                        <option value="5">Reffered Out</option>
+                                        <option value="10">Reported</option>
+                                        <option value="15">Awaiting Secondary Report</option>
+                                        <option value="15">Secondary Reported</option>
+                                        <option value="20">Confirmed</option>
+                                        <option value="100">Cancelled</option>
                                     </select>
-                                    <input type="date" class="form-control mr-1" v-model="start_date" /> -
-                                    <input type="date" class="form-control" v-model="end_date" />
+                                    <input type="date" class="form-control mr-1" v-model="start_date" />
+                                    <input type="date" class="form-control mr-1" v-model="end_date" />
                                 </div>
                             </div>
                         </div>
@@ -38,7 +42,9 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryDetailRequestList from '@/emr/laboratory/details/RequestList.vue'
 export default {
+    components:{EMRLaboratoryDetailRequestList},
     data() {
         return {
             current_page: 1,
@@ -49,7 +55,8 @@ export default {
             request: {},
             requests: {data: [],total: 0,},
             start_date: '',
-            status: "uncollected",
+            status: '',
+            type: '',
         }
     },
     mounted() {
@@ -57,7 +64,7 @@ export default {
     },
     methods: {
         getInitials() {
-            axios.get('/api/emr/laboratory/requests?page='+this.current_page)
+            axios.get('/api/emr/laboratory/requests?end_date='+this.end_date+'&page='+this.current_page+'&query='+this.query+'&start_date='+this.start_date+'&type='+this.type)
             .then(response => {
                 this.refreshQueue(response)
             })

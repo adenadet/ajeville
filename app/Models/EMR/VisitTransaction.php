@@ -21,15 +21,22 @@ class VisitTransaction extends Structure
     const PaidByCoPayment = 3;
     
     const StatusPending     = 1;
+    const StatusPaid = 10;
     const StatusCompleted   = 100;
     const StatusDeferred   = 50;
     const StatusCancelled   = 400;
-    const StatusTransferred = 1000;
-
-    
+    const StatusTransferred = 1000;    
 	
     public function coverage(){
     	return $this->hasOne('App\Models\EMR\VisitTransactionCoverage', 'visit_transaction_id', 'id');
+	}
+
+    public function creator(){
+    	return $this->belongsTo('App\Models\User', 'created_by', 'id');
+	}
+
+    public function deleter(){
+    	return $this->belongsTo('App\Models\User', 'deleted_by', 'id');
 	}
 
     public function item(){
@@ -40,6 +47,10 @@ class VisitTransaction extends Structure
     	return $this->belongsTo('App\Models\EMR\Patient\Patient', 'patient_id', 'id');
 	}
 
+    public function paymentAllocations(){
+        return $this->hasMany('App\Models\EMR\VisitPaymentAllocation', 'visit_transaction_id', 'id');
+    }
+
     public function performer(){
     	return $this->belongsTo('App\Models\User', 'performed_by', 'id');
 	}
@@ -48,6 +59,10 @@ class VisitTransaction extends Structure
     {
         return $this->morphTo();
     }
+
+    public function updater(){
+    	return $this->belongsTo('App\Models\User', 'updated_by', 'id');
+	}
 
     public function visit(){
     	return $this->belongsTo('App\Models\EMR\Visit', 'visit_id', 'id');
@@ -60,7 +75,7 @@ class VisitTransaction extends Structure
 
     public function scopeCompleted($query)
     {
-        return $query->where('status', self::StatusCompleted);
+        return $query->where('status', '=', self::StatusCompleted);
     }
 
     public function getPatientPaidAttribute()

@@ -35,7 +35,10 @@
 </section>
 </template>
 <script>
+import EMRLaboratoryDetailReferenceRangeList from '@/emr/laboratory/details/ReferenceRangeList.vue';
+import EMRLaboratoryFormAnalyte from '@/emr/laboratory/forms/Analyte.vue';
 export default {
+    components:{EMRLaboratoryDetailReferenceRangeList, EMRLaboratoryFormAnalyte},
     data() {
         return {
             analyte: {},

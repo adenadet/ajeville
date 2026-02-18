@@ -1,38 +1,63 @@
 <template>
-    <section>
-        <table class="table table-head-fixed text-nowrap table-stripped table-hover" :id="actionable == 'yes' ? 'example1' : ''">
+    <section class="overlay-wrapper p-0">
+        <table class="table table-striped table-hover text-nowrap">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th></th>
                     <th>Date</th>
-                    <th>Patient</th>
-                    <th>Category</th>
-                    <th>Item</th>
-                    <th>Status</th>
-                    <th v-if="source == 'laboratory'"></th>
+                    <th>Service Name</th>
+                    <th>Amount</th>
+                    <th>Payment Status</th>
+                    <th>Completion Status</th>
+                    <th></th>
                 </tr>
             </thead>
-            <tbody>
-                <tr v-for="(request, index) in requests" :key="index">
-                    <td>{{ addOne(index) }}</td>
-                    <td>{{ request.date }}</td>
-                    <td v-if="request.patient != null">{{ patientName(request.patient) }}</td>
-                    <td v-else>{{request.patient_id}}</td>
-                    <td>{{ (request.item != null && request.item.category != null) ? request.item.category.name : 'No Category Yet' }}</td>
-                    <td>{{ request.item != null ? request.item.name : '' }}</td>
-                    <td>{{ request.status == 0 ? 'Unpaid' : 'Cleared' }}</td>
-                    <td v-if="source == 'laboratory'">
+            <tbody v-if="!(loading) && requests != null && requests.data.length != 0">
+                <tr v-for="(request, index) in requests.data" :key="request.id" :class="request.status == 0 ? 'text-danger' : ''">
+                    <td>{{ addOne(index)  }}</td>
+                    <td>{{ ExcelDate(request.date) }}</td>
+                    <td>{{ request.item_name }}</td>
+                    <td>{{ request.item_total }}</td>
+                    <td>
+                        <span v-if="request.status == 400" class="badge badge-danger">Cancelled</span>
+                        <span v-else-if="request.status == 100" class="badge badge-success">Paid</span>
+                        <span v-else-if="request.status == 1" class="badge badge-dark">Unpaid</span>
+                    </td>
+                    <td>
+                        <span v-if="request.status == 400" class="badge badge-danger">Cancelled</span>
+                        <span v-else-if="request.status == 1000" class="badge badge-info">Transferred</span>
+                        <span v-else-if="request.service_status == 1" class="badge badge-success">Done</span>
+                        <span v-else class="badge badge-warning">Pending</span>
+                    </td>
+                    <td>
                         <span class="nav-link" data-toggle="dropdown" href="#">
                             <i class="fa fa-ellipsis-v"></i>
                         </span>
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                            <router-link :to="'/laboratory/requests/'+request.id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Request</router-link>
-                            <button v-if="request.status == 0 && (request.transaction == null || request.transaction.paid_by == 1)" class="btn btn-block dropdown-item" @click="pay_from_wallet(request.transaction.id)"><i class="fas fa-cash-register mr-2"></i> Pay from Wallet</button>
+                            <button class="btn btn-block dropdown-item" @click="viewTransaction(request)"><i class="fas fa-eye mr-2"></i> View Transaction</button>
+                            <button class="btn btn-block dropdown-item" v-if="request.status == 1 && (request.paid_by == 1 || request.paid_by == 3)" @click="viaWallet(request)"><i class="fas fa-wallet mr-2"></i> Pay via Wallet</button>
+                            <button class="btn btn-block dropdown-item" v-if="request.service_status == 0" @click="cancelTransaction(request)"><i class="fas fa-times mr-2"></i> Cancel</button>
                         </div>
                     </td>
                 </tr>
             </tbody>
-        </table>
+            <tbody v-else-if="loading">
+                <tr>
+                    <td colspan="8">
+                        <div class="card">
+                            <div class="overlay-wrapper">
+                                <div class="overlay dark"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody v-else>
+                <tr>
+                    <td colspan="8">No Transaction Created</td>
+                </tr>
+            </tbody>
+        </table>    
     </section>
 </template>
 <script>
@@ -46,8 +71,41 @@ export default {
         
     },
     methods: {
+        viaWallet(transaction){
+            var force = 0;
+            this.$swal.fire({
+                title: 'Are you sure?',
+                text: "The patient's wallet would be debited for this transaction",
+                icon: 'warning',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: "Pay Wallet",
+                denyButtonText: "Force Debit",
+                confirmButtonColor: '#3035d6',
+                cancelButtonColor: '#d33',
+                denyButtonColor: '#0D0',
+                confirmButtonText: 'Yes, proceed!'
+            }) 
+            .then((result) => {
+                if((result.isConfirmed) || (result.isDenied)){
+                    force = result.isDenied ? 1 : 0;
+                    this.form.get('/api/emr/finance/transactions/'+transaction.id+'/payment?forced='+force)
+                    .then(response=>{
+                        this.$swal.fire('Paid', 'Transaction paid', 'success');
+                        this.$emit('refreshTransactionList');
+                    })
+                    .catch(error => {
+                        let message = 'Payment failed.';
+                        if (error.response && error.response.data) {
+                            message = error.response.data.transaction || error.response.data.message || message;
+                        }
+                        this.$swal.fire({ icon: 'error', title: 'Payment Failed', text: message});
+                    });
+                }
+            });
+        },
         pay_from_wallet(id){
-            Swal.fire({
+            this.$swal.fire({
                 title: 'Are you sure?',
                 text: "Debit patient's wallet for transaction!",
                 icon: 'warning',
@@ -55,7 +113,7 @@ export default {
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
-                })
+            })
             .then((result) => {
                 //Send Delete request
                 if(result.value){

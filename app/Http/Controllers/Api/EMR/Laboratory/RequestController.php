@@ -49,7 +49,7 @@ class RequestController extends Controller
     
     public function index()
     {
-        $requests = $this->emr_laboratory_service_get_all($_GET['status'] ?? null, $_GET, true, true);
+        $requests = $this->emr_laboratory_request_get_all($_GET['type'] ?? null, $_GET, true, true);
         
         return response()->json([
             'requests' => $requests,

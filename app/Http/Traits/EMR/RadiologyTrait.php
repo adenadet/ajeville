@@ -10,9 +10,10 @@ use App\Models\EMR\Radiology\Referral;
 use App\Models\EMR\Radiology\Request as RadiologyRequest;
 use App\Models\EMR\Radiology\Service;
 use App\Models\EMR\Service as EMRService;
+use App\Models\EMR\VisitTransaction;
 use App\Models\Inventory\Item;
 use App\Models\Procurement\Vendor;
-
+use App\Services\EMR\RadiologyRequestService;
 use Exception;
 
 use Illuminate\Support\Facades\Auth;
@@ -164,6 +165,11 @@ trait RadiologyTrait{
         }
     }
 
+    /*
+    ---------------------------------------------------------------
+    Approve Radiology Test Results
+    ---------------------------------------------------------------
+    */
     public function emr_radiology_request_approve_result($data, $id){
         DB::beginTransaction();
 
@@ -187,39 +193,35 @@ trait RadiologyTrait{
             return $e->getMessage();
         }
     }
-    public function emr_radiology_request_create($patient_id, $item_id, $visit_id=null, $consultation_id = null, $date = null, $special = 0){
-        DB::beginTransaction();
-        
-        try{ 
-            $transaction = $this->emr_visit_transaction_create($item_id, $patient_id, 1, false, $visit_id);
-            if(is_string($transaction)){
-                $this->log_user_activity('EMR Laboratory Request Create', true, null);
-                return $transaction." Can not create transaction"; 
-            }   
-            $query = RadiologyRequest::create([
-                'date' => $date,
-                'visit_id' => $visit_id,
-                'branch_id' => $visit_id ?? request()->cookie('current_branch'),
-                'consultation_id' => $consultation_id,
-                'request_type_id' => $data['request_type_id'] ?? null,
-                'patient_id' => $patient_id,
-                'transaction_id' => $transaction->id,
-                'quantity' => 1,
-                'item_id' => $item_id,
-                'status' => RadiologyRequest::StatusBooked,
-                'special' => $special,
-                'created_by' => auth('api')->id() ?? Auth::id(),
-                'updated_by' => auth('api')->id() ?? Auth::id(),
-            ]);
 
-            $this->log_activity_user_activity('EMR Radiology Request Create', $query->id, true);
-            DB::commit();
-            return $query;
+    /*
+    -------------------------------------------------------------------------------------------------
+    Radiology Request Functions
+    -------------------------------------------------------------------------------------------------
+    */
+    public function emr_radiology_request_create(int $patient_id, int $item_id, ?int $visit_id = null, ?int $consultation_id = null, ?string $date = null,int $special = 0){
+        $transaction = $this->emr_visit_transaction_create($item_id, $patient_id, 1, false, $visit_id);
+
+        if (!$transaction instanceof VisitTransaction) {
+            throw new Exception("Failed to create visit transaction.");
         }
-        catch (Exception $e){
-            DB::rollback();
-            $this->log_activity_user_activity('EMR Radiology Request Create', null, false);
-        }  
+
+        RadiologyRequest::create([
+            'date'            => $date ?? now(),
+            'visit_id'        => $visit_id,
+            'branch_id'       => request()->cookie('current_branch'),
+            'consultation_id' => $consultation_id,
+            'patient_id'      => $patient_id,
+            'transaction_id'  => $transaction->id,
+            'quantity'        => 1,
+            'item_id'         => $item_id,
+            'status'          => RadiologyRequest::StatusBooked,
+            'special'         => $special,
+            'created_by'      => auth('api')->id() ?? Auth::id(),
+            'updated_by'      => auth('api')->id() ?? Auth::id(),
+        ]);
+
+        return $transaction;
     }
 
     public function emr_radiology_request_collect_sample($data, $id){
@@ -246,42 +248,88 @@ trait RadiologyTrait{
         }
     }
 
-    public function emr_radiology_request_get_all($type, $specific, $detailed, $paginated, $page ){
+    public function emr_radiology_request_deactivate($id){
+        DB::beginTransaction();
+
+        try{
+            $query = RadiologyRequest::where('id', '=', $id)->orWhere('unique_id', '=', $id)->firstOrFail();
+
+            if ($query->status > RadiologyRequest::StatusBooked){
+                throw new Exception('Request has been initiated');
+            }
+
+            $query->status = RadiologyRequest::StatusCancelled;
+            $query->deleted_by = Auth::id() ?? auth('api')->id();
+            $query->deleted_at = now();
+
+            $query->save();
+
+            $this->log_activity_user_activity('EMR Radiology Request Cancelled', $id, true);
+            DB::commit();
+            return $query;
+        }
+        catch (Exception $e){
+            DB::rollback();
+            $this->log_activity_user_activity('EMR Radiology Request Cancelled', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_radiology_request_get_all($type, $specific, $detailed, $paginated){
+        $query = RadiologyRequest::query();
+
         switch($type){
             case 'all':
-                $query = RadiologyRequest::withTrashed();
-                if (isset($specific['status'])){$query->where('status', '=', $specific['status']);}
-                if (isset($specific['start_date'])){$query->whereDate('date', '>=', $specific['start_date']);}
-                if (isset($specific['end_date'])){$query->whereDate('date', '>=', $specific['end_date']);}
+                $query = $query->withTrashed();
+            break;
+            case 'emergency':
+                $query = $query->where('special', '=', 1);
             break;
             case 'status':
-                $query = RadiologyRequest::where('status', '=', $specific);
             break;  
         }
 
-        $query = $detailed ? $query->with(['patient', 'item.category.primary_category']) : $query->select('id', 'unique_id', 'item_id');
+        if (is_string($specific)){
+            if (!empty($specific['start_date'])){
+                $query->whereDate('date', '>=', $specific['start_date']);
+            }
+            if (!empty($specific['end_date'])){
+                $query->whereDate('date', '>=', $specific['end_date']);
+            }
+            if(!empty($specific['query'])){
+                $search = $specific['query'];
+                $items = Item::where('name', 'LIKE', "%$search%")->pluck('id');
+
+                $query->whereIn('item_id', $items);
+            }
+            if (!empty($specific['status'])){
+                $query = $query->where('status', '=', $specific['status']);
+            }
+        }
+
+        $query = $detailed ? $query->with(['item.category', 'item.emr_service.reference', 'patient.user', 'transaction']) : $query->select('id', 'unique_id', 'item_id');
         $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
     }
 
     public function emr_radiology_request_get_by($type, $id, $detailed){
-        switch($type){
-            case 'id':
-                $query = RadiologyRequest::where('id', '=', $id);
-            break;
-            case 'unique_id':
-                $query = RadiologyRequest::where('unique_id', '=', $id);
-            break;
+        try{
+            $query = RadiologyRequest::where('id', '=', $id)->orWhere('unique_id', '=', $id);
+
+            $query = $detailed ? $query->with(['collector', 'creator', 'item.category', 'item.emr_service.reference', 'outsourced_to', 'outsourced_branch', 'patient.user', 'reporter', 'secondary_reporter', 'sourced_from', 'transaction', 'updater',]) : $query->select('id', 'unique_id', 'item_id')->with(['item']);
+            return $query->firstOrFail();
         }
-        $query = $detailed ? $query->with(['patient', 'item.category.primary_category', 'creator', 'updater', 'approver', 'sampler', 'reporter', 'secondary_reporter', 'outsourced_to', 'outsourced_branch', 'sourced_from']) : $query->with(['patient', 'item.category.primary_category']);
-        return $query->first();
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     public function emr_radiology_request_outsource($data, $id){
         DB::beginTransaction();
 
-        try{    
+        try{
+            $radiology_request = new RadiologyRequestService();    
             $query = RadiologyRequest::find($id);
 
             $query->outsurced_by = Auth::id() ?? auth('api')->id();
@@ -330,9 +378,25 @@ trait RadiologyTrait{
         }
     }
 
+    public function emr_radiology_request_start($data, $id){
+        try{
+            $query = RadiologyRequest::findOrFail($id);
+
+            $radiology_request_service = new RadiologyRequestService();
+            $query = $radiology_request_service->start($query, $data);
+
+            return $query;
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
     public function emr_radiology_request_report_result($data, $id){
         //this is links to the HL7 project
     }
+
+    
 
     public function emr_radiology_service_create($data){
         DB::beginTransaction();
@@ -340,7 +404,7 @@ trait RadiologyTrait{
         try{
             $emr_service = EMRService::create([
                 'item_id'           => null,
-                'service_type_id'   => $data['type_id'] ?? 6,
+                'service_type_id'   => $data['type_id'] ?? 7,
                 'reference_id'      => null,
                 'description'       => $data['description'],
                 'status'            => EMRService::StatusActive ?? 1,
@@ -360,6 +424,7 @@ trait RadiologyTrait{
             $item = Item::create([
                 'name'                  => $data['name'],
                 'type_id'               => $data['type_id'] ?? 7,
+                'service_type_id'       => 6,
                 'unique_id'             => $this->inventory_generate_unique_id('item'),
                 'service_id'            => $emr_service->id,
                 'last_landing_cost'     => $data['landing_cost'] ?? 0.00,

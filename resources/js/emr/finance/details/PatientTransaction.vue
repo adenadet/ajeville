@@ -46,7 +46,7 @@
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a href="#" class="nav-link">
-                        Requested By: <span class="float-right badge">{{  transaction.creator | fullName}}</span>
+                        Requested By: <span class="float-right badge">{{ fullName(transaction.creator) }}</span>
                         </a>
                     </li>
                     <li class="nav-item">

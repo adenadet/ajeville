@@ -11,7 +11,7 @@ class ResultTemplate extends Model
 
     protected $table = 'emr_settings_laboratory_result_templates';
 
-    protected $fillable = ['name', 'layout', 'status', 'description', 'created_by', 'updated_by', 'deleted_by',  'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['name', 'layout', 'structured_json', 'status', 'description', 'created_by', 'updated_by', 'deleted_by',  'created_at', 'updated_at', 'deleted_at'];
 
 
     public function creator(){

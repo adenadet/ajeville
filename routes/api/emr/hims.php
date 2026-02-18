@@ -34,7 +34,8 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
     Route::get( '/visits/{id}/start',                'VisitationController@start')->name('visits.start');
     Route::post('/visits/set_cookie',                'VisitationController@set_cookie')->name('visits.set_cookie');
     Route::post('/visits/transactions',              'VisitationController@transactions')->name('visits.transactions');
-
+    Route::get( '/visit_transactions/{id}/pending',  'VisitTransactionController@pending')->name('visit_transactions.pending');
+    
     Route::apiResources([
         'allergies'             => 'AllergyController',
         'allergy_types'         => 'AllergyTypeController',

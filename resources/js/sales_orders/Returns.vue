@@ -50,7 +50,12 @@
 </section>
 </template>
 <script>
+import SalesDetailReturnList from '@/sales_orders/details/ReturnList.vue';
+import SalesFormReturn from '@/sales_orders/forms/Return.vue';
 export default {
+    components: {
+        SalesDetailReturnList, SalesFormReturn 
+    },
     data() {
         return {
             current_page: 1,

@@ -9,6 +9,7 @@ class Panel extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id';
     protected $table = 'emr_laboratory_panels';
 
     protected $fillable = ['name', 'service_id', 'category_id', 'description', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'];

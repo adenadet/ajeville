@@ -1,7 +1,8 @@
 import './bootstrap';
 import {createRouter, createWebHistory} from 'vue-router';
 
-import router, { registerGlobalComponents } from './router';
+import router from './router';
+//import { registerGlobalComponents } from './globalComponents';
 import { createApp, ref } from 'vue';
 import _ from 'lodash';
 import { globalMethods } from './globalMethods'; 
@@ -14,11 +15,11 @@ const app = createApp({
     }
 });
 
-registerGlobalComponents(app);
-/*
+//registerGlobalComponents(app);
+
 import HeaderBranch from './header/Branch.vue';
 app.component('HeaderBranch', HeaderBranch);
-*/
+
 import VueApexCharts from "vue3-apexcharts";
 app.use(VueApexCharts);
 

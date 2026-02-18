@@ -117,14 +117,6 @@ export default {
             var visit = this.$store.getters.currentVisit;
             return visit;
         },
-        transactions(){
-            if(this.source == 'visit'){
-                return  this.visit?.transactions || [];
-            }
-            else{
-                return this.patient?.transactions || [];
-            }
-        },
     },
     data() {
         return {
@@ -214,7 +206,7 @@ export default {
                     this.form.transaction_id = transaction.id;
                     this.form.post('/api/finance/payments')
                     .then(response=>{
-                        Swal.fire('Update!', response.data.message, response.data.icon);
+                        this.$swal.fire('Update!', response.data.message, response.data.icon);
                         //this.getInitials();  
                     })
                     .catch(()=>{
@@ -231,6 +223,9 @@ export default {
     },
     props:{
         source: String,
+    },
+    watch:{
+        
     }
 }
 </script>

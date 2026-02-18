@@ -19,12 +19,23 @@ class VisitTransactionController extends Controller
         ], is_string($transaction) ? 404 : 200);
 
     }
+
     public function index()
     {
         $transactions = $this->emr_visit_transaction_get_all($_GET['type'], $_GET, true, true);
         return response()->json([
             'transactions' => $transactions,
         ], is_string($transactions) ? 500 : 200);
+    }
+
+    public function pending($id)
+    {
+        $transactions = $this->emr_visit_transaction_get_all('unconfirmed', ['patient_id' => $id], true, false);
+        
+        return response()->json([
+            'transactions' => $transactions,
+        ], is_string($transactions) ? 500 : 200);
+
     }
 
     public function store(Request $request)

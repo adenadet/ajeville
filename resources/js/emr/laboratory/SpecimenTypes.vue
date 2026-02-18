@@ -17,7 +17,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-warning">
                     <h3 class="card-title">Specimen Types</h3>
                     <div class="card-tools">
                         <div class="input-group input-group-sm" style="width: 150px;">
@@ -32,6 +32,8 @@
                             <tr>
                                 <th>S/N</th>
                                 <th>Name</th>
+                                <th>Storage Temperature</th>
+                                <th>Stability Duration</th>
                                 <th>Description</th>
                                 <th>Status</th>
                                 <th><button class="btn btn-xs btn-primary" @click="addSpecimenType()"><i class="fa fa-plus"></i></button></th>
@@ -41,6 +43,8 @@
                             <tr v-for="(specimen_type, index) in specimen_types.data" :key="specimen_type">
                                 <td>{{ addOne(index) }}</td>
                                 <td>{{ specimen_type.name }}</td>
+                                <td>{{ specimen_type.storage_temperature || '-'}}<sup>o</sup>C</td>
+                                <td>{{ specimen_type.stability_duration || '-' }} hrs</td>
                                 <td v-html="readMore(specimen_type.description, 50, '...')" :title="specimen_type.description"></td>
                                 <td>
                                     <span v-if="specimen_type.status == 1" class="badge badge-success">Active</span>
@@ -70,7 +74,10 @@
 </section>
 </template>
 <script>
+import EMRLaboratoryFormSpecimenType from '@/emr/laboratory/forms/SpecimenType.vue';
+
 export default {
+    components:{EMRLaboratoryFormSpecimenType},
     data() {
         return {
             current_page: 1,

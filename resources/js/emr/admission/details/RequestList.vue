@@ -1,6 +1,21 @@
 <template>
 <section class="overlay-wrapper">
     <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+    <div class="modal fade" id="admitFormModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Bed Assignment Details</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <EMRAdmissionFormAdmit :admission.sync="request" @refreshAdmitForm="closeModals()" />
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="bedAssignmentFormModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -92,17 +107,19 @@
                     <span v-else-if="request.status == 3"class="badge badge-warning">Bed Assigned</span>
                     <span v-else-if="request.status == 4"class="badge badge-warning">Billed</span>
                     <span v-else-if="request.status == 10"class="badge badge-success">Admitted</span>
-                    <span v-else-if="request.status == 10"class="badge">Discharged</span>
+                    <span v-else-if="request.status > 10"class="badge">Discharged</span>
                     <span v-else class="badge badge-danger">Delete</span>
                 </td>
                 <td>
                     <button class="nav-link btn btn-tool" data-toggle="dropdown" type="button"><i class="fa fa-ellipsis-v text-dark"></i></button>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <button class="dropdown-item btn btn-block btn-sm" @click="viewRequest(request)"><i class="fa fa-eye mr-1 text-primary"></i> View Request</button>
+                        <button class="dropdown-item btn btn-block btn-sm" @click="viewRequest(request)"><i class="fa fa-camera mr-1 text-primary"></i> Snap Request</button>
+                        <router-link :to="'/emr/admission/requests/'+request.id" class="dropdown-item btn btn-block btn-sm"><i class="fa fa-eye mr-1 text-primary"></i> View Request</router-link :to="'/emr/'+">
                         <button v-if="request.status == 0" class="dropdown-item btn btn-block btn-sm" @click="confirmRequest(request)"><i class="fa fa-check mr-1 text-purple"></i> Confirm Request</button>
                         <button v-if="request.status == 1" class="dropdown-item btn btn-block btn-sm" @click="precheckRequest(request)"><i class="fa fa-list mr-1 text-dark"></i> Precheck Request</button>
                         <button v-if="request.status == 2" class="dropdown-item btn btn-block btn-sm" @click="bedAssignment(request)"><i class="fa fa-bed mr-1 text-success"></i> Assign Bed</button>
-                        <button v-if="request.status >= 4 && request.status < 10" class="dropdown-item btn btn-block btn-sm" @click="admitRequest(request)"><i class="fa fa-list mr-1 text-dark"></i> Admit Request</button>
+                        <button v-if="request.status >= 3 && request.status < 10" class="dropdown-item btn btn-block btn-sm" @click="admitRequest(request)"><i class="fa fa-check-double mr-1 text-dark"></i> Admit Request</button>
+                        <button v-if="request.status == 10" class="dropdown-item btn btn-block btn-sm" @click="dischargeRequest(request)"><i class="fa fa-clipboard mr-1 text-dark"></i> Discharge Request</button>
                         <button v-if="request.status == 0"class="dropdown-item btn btn-block btn-sm" @click="updateRequest(request)"><i class="fa fa-edit mr-1 text-warning"></i> Update Request</button>
                         <button v-if="request.status == 0" class="dropdown-item btn btn-block btn-sm" @click="deactivateRequest(request)"><i class="fa fa-times mr-1 text-danger"></i> Cancel Request</button>
                     </div>
@@ -111,7 +128,7 @@
         </tbody>
         <tbody v-else>
             <tr>
-                <td colspan="9" class="text-center">No Room Types Found</td>
+                <td colspan="9" class="text-center">No Admission Request meets your requirements</td>
             </tr>
         </tbody>
     </table>
@@ -137,9 +154,8 @@ export default {
         },
         admitRequest(request){
             this.loading = true;
-            this.editMode = false;
             this.request = request;
-            $('#requestFormModal').modal('show');
+            $('#admitFormModal').modal('show');
             this.loading = false;
         },
         bedAssignment(request){
@@ -150,6 +166,7 @@ export default {
         },
         closeModals(){
             this.$emit('refreshRequestList');
+            $('#admitFormModal').modal('hide');
             $('#bedAssignmentFormModal').modal('hide');
             $('#requestFormModal').modal('hide');
             $('#requestViewModal').modal('hide');            
@@ -211,6 +228,12 @@ export default {
                     });
                 }
             });
+        },
+        dischargeRequest(request){
+            this.loading = true;
+            this.request = request;
+            $('#dischargeFormModal').modal('show');
+            this.loading = false;
         },
         precheckRequest(request){
             this.loading = true;

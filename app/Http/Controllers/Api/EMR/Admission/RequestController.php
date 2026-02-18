@@ -14,6 +14,14 @@ class RequestController extends Controller
 {
     use AdmissionTrait, ConsultantTrait, VisitTrait;
 
+    public function admit(Request $request, $id){
+        $request = $this->admission_request_admit($request, $id);
+
+        return response()->json([
+            'request' => $request
+        ], is_string($request) ? 500 : 200);
+    }
+
     public function confirm($id){
         $request = $this->admission_request_confirm($id);
 

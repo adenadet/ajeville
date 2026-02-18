@@ -108,7 +108,7 @@
                             <h3 class="card-title">Requests</h3>
                         </div>
                         <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <EMRRadiologyDetailRequestList :requests="requests" />
+                            <EMRRadiologyDetailRequestList :requests="requests.data" />
                         </div>
                     </div>
                 </div>
@@ -127,20 +127,25 @@
     </section>
 </template>
 <script>
+import EMRRadiologyDetailRequestList from '@/emr/radiology/details/RequestList.vue'
 export default {
+    components:{EMRRadiologyDetailRequestList},
     data() {
         return {
             cancelled_requests: 0,
             completed_requests: 0,
             completed_referred_in: 0,
             completed_referred_out: 0,
+            editMode: true,
+            emergency_requests: [],
             new_requests: 0,
             pending_referred_in: 0,
             pending_referred_out: 0,
+            request: {},
+            requests: {data:[], total:0},
             transaction: {},
             transactions: {},
             unpaid_requests: 0,
-            editMode: true,
         }
     },
     mounted() {
@@ -187,6 +192,7 @@ export default {
             this.completed_referred_in = response.data.completed_referred_in;
             this.completed_referred_out = response.data.completed_referred_out;
             this.new_requests = response.data.new_requests;
+            this.requests = response.data.requests;
             this.pending_referred_in = response.data.pending_referred_in;
             this.pending_referred_out = response.data.pending_referred_out;
             this.unpaid_requests = response.data.unpaid_requests;

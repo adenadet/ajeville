@@ -5,7 +5,7 @@
                 <LaboratoryDetailSummary :request="request" :show_status="editMode" :print_label="!editMode"/>
             </div>
             <div class="col-md-8 card">
-                <div class="card-header">
+                <div class="card-header bg-warning">
                     <h4 class="card-title">Recent Activity</h4>
                 </div>
                 <div class="card-body">

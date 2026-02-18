@@ -1,7 +1,7 @@
 <template>
 <section class="col-md-12">
     <div class="card">
-        <div class="card-header bg-dark">
+        <div class="card-header bg-dark no-print">
             <h3 class="card-title">Delivery Note</h3>
             <div class="card-tools">
                 <button class="btn btn-xs btn-tool" data-toggle="dropdown" type="button"><i class="fa fa-ellipsis-v text-white mt-2"></i></button>
@@ -117,7 +117,12 @@
 <script>
 import useInvoiceTools from '@/globalMethods/useInvoiceTools';
 import {ref} from 'vue';
+import SalesDetailDeliveryNote from '@/sales_orders/details/DeliveryNote.vue';
+import SalesFormDeliveryNote from '@/sales_orders/forms/DeliveryNote.vue';
 export default {
+    components: {
+        SalesDetailDeliveryNote, SalesFormDeliveryNote 
+    },
     data(){
         return {
             customers: {total: 0,},

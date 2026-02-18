@@ -70,7 +70,11 @@
 </section>
 </template>
 <script>
+import ApprovalFormSalesOrder from '@/approvals/forms/SalesOrder.vue';
+import InventoryFormFulfill from '@/inventory/forms/Fulfill.vue';
+import SalesFormOrder from '@/sales_orders/forms/Order.vue';
 export default {
+    components: {ApprovalFormSalesOrder, InventoryFormFulfill, SalesFormOrder},
     data() {
         return {
             current_item: {},

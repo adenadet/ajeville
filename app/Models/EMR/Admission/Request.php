@@ -24,11 +24,15 @@ class Request extends Structure
     protected $fillable = array('date', 'visit_id', 'branch_id', 'consultation_id', 'patient_id', 'admission_type_id', 'admission_reason', 'confirmed_by', 'confirmed_at', 'admitted_by', 'admission_note', 'admitted_date', 'admitted_at', 'discharged_by', 'discharged_at', 'requested_by', 'requested_at', 'requested_remark', 'bed_assigned_by', 'bed_assigned_at','precheck_by', 'precheck_at', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
     public function admission_type(){
-		    return $this->belongsTo('App\Models\EMR\Admission\Type', 'admission_type_id', 'id');
+		return $this->belongsTo('App\Models\EMR\Admission\Type', 'admission_type_id', 'id');
+    }
+
+    public function assigner(){
+		return $this->belongsTo('App\Models\User', 'bed_assigned_by', 'id');
     }
 
     public function bed_assignment(){
-        return $this->belongsTo('App\Models\EMR\Admission\BedAssignment', 'bed_assignment_id', 'id');
+        return $this->belongsTo('App\Models\EMR\Admission\BedAssignment', 'id', 'admission_id');
     }
 
     public function creator(){
@@ -40,7 +44,11 @@ class Request extends Structure
     }
 
     public function pre_admission_checks(){
-        return $this->hasMany('App\Models\EMR\Admission\PreAdmissionCheck', 'admission_id', 'id');
+        return $this->hasMany('App\Models\EMR\Admission\PreAdmissionCheck', 'admission_request_id', 'id');
+    }
+
+    public function requester(){
+        return $this->belongsTo('App\Models\User', 'requested_by', 'id');
     }
 
     public function updater(){

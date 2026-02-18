@@ -11,6 +11,20 @@ use Exception;
 
 class PaymentService
 {
+    public function makePayment($transaction_id){
+        DB::beginTransaction();
+
+        try{
+            $transaction = VisitTransaction::with('allocations.visit_transaction')->findOrFail($transaction_id);
+
+            $payable = $transaction->amount - $transaction->coverage->amount;
+            
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
+    }
     public function reversePayment($paymentId)
     {
         return DB::transaction(function () use ($paymentId) {

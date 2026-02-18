@@ -65,7 +65,10 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryFormAnalyte from '@/emr/laboratory/forms/Analyte.vue';
+
 export default {
+    components:{EMRLaboratoryFormAnalyte},
     data() {
         return {
             analytes: {},

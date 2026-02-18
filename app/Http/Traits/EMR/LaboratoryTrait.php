@@ -11,6 +11,7 @@ use App\Models\EMR\Laboratory\Request as LaboratoryRequest;
 use App\Models\EMR\Laboratory\Bottle;
 use App\Models\EMR\Laboratory\Category;
 use App\Models\EMR\Laboratory\ReferenceRange;
+use App\Models\EMR\Laboratory\Result;
 use App\Models\EMR\Laboratory\ResultTemplate;
 use App\Models\EMR\Laboratory\ResultTemplateAnalyte;
 use App\Models\EMR\Laboratory\ResultTemplateVersion;
@@ -18,6 +19,7 @@ use App\Models\EMR\Laboratory\Service;
 use App\Models\EMR\Laboratory\Specimen;
 use App\Models\EMR\Laboratory\SpecimenType;
 use App\Models\EMR\Service as EMRService;
+use App\Models\EMR\Visit;
 use App\Models\EMR\VisitTransaction;
 use App\Models\Inventory\Item;
 use App\Models\Procurement\Vendor;
@@ -373,6 +375,127 @@ trait LaboratoryTrait{
             return $e->getMessage();
         }  
     }
+    
+    /*
+    -----------------------------------------------------------
+    EMR Laboratory Reference Range Functions
+    -----------------------------------------------------------
+    */
+
+    public function emr_laboratory_reference_range_create($data){
+        DB::beginTransaction();
+        try{
+            $query = ReferenceRange::create([
+                'analyte_id' => $data['analyte_id'],
+                'gender' => $data['gender'] ?? null,
+                'age_min' => $data['age_min'] ?? 0,
+                'age_max' => $data['age_max'] ?? 120,
+                'low_value' => $data['low_value'] ?? null,
+                'normal_value' => $data['normal_value'] ?? null,
+                'high_value' => $data['high_value'] ?? null,
+                'critical_low' => $data['critical_low'] ?? null,
+                'critical_high' => $data['critical_high'] ?? null,
+                'created_by' => auth('api')->id() ?? Auth::id(),
+                'updated_by' => auth('api')->id() ?? Auth::id(),
+            ]);
+
+            DB::commit();
+            $this->log_user_activity('EMR Laboratory Reference Range Create', $query->id, true);
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Reference Range Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_laboratory_reference_range_deactivate($id){
+        DB::beginTransaction();
+
+        try{
+            $query = ReferenceRange::where('id', '=', $id)->firstOrFail();
+
+            if(is_null($query->deleted_at)){
+                $query->deleted_at = date('Y-m-d H:i:s');
+            }
+            else{
+                $query->deleted_at = null;                
+            }
+
+            $query->updated_at = date('Y-m-d H:i:s');
+            $query->save();
+
+            DB::commit();
+            $this->log_user_activity('EMR Laboratory Reference Range Deactivate', $id, true);
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Reference Range Deactivate', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_laboratory_reference_range_get_all($type, $specific, $detailed, $paginated){
+        $query = ReferenceRange::query();
+
+        switch($type){
+            case 'all':
+                $query = $query->withTrashed();
+            break;
+        }
+
+        if (is_array($specific)){
+            if(!empty($specific['id'])){
+                $query = $query->where('analyte_id', '=', $specific['id']);
+            }
+        }
+
+        $query = $detailed ? $query->with(['analyte']) : $query;
+        $query = $paginated? $query->paginate(20) : $query->get();
+        
+        return $query;
+    }
+
+    public function emr_laboratory_reference_range_get_by($type, $id, $detailed){
+        try{
+            $query = ReferenceRange::where('id', '=', $id);
+            $query = $detailed ? $query->with(['analyte']) : $query;
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_laboratory_reference_range_update($data, $id){
+        DB::beginTransaction();
+        try{
+            $query = ReferenceRange::where('id', '=', $id)->firstOrFail();
+
+            $query->analyte_id = $data['analyte_id'] ?? $query->analyte_id;
+            $query->gender = $data['gender'] ?? $query->gender;
+            $query->age_min = $data['age_min'] ?? $query->age_min;
+            $query->age_max = $data['age_max'] ?? $query->age_max;
+            $query->low_value = $data['low_value'] ?? $query->low_value;
+            $query->normal_value = $data['normal_value'] ?? $query->normal_value;
+            $query->high_value = $data['high_value'] ?? $query->high_value;
+            $query->critical_low = $data['critical_low']  ?? $query->critical_low;
+            $query->updated_by = Auth::id() ?? auth('api')->id();
+            
+            $query->save();
+
+            DB::commit();
+            $this->log_user_activity('EMR Laboratory Reference Range Update', $id, true);
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Reference Range Update', $id, false);
+            return $e->getMessage();
+        }
+    }
 
 
     /*
@@ -384,21 +507,21 @@ trait LaboratoryTrait{
     public function emr_laboratory_request_create($patient_id, $item_id, $visit_id =null, $consultation_id = null, $date = null, $special = 0){
         DB::beginTransaction();
         
-        try{ 
+        try{
             $transaction = $this->emr_visit_transaction_create($item_id, $patient_id, 1, false, $visit_id);
 
+            $visit = Visit::findOrFail($visit_id);
             if(is_string($transaction)){
                 $this->log_user_activity('EMR Laboratory Request Create', true, null);
                 return $transaction." Can not create transaction"; 
             }  
 
             $query = LaboratoryRequest::create([
-                // 'result', 'sample_by', 'sample_at', 'sample_remark', 'reported_by', 'reported_at', 'report_remark', 'secondary_report_by', 'secondary_report_at', 'secondary_report_remark', 'approved_by', 'approved_at', 'approval_remark', 'outsourced_type', 'outsourced_to_id', 'outsourced_status_id', 'outsourced_remark', 'insourced_remark', 'insourced_final_remark', 'outsource_result_file', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'
                 'date' => $date ?? date('Y-m-d'),
                 'visit_id' => $visit_id,
-                'branch_id' => $visit_id ?? request()->cookie('current_branch'),
+                'branch_id' => $visit->branch_id ?? request()->cookie('current_branch'),
                 'consultation_id' => $consultation_id,
-                'request_type_id' => $data['request_type_id'] ?? null,
+                'request_type_id' => null,
                 'patient_id' => $patient_id,
                 'transaction_id' => $transaction->id,
                 'quantity' => 1,
@@ -411,7 +534,8 @@ trait LaboratoryTrait{
 
             $this->log_user_activity('EMR Laboratory Request Create', $query->id, true);
             DB::commit();
-            return $query;
+
+            return $transaction;
         }
         catch (Exception $e){
             DB::rollback();
@@ -422,33 +546,25 @@ trait LaboratoryTrait{
 
     public function emr_laboratory_request_get_all($type, $specific, $detailed, $paginated){
         $query = LaboratoryRequest::query();
-        
-        switch($type){
-            case 'awaiting':
-                $query = $query->where('branch_id', '=', request()->cookie('current_branch'))->where('status', '=', LaboratoryRequest::StatusSampleCollected);
-            break;    
-            case 'completed':
-                $query = $query->where('status', '=', LaboratoryRequest::StatusConfirmed)->where('branch_id', '=', request()->cookie('current_branch'));
-            break;
-            case 'insurance':
-                $transactions = VisitTransaction::whereIn('paid_by', [1, 3])->pluck('id');    
-                $query = $query->where('branch_id', '=', request()->cookie('current_branch'))->whereIn('transaction_id', $transactions)->where('status', '=', LaboratoryRequest::StatusBooked);
-            break;
-            case 'reffered_in':
-                $query = $query->where('status', '=', LaboratoryRequest::StatusReferredOut)->where('outsourced_to_id', '=', request()->cookie('current_branch'))->where('outsourced_type', '=', 0);
-            break;
-            case 'reffered_out':
-                $query = $query->where('branch_id', '=', request()->cookie('current_branch'))->where('status', '=', LaboratoryRequest::StatusReferredOut)->where('outsourced_to_id', '=', request()->cookie('current_branch'))->where('outsourced_type', '=', 1);
-            break;
-            case 'uncollected':
-                $query = $query->where('branch_id', '=', request()->cookie('current_branch'))->where('status', '=', LaboratoryRequest::StatusConfirmed);
-            break;
-            case 'unpaid':
-                $query = $query->where('branch_id', '=', request()->cookie('current_branch'))->where('status', '=', LaboratoryRequest::StatusBooked);
-            break;
+
+        if(is_array($specific)){
+            if(!empty($specific['end_date'])){
+                $query = $query->whereDate('date', '>=', $specific['end_date']);
+            }
+
+            if(!empty($specific['start_date'])){
+                $query = $query->whereDate('date', '>=', $specific['start_date']);
+            }
+
+            if (!empty($specific['status'])){
+                $query = $query->whereDate('status', '=', $specific['status']);
+            }
         }
 
+        $query = $detailed ? $query->with([]) : $query->select('id', );
+        $query = $paginated ? $query->paginate(50) : $query->get();
 
+        return $query;
     }
 
     public function emr_laboratory_request_get_by($type, $id, $detailed){
@@ -466,6 +582,69 @@ trait LaboratoryTrait{
     public function emr_laboratory_request_update($data, $id){
         DB::beginTransaction();
         
+    }
+
+    /*
+    ---------------------------------------------------------
+    EMR Laboratory Request Result Functions
+    ---------------------------------------------------------
+    */
+    public function emr_laboratory_request_result_create($data){
+        DB::beginTransaction();
+        
+        try{
+            $query = Result::create([]);
+            return $query;
+        }
+        catch (Exception $e){
+            DB::rollback();
+            $this->log_user_activity('EMR Laboratory Request Create', null, false);
+            return $e->getMessage();
+        }  
+    }
+
+    public function emr_laboratory_request_result_get_all($type, $specific, $detailed, $paginated){
+        $query = LaboratoryRequest::query();
+
+        if(is_array($specific)){
+            if(!empty($specific['end_date'])){
+                $query = $query->whereDate('date', '>=', $specific['end_date']);
+            }
+
+            if(!empty($specific['start_date'])){
+                $query = $query->whereDate('date', '>=', $specific['start_date']);
+            }
+
+            if (!empty($specific['status'])){
+                $query = $query->whereDate('status', '=', $specific['status']);
+            }
+        }
+
+        $query = $detailed ? $query->with([]) : $query->select('id', );
+        $query = $paginated ? $query->paginate(50) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_laboratory_request_result_get_by($type, $id, $detailed){
+        try{
+            $query = LaboratoryRequest::where('id', '=', $id)->orWhere('unique_id', '=', $id);
+
+            $query = $detailed ? $query->with(['item', 'service.service', 'patient.user', 'transaction.payments']) : $query->select('id', 'unique_id')->with(['transaction.payments']);
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+    
+    public function emr_laboratory_request_result_update($data, $id){
+        DB::beginTransaction();
+        try{}
+        catch(Exception $e){
+            DB::rollBack();
+            return $e->getMessage();
+        }
     }
 
     /*
@@ -651,127 +830,7 @@ trait LaboratoryTrait{
         }
     }
 
-    /*
-    -----------------------------------------------------------
-    EMR Laboratory Reference Range Functions
-    -----------------------------------------------------------
-    */
-
-    public function emr_laboratory_reference_range_create($data){
-        DB::beginTransaction();
-        try{
-            $query = ReferenceRange::create([
-                'analyte_id' => $data['analyte_id'],
-                'gender' => $data['gender'] ?? null,
-                'age_min' => $data['age_min'] ?? 0,
-                'age_max' => $data['age_max'] ?? 120,
-                'low_value' => $data['low_value'] ?? null,
-                'normal_value' => $data['normal_value'] ?? null,
-                'high_value' => $data['high_value'] ?? null,
-                'critical_low' => $data['critical_low'] ?? null,
-                'critical_high' => $data['critical_high'] ?? null,
-                'created_by' => auth('api')->id() ?? Auth::id(),
-                'updated_by' => auth('api')->id() ?? Auth::id(),
-            ]);
-
-            DB::commit();
-            $this->log_user_activity('EMR Laboratory Reference Range Create', $query->id, true);
-            return $query;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            $this->log_user_activity('EMR Laboratory Reference Range Create', null, false);
-            return $e->getMessage();
-        }
-    }
-
-    public function emr_laboratory_reference_range_deactivate($id){
-        DB::beginTransaction();
-
-        try{
-            $query = ReferenceRange::where('id', '=', $id)->firstOrFail();
-
-            if(is_null($query->deleted_at)){
-                $query->deleted_at = date('Y-m-d H:i:s');
-            }
-            else{
-                $query->deleted_at = null;                
-            }
-
-            $query->updated_at = date('Y-m-d H:i:s');
-            $query->save();
-
-            DB::commit();
-            $this->log_user_activity('EMR Laboratory Reference Range Deactivate', $id, true);
-            return $query;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            $this->log_user_activity('EMR Laboratory Reference Range Deactivate', $id, false);
-            return $e->getMessage();
-        }
-    }
-
-    public function emr_laboratory_reference_range_get_all($type, $specific, $detailed, $paginated){
-        $query = ReferenceRange::query();
-
-        switch($type){
-            case 'all':
-                $query = $query->withTrashed();
-            break;
-        }
-
-        if (is_array($specific)){
-            if(!empty($specific['id'])){
-                $query = $query->where('analyte_id', '=', $specific['id']);
-            }
-        }
-
-        $query = $detailed ? $query->with(['analyte']) : $query;
-        $query = $paginated? $query->paginate(20) : $query->get();
-        
-        return $query;
-    }
-
-    public function emr_laboratory_reference_range_get_by($type, $id, $detailed){
-        try{
-            $query = ReferenceRange::where('id', '=', $id);
-            $query = $detailed ? $query->with(['analyte']) : $query;
-            return $query->firstOrFail();
-        }
-        catch(Exception $e){
-            return $e->getMessage();
-        }
-    }
-
-    public function emr_laboratory_reference_range_update($data, $id){
-        DB::beginTransaction();
-        try{
-            $query = ReferenceRange::where('id', '=', $id)->firstOrFail();
-
-            $query->analyte_id = $data['analyte_id'] ?? $query->analyte_id;
-            $query->gender = $data['gender'] ?? $query->gender;
-            $query->age_min = $data['age_min'] ?? $query->age_min;
-            $query->age_max = $data['age_max'] ?? $query->age_max;
-            $query->low_value = $data['low_value'] ?? $query->low_value;
-            $query->normal_value = $data['normal_value'] ?? $query->normal_value;
-            $query->high_value = $data['high_value'] ?? $query->high_value;
-            $query->critical_low = $data['critical_low']  ?? $query->critical_low;
-            $query->updated_by = Auth::id() ?? auth('api')->id();
-            
-            $query->save();
-
-            DB::commit();
-            $this->log_user_activity('EMR Laboratory Reference Range Update', $id, true);
-            return $query;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            $this->log_user_activity('EMR Laboratory Reference Range Update', $id, false);
-            return $e->getMessage();
-        }
-    }
-
+    
     /*
     -----------------------------------------------------------------------
     Laboratory Services
@@ -1081,6 +1140,8 @@ trait LaboratoryTrait{
         try{
             $query = SpecimenType::create([
                 'name' => $data['name'],
+                'storage_temp' => $data['storage_temp'] ?? null,
+                'stability_duration' => $data['stability_duration'] ?? null,
                 'description' => $data['description'],
                 'status' => $data['status'] ?? 1,
                 'created_by' => Auth::id() ?? auth('api')->id(),
@@ -1151,6 +1212,7 @@ trait LaboratoryTrait{
         }
 
         $query = $detailed ? $query->with(['creator', 'deleter', 'updater']) : $query->select('id', 'name');
+        $query = $query->orderBy('name', 'ASC');
         $query = $paginated ? $query->paginate(30) : $query->get();
 
         return $query;
@@ -1174,6 +1236,8 @@ trait LaboratoryTrait{
             $query = SpecimenType::findOrFail($id);
 
             $query->name = $data['name'] ?? $query->name;
+            $query->storage_temp = $data['storage_temp'] ?? $query->name;
+            $query->stability_duration = $data['stability_duration'] ?? $query->name;
             $query->description = $data['description'] ?? $query->description;
             $query->status = $data['status'] ?? 1;
             $query->updated_by = Auth::id() ?? auth('api')->id();

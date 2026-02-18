@@ -2,9 +2,7 @@
 
 namespace App\Http\Traits\EMR;
 
-use App\Http\Traits\EMR\InsuranceTrait;
 use App\Http\Traits\UMS\LogTrait;
-
 use App\Models\Operations\Branch;
 use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Patient\Insurance;
@@ -18,7 +16,8 @@ use App\Models\Finance\PriceList;
 use App\Models\Finance\PriceListItem;
 use App\Models\Inventory\Item;
 use App\Models\Operations\BranchPlanPriceList;
-
+use App\Services\EMR\LedgerService as EMRLedgerService;
+use App\Services\EMR\TransactionService;
 use Exception;
 
 use Illuminate\Support\Facades\Auth;
@@ -187,15 +186,23 @@ trait VisitTransactionTrait{
         try{   
             $visit_transactions = [];      
             foreach($data['items'] as $service){
-                $visit_transaction = $this->emr_visit_transaction_create($service['item_id'], $data['patient_id'], $service['quantity'], $item['auto_debit'] ?? false, $data['visit_id']);
+                $transaction = new TransactionService();
+                $visit_transaction = $transaction->create_transaction([
+                    'consultation_id' => $data['consultation_id'] ?? null,
+                    'date' => $data['date'] ?? date('Y-m-d'),
+                    'item_id' => $service['item_id'], 
+                    'patient_id' => $data['patient_id'],
+                    'quantity' => $data['quantity'] ?? 1,
+                    'request_type_id' => $data['request_type_id'] ?? 0,
+                    'special' => $data['special'] ?? 0,
+                    'type_id' => $data['request_type_id'] ?? null,
+                    'visit_id' => $data['visit_id'] ?? null,
+                ]);
 
-                if (is_string($visit_transaction)){
-                    DB::rollBack();
-                    return 'Error occured while creating Visit Transaction: '.$visit_transaction;
+                if(is_string($visit_transaction)){
+                    throw new Exception('Something went wrong');
                 }
-                else{
-                    array_push($visit_transactions, $visit_transaction);
-                }
+                array_push($visit_transactions, $visit_transaction);
             }
 
             DB::commit();
@@ -217,6 +224,7 @@ trait VisitTransactionTrait{
                 return "Transaction has already been performed";
             }
 
+            $query->status = VisitTransaction::StatusCancelled;
             $query->deleted_by = Auth::id() ?? auth('api')->id();
             $query->updated_by = Auth::id() ?? auth('api')->id();
             $query->deleted_at = date('Y-m-d H:i:s');
@@ -268,6 +276,41 @@ trait VisitTransactionTrait{
         }
     }
 
+    public function emr_visit_transaction_payment($id, $forced){
+        DB::beginTransaction();
+        try{
+            $query = VisitTransaction::where('id', '=', $id)->orWhere('unique_id', '=', $id)->with(['coverage'])->firstOrFail();
+            $payable = $query->coverage ? $query->coverage->patient_payable : $query->item_total; 
+            $patient = Patient::findOrFail($query->patient_id);
+            $ledger = new EMRLedgerService();
+            if ($query->status == VisitTransaction::StatusCompleted){
+                throw new Exception('Transaction has already been paid');
+            }
+
+            if (($patient->balance + $payable) > 0) {
+                if ($forced){
+                    $new_row = $ledger->createLedgerEntry($patient->id, $query->visit_id, $id, null, 'debit', 'debit');
+                }
+                else{
+                    throw new Exception('Insufficient Balance');
+                }
+            }
+
+            $coverage = VisitTransactionCoverage::where('visit_transaction_id', '=', $id)->where('approval_status', '=', VisitTransactionCoverage::ApprovalApproved)->first();
+
+            if($query->item_total <= ($coverage->covered_amount ?? 0 + $new_row->amount)){
+                $query->status = VisitTransaction::StatusCompleted;
+                $query->updated_by = auth('api')->id() ?? Auth::id();
+
+                $query->save();
+            }
+
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
     public function emr_visit_transaction_update($data, $id){
         DB::beginTransaction();
         try{
@@ -304,59 +347,51 @@ trait VisitTransactionTrait{
     }
 
     public function emr_visit_payment_create($data){
-        DB::beginTransaction();
-        try{
-            $query = VisitPayment::create([
-                'visit_id' => $data['visit_id'],
-                'patient_id' => $data['patient_id'],
-                'amount' => $data['amount'],
+        return DB::transaction(function () use ($data) {
+            $userId = auth('api')->id() ?? Auth::id();
+            $payment = VisitPayment::create([
+                'visit_id'       => $data['visit_id'],
+                'patient_id'     => $data['patient_id'],
+                'amount'         => $data['amount'],
                 'payment_method' => $data['payment_method'] ?? VisitPayment::DefaultPaymentMethod,
-                'reference' => $data['reference'] ?? null,
-                'received_by' => $data['received_by'] ?? Auth::id() ?? auth('api')->id(),
-                'received_at' => $data['received_at'] ?? date('Y-m-d'),
-                'status' => $data['status'] ?? VisitPayment::StatusReceived,
-                'notes' => $data['notes'],
-                'created_by' => Auth::id() ?? auth('api')->id(),
-                'updated_by' => Auth::id() ?? auth('api')->id(),
+                'reference'      => $data['reference'] ?? null,
+                'received_by'    => $data['received_by'] ?? $userId,
+                'received_at'    => $data['received_at'] ?? now(),
+                'status'         => $data['status'] ?? VisitPayment::StatusReceived,
+                'notes'          => $data['notes'] ?? null,
+                'created_by'     => $userId,
+                'updated_by'     => $userId,
             ]);
-            DB::commit();
-            return $query;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            return $e->getMessage();
-        }
+
+            //Add to Ledger
+            $ledger = new EMRLedgerService();
+            $payment_ledger = $ledger->createLedgerEntry($data['patient_id'], $data['visit_id'], null, $payment->id, 'credit', 'credit');
+
+            return $payment->fresh(['allocations']);
+        });
     }
+
 
     public function emr_visit_payment_deactivate($id){
-        DB::beginTransaction();
-        try{
-            $query = VisitPayment::find($id);
-            
-            $query->status = VisitPayment::StatusTransferred;
-            $query->updated_by = Auth::id() ?? auth('api')->id();
-            $query->deleted_by = Auth::id() ?? auth('api')->id();
-            $query->deleted_at = date('Y-m-d H:i:s');
-            
-            $allocations = VisitPaymentAllocation::where('visit_payment_id', '=', $id)->get();
+        return DB::transaction(function () use ($id) {
+            $userId = auth('api')->id() ?? Auth::id();
+            $payment = VisitPayment::with('allocations')->lockForUpdate()->findOrFail($id);
 
-            foreach($allocations as $allocation){
-                $allocation->updated_at = date('Y-m-d H:i:s');
-                $allocation->deleted_at = date('Y-m-d H:i:s');
+            if ($payment->status == VisitPayment::StatusReversed) {throw new Exception('Payment already reversed.');}
 
-                $allocation->save();
-            }
+            $patient = Patient::lockForUpdate()->findOrFail($payment->patient_id);
 
-            $query->save();
+            $ledger = new EMRLedgerService();
+            $payment_ledger = $ledger->createLedgerEntry($patient->id, $payment->visit_id, null, $payment->id, 'reversal', 'debit');
             
-            DB::commit();
-            return $query;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            return $e->getMessage();
-        }
+            $payment->status = VisitPayment::StatusReversed;
+            $payment->updated_by = $userId;
+            $payment->save();
+
+            return $payment;
+        });
     }
+
 
     public function emr_visit_payment_get_all($type, $specific, $detailed, $paginated){
         $query = VisitPayment::where('branch_id', '=', request()->cookie('current_branch'));
@@ -402,6 +437,9 @@ trait VisitTransactionTrait{
         try{
             $query = VisitPayment::where('id', '=', $id);
 
+            $ledger = new EMRLedgerService();
+            $payment_ledger = $ledger->createLedgerEntry($query->patient_id, $query->visit_id, null, $query->id, 'reversal', 'debit');
+
             $query->visit_id = $data['visit_id'] ?? $query->visit_id;
             $query->patient_id = $data['patient_id'] ??$query->patient_id;
             $query->amount = $data['amount'] ?? $query->amount;
@@ -415,72 +453,13 @@ trait VisitTransactionTrait{
 
             $query->save();
 
+            $payment_ledger = $ledger->createLedgerEntry($query->patient_id, $query->visit_id, null, $query->id, 'reversal', 'debit');
+
             return $query;
         }
         catch(Exception $e){
             DB::rollBack();
             return $e->getMessage(); 
-        }
-    }
-
-    public function emr_visit_payment_allocation_create($payment_id, $transactions)
-    {
-        DB::beginTransaction();
-
-        try {
-            $payment = VisitPayment::with('allocations')->findOrFail($payment_id);
-            $payment_balance = $payment->balance;
-
-            if ($payment_balance <= 0) {
-                return 'No available balance to allocate.';
-            }
-
-            foreach ($transactions as $transaction) {
-                // Only billable & not cancelled
-                if (!$transaction->billable || $transaction->status == VisitTransaction::StatusCancelled) {
-                    continue;
-                }
-
-                // Determine payable amount
-                if ($transaction->coverage && $transaction->coverage->approval_status == VisitTransactionCoverage::ApprovalApproved) {
-                    $total_payable = $transaction->coverage->patient_payable;
-                } 
-                else {
-                    $total_payable = $transaction->amount;
-                }
-
-                // Already paid for this transaction
-                $already_paid = $transaction->paymentAllocations()->sum('amount');
-
-                $outstanding = max(0, $total_payable - $already_paid);
-
-                if ($outstanding <= 0) {
-                    continue;
-                }
-
-                // Allocate
-                $amount_to_allocate = min($payment_balance, $outstanding);
-
-                VisitPaymentAllocation::create([
-                    'visit_payment_id' => $payment->id,
-                    'visit_transaction_id' => $transaction->id,
-                    'amount' => $amount_to_allocate,
-                ]);
-
-                $payment_balance -= $amount_to_allocate;
-
-                if ($payment_balance <= 0) {
-                    break;
-                }
-            }
-
-            DB::commit();
-            return $payment->fresh(['allocations']);
-
-        } 
-        catch (Exception $e) {
-            DB::rollBack();
-            return $e->getMessage();
         }
     }
 }

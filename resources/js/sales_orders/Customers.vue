@@ -59,7 +59,10 @@
 </section>
 </template>
 <script>
+import CRMFormCustomer from '@/crm/forms/Customer.vue';
+import CRMDetailCustomerList from '@/crm/details/CustomerList.vue';
 export default {
+    components:{CRMFormCustomer, CRMDetailCustomerList},
     data() {
         return {
             current_page: 1,

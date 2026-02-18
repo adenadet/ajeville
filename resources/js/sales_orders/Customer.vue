@@ -54,7 +54,12 @@
     </section>
 </template>
 <script>
+import CRMFormCustomer from '@/crm/forms/Customer.vue';
+import CRMDetailContactList from '@/crm/details/ContactList.vue';
+import CRMDetailCustomerSummary from '@/crm/details/CustomerSummary.vue';
+import FinanceDetailTransactionList from '@/finance/details/TransactionList.vue';
 export default {
+    components:{CRMDetailCustomerSummary, CRMFormCustomer, CRMDetailContactList, FinanceDetailTransactionList},
     data() {
         return {
             contacts: [],

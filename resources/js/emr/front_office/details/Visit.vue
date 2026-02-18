@@ -223,7 +223,7 @@ export default {
                         </li>
                         <li class="small">
                             <span class="fa-li"><i class="fas fa-money-bill"></i></span>
-                            Balance: {{ currency(visit.patient.balance) }}
+                            Balance: <span :class="patient?.balance < 0 ? 'text-primary' : 'text-danger'">{{currency(patient?.balance)}}</span>
                         </li>
                         <li class="small">
                             <span class="fa-li"><i class="fas fa-stopwatch"></i></span>

@@ -7,7 +7,19 @@
                     <input type="text" class="form-control" id="name" placeholder="Enter name" v-model="specimenTypeData.name">
                 </div>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Storage Temperature in Celsius</label>
+                    <input type="number" step="0.01" class="form-control" id="storage_temp" placeholder="Enter Storage Temperature in Celsius" v-model="specimenTypeData.storage_temp">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Stability Duration in Hours</label>
+                    <input type="text" class="form-control" id="stability_duration" placeholder="Enter Stability Duration in Hours" v-model="specimenTypeData.stability_duration">
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="form-group">
                     <label>Status</label>
                     <select class="form-control" id="status" name="status" v-model="specimenTypeData.status">

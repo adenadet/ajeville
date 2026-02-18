@@ -93,7 +93,17 @@ import useInvoiceTools from '@/globalMethods/useInvoiceTools';
 import { create } from 'lodash';
 import {ref} from 'vue';
 
+import ApprovalFormSalesOrder from '@/approvals/forms/SalesOrder.vue';
+import InventoryFormFulfill from '@/inventory/forms/Fulfill.vue';
+import SalesDetailOrder from '@/sales_orders/details/Order.vue';
+import SalesFormDeliveryNote from '@/sales_orders/forms/DeliveryNote.vue';
+import SalesFormFulfillOrderItem from '@/sales_orders/forms/FulfillOrderItem.vue'
+import SalesFormOrder from '@/sales_orders/forms/Order.vue';
+
 export default {
+    components: {
+        ApprovalFormSalesOrder, InventoryFormFulfill, SalesDetailOrder, SalesFormOrder, SalesFormDeliveryNote, SalesFormFulfillOrderItem
+    },
     computed:{
         sub_total(){
             if (!this.order.order_items?.length) return 0;

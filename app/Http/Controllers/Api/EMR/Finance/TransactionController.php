@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Finance;
+namespace App\Http\Controllers\Api\EMR\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\VisitTransactionTrait;
@@ -65,6 +65,14 @@ class TransactionController extends Controller
         return response()->json([
             'transaction' => VisitTransaction::where('id', '=', $id)->with(['creator', 'payments.creator', 'patient.user', 'service_type', 'visit', ])->first(),
         ]);
+    }
+
+    public function payment($id){
+        $transaction = $this->emr_visit_transaction_payment($id, $_GET['forced']);
+
+        return response()->json([
+            'transaction' => $transaction,
+        ], is_string($transaction) ? 500 : 200);
     }
 
     public function update(Request $request, $id)

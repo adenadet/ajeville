@@ -76,6 +76,7 @@ export default {
             stores: [],
         }
     },
+    emits: ['refreshPatientServiceForm'],
     methods: {
         addServices(){
             this.loading = true;
@@ -84,9 +85,10 @@ export default {
             this.billForm.post('/api/emr/hims/visit_transactions')
             .then(response =>{
                 this.$swal.fire('Success', 'Visit Transactions created', 'success');
+                this.$emit('refreshPatientServiceForm');
             })
             .catch(()=>{
-                this.$swal.fire('Error', 'Unable to check in patient', 'error')
+                this.$swal.fire('Error', 'Unable to create transaction', 'error')
             })
             .finally(()=>{
                 this.loading =false;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Finance;
+namespace App\Http\Controllers\Api\EMR\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;

@@ -346,9 +346,7 @@ trait VisitTrait{
             $visit = Visit::lockForUpdate()->findOrFail($id);
 
             $invalidTransactions = VisitTransaction::where('visit_id', $id)
-                ->where('status', VisitTransaction::StatusCompleted)
-                ->get()
-                ->filter(function ($transaction) {
+                ->where('status', VisitTransaction::StatusCompleted)->get()->filter(function ($transaction) {
                     return (float) $transaction->outstanding_amount > 0;
                 });
 
@@ -360,31 +358,20 @@ trait VisitTrait{
 
             if ($pendingTransactions->isNotEmpty()) {
                 $pendingTransactions->each(function ($transaction) use ($cancel) {
-                    $transaction->status = $cancel
-                        ? VisitTransaction::StatusCancelled
-                        : VisitTransaction::StatusDeferred;
-
+                    $transaction->status = $cancel ? VisitTransaction::StatusCancelled : VisitTransaction::StatusDeferred;
                     $transaction->save();
                 });
             }
 
-            /*
-             |------------------------------------------------------------
-             | 3. Complete visit & appointments only if no pending txns
-             |------------------------------------------------------------
-             */
             if ($pendingTransactions->isEmpty()) {
 
                 $visit->status = Visit::StatusClosed;
+                $visit->end_date = date('Y-m-d');
+                $visit->end_timestamp = date('Y-m-d H:i:s');
                 $visit->ended_at = now();
                 $visit->save();
 
-                Appointment::where('visit_id', $id)
-                    ->where('status', '!=', Appointment::StatusCompleted)
-                    ->update([
-                        'status' => Appointment::StatusCompleted,
-                        'updated_at' => now(),
-                    ]);
+                Appointment::where('visit_id', $id)->where('status', '!=', Appointment::StatusCompleted)->update(['status' => Appointment::StatusCompleted, 'updated_by' => auth('api')->id() ?? Auth::id(),]);
             }
 
             return true;
@@ -450,7 +437,7 @@ trait VisitTrait{
 
     public function emr_visit_get_by($type, $id, $detailed){
         try{
-            $query = Visit::where('id', '=', $id)->orWhere('unique_id', '=', $id);
+            $query = Visit::Where('unique_id', '=', $id);
             $query = $detailed ? $query->with(['branch', 'patient.user', 'price_list']) :$query->with(['patient.user']);
 
             return $query->firstOrFail();

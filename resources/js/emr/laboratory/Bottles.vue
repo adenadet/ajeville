@@ -62,8 +62,9 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryFormBottle from '@/emr/laboratory/forms/Bottle.vue';
 export default {
-    data() {
+    components:{EMRLaboratoryFormBottle},    data() {
         return {
             bottles: {},
             bottle: {},

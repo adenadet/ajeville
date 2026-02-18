@@ -48,7 +48,12 @@
 </div>
 </template>
 <script>
+import SalesDetailQuotationList from '@/sales_orders/details/QuotationList.vue';
+import SalesFormQuotation from '@/sales_orders/forms/Quotation.vue';
 export default {
+    components: {
+        SalesDetailQuotationList, SalesFormQuotation 
+    },
     data() {
         return {
             current_page: 1,

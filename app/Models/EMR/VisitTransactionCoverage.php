@@ -19,22 +19,32 @@ class VisitTransactionCoverage extends Structure
     const ClaimPaid      = 100;
     const ClaimRejected  = 4000;
 
-    protected $table = 'visit_transaction_coverages';
+    protected $table = 'emr_visit_transaction_coverages';
 
-    protected $fillable = ['visit_transaction_id', 'provider_id', 'plan_id', 'authorization_code', 'covered_amount', 'patient_payable', 'coverage_percent', 'approval_status', 'claim_status', 'notes',];
+    protected $fillable = ['visit_transaction_id', 'provider_id', 'plan_id', 'authorization_code', 'covered_amount', 'patient_payable', 'coverage_percent', 'approval_status', 'claim_status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'];
 
-    public function visit_transaction()
-    {
-        return $this->belongsTo('App\Models\EMR\VisitTransaction', 'visit_transaction_id', 'id');
+    public function creator(){
+        return $this->belongsTo('App\Models\User', 'created_by', 'id');
     }
 
-    public function provider()
-    {
+    public function deleter(){
+        return $this->belongsTo('App\Models\User', 'deleted_by', 'id');
+    }
+
+    public function plan(){
+        return $this->belongsTo('App\Models\Insurance\Plan','plan_id','id');
+    }
+
+    public function provider(){
         return $this->belongsTo('App\Models\Insurance\Provider', 'provider_id', 'id');
     }
 
-    public function plan()
-    {
-        return $this->belongsTo('App\Models\Insurance\Plan','plan_id','id');
+    public function updater(){
+        return $this->belongsTo('App\Models\User', 'updated_by', 'id');
     }
+
+    public function visit_transaction(){
+        return $this->belongsTo('App\Models\EMR\VisitTransaction', 'visit_transaction_id', 'id');
+    }
+
 }

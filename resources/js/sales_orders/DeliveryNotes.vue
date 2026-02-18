@@ -5,7 +5,7 @@
             <div class="card-header bg-navy">
                 <h3 class="card-title">Delivery Notes</h3>
             </div>
-            <div class="card-body table-responsive p-0">
+            <div class="card-body table-responsive p-0" style="height:600px;">
                 <SalesDetailDeliveryNoteList :delivery_notes.sync="delivery_notes.data" source="main"/>
             </div>
             <div class="card-footer">
@@ -15,7 +15,12 @@
     </section>
 </template>
 <script>
+import SalesDetailDeliveryNoteList from '@/sales_orders/details/DeliveryNoteList.vue';
+import SalesFormDeliveryNote from '@/sales_orders/forms/DeliveryNote.vue';
 export default {
+    components: {
+        SalesDetailDeliveryNoteList, SalesFormDeliveryNote 
+    },
     data(){
         return {
             current_page: 1,

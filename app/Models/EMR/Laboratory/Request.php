@@ -12,10 +12,9 @@ class Request extends Structure
     const StatusBooked = 0;
     const StatusStarted = 1;
     const StatusSampleCollected = 2;
-    const StatusReferredOut = 5;
-    const StatusReported = 10;
-    const StatusSecondaryReport = 15;
+    const StatusOngoing = 4;
     const StatusConfirmed = 20;
+    const StatusCancelled = 100;
 
     protected $primaryKey = 'id';
     protected $table = 'emr_laboratory_requests';

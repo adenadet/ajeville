@@ -146,7 +146,16 @@
 </section>
 </template>
 <script>
+import ApprovalFormSalesOrder from '@/approvals/forms/SalesOrder.vue';
+import InventoryFormFulfill from '@/inventory/forms/Fulfill.vue';
+import SalesFormDeliveryNote from '@/sales_orders/forms/DeliveryNote.vue';
+import SalesFormFulfillOrderItem from '@/sales_orders/forms/FulfillOrderItem.vue'
+import SalesFormOrder from '@/sales_orders/forms/Order.vue';
+
 export default {
+    components: {
+        ApprovalFormSalesOrder, InventoryFormFulfill, SalesFormOrder, SalesFormDeliveryNote, SalesFormFulfillOrderItem
+    },
     computed:{
         sub_total(){
             if (!this.order.order_items?.length) return 0;
@@ -192,12 +201,10 @@ export default {
                     title: 'Returns were not loaded successfully',
                 })
             });
-            this.loading = false;
-                
+            this.loading = false;  
         },
         refreshPage(response) {
             this.accounts = response.data.accounts;
-            //this.company = response.data.company;
             this.closeModals();
         },
         updateOrder(){

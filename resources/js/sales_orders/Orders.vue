@@ -50,7 +50,10 @@
 </section>
 </template>
 <script>
+import SalesDetailOrderList from '@/sales_orders/details/OrderList.vue';
+import SalesFormOrder from '@/sales_orders/forms/Order.vue';
 export default {
+    components: {SalesDetailOrderList, SalesFormOrder},
     data() {
         return {
             current_page: 1,

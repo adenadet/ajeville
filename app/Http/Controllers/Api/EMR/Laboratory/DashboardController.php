@@ -15,14 +15,14 @@ class DashboardController extends Controller
 
     public function index(){
         return response()->json([
-            'completed' => $this->laboratory_request_get_all('paid', null, false, false, $_GET['page'] ?? 1),
-            'completed_referred_in' => $this->laboratory_request_get_all('referred_in', 'pending', false, false, $_GET['page'] ?? 1),
-            'completed_referred_out' => $this->laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
-            'emergency' => $this->laboratory_request_get_all('emergency', null, false, false, $_GET['page'] ?? 1),
-            'new' => $this->laboratory_request_get_all('paid', null, false, false, $_GET['page'] ?? 1),
-            'pending_referred_in' => $this->laboratory_request_get_all('referred_in', 'pending', false, false, $_GET['page'] ?? 1),
-            'pending_referred_out' => $this->laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
-            'unapproved' => $this->laboratory_request_get_all('unapproved', null, false, false, $_GET['page'] ?? 1),
+            'completed' => $this->emr_laboratory_request_get_all('paid', null, false, false, $_GET['page'] ?? 1),
+            'completed_referred_in' => $this->emr_laboratory_request_get_all('referred_in', 'pending', false, false, $_GET['page'] ?? 1),
+            'completed_referred_out' => $this->emr_laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
+            'emergency' => $this->emr_laboratory_request_get_all('emergency', null, false, false, $_GET['page'] ?? 1),
+            'new' => $this->emr_laboratory_request_get_all('paid', null, false, false, $_GET['page'] ?? 1),
+            'pending_referred_in' => $this->emr_laboratory_request_get_all('referred_in', 'pending', false, false, $_GET['page'] ?? 1),
+            'pending_referred_out' => $this->emr_laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
+            'unapproved' => $this->emr_laboratory_request_get_all('unapproved', null, false, false, $_GET['page'] ?? 1),
         ]);
     }
     

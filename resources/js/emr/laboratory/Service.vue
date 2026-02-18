@@ -11,8 +11,11 @@
 </section>
 </template>
 <script>
+import EMRLaboratoryDetailReferenceRangeList from '@/emr/laboratory/details/ReferenceRangeList.vue';
+import EMRLaboratoryDetailService from '@/emr/laboratory/details/Service.vue';
+
 export default {
-    data() {
+    components:{EMRLaboratoryDetailService},    data() {
         return {
             loading: false,
             item: {},

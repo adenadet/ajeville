@@ -28,7 +28,10 @@
     </section>
 </template>
 <script>
+import EMRInsuranceDetailTransactionList from '@/emr/insurance/details/TransactionList.vue'
 export default {
+    components:{EMRInsuranceDetailTransactionList},
+
     data() {
         return {
             current_page: 1,

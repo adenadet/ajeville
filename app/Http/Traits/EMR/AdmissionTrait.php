@@ -22,6 +22,7 @@ use App\Models\EMR\Consultation\SpecialtyDoctor;
 use App\Models\Operations\Branch;
 use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Patient\Insurance;
+use App\Models\EMR\Pharmacy\Prescription;
 use App\Models\EMR\Service as EMRService;
 use App\Models\EMR\Visit;
 use App\Models\EMR\VisitTransaction;
@@ -245,7 +246,11 @@ trait AdmissionTrait{
             ]);
 
             //Add Bed cost to Patient's bill here
-            $billing_service->createCharge($query,1);
+            $transaction = $billing_service->createCharge($query,1);
+            if ($transaction->status == VisitTransaction::StatusCompleted){
+                $query->status = BedAssignment::StatusAssigned;
+                $query->save();
+            }
 
             //Update Bed Status to In Use
             $bed->assignment_status = Bed::AssignmentStatusInUse;
@@ -253,8 +258,10 @@ trait AdmissionTrait{
             $bed->save();
 
             //Update Admission Status to Bed Assigned
-            $admission->status = AdmissionRequest::StatusBedAssigned;
-            $admission->updated_by =auth('api')->id() ?? Auth::id();
+            $admission->bed_assigned_by = auth('api')->id() ?? Auth::id();
+            $admission->bed_assigned_by = now();
+            $admission->status = $transaction->status == VisitTransaction::StatusCompleted ? AdmissionRequest::StatusBedAssigned : AdmissionRequest::StatusBilled;
+            $admission->updated_by = auth('api')->id() ?? Auth::id();
             $admission->save();
 
             DB::commit();
@@ -575,6 +582,48 @@ trait AdmissionTrait{
     --------------------------------------------------------------
     */
 
+    public function admission_request_admit($data, $id){
+        DB::beginTransaction();
+        try{
+            $query = AdmissionRequest::with(['bed_assignment', 'admission_type', 'pre_admission_checks', 'visit.transactions'])->findOrFail($id);
+
+            if(empty($query->bed_assignment)){
+                throw new Exception('No Bed Assigned can not admit');
+            }
+            else{
+                //Debit the Patient for the BedAssignment
+                if ($query->bed_assignment->status == BedAssignment::StatusPending){
+                    $billing = new BedBillingService();
+
+                    /*$paid = $billing->makePayment($query->bed_assignment);
+
+                    if ($paid){}
+                    else{
+                        throw new Exception('Payment has not been made');
+                    }
+                    */
+
+                }
+            }
+            
+            $query->status = AdmissionRequest::StatusAdmitted;
+            $query->admitted_date = $data['admit_date'] ?? date('Y-m-d');
+            $query->admitted_at = now();
+            $query->admitted_by = auth('api')->id() ?? Auth::id();
+
+            $query->save();
+
+            DB::commit();
+            $this->log_user_activity('Admission Started', $query->id, true);
+            return $query;
+        }
+        catch(Exception $e){   
+            DB::rollBack();
+            $this->log_user_activity('Admission Started', null, false);
+            return $e->getMessage();
+        }
+    }
+
     public function admission_request_confirm($id){
         DB::beginTransaction();
 
@@ -665,6 +714,61 @@ trait AdmissionTrait{
         }
     }
 
+    public function admission_request_discharge($data, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $admission = AdmissionRequest::with(['visit'])->where('id', $id)->whereNull('discharged_at')->firstOrFail();
+
+            Prescription::where('patient_id', $admission->patient_id)->whereNull('stopped_at')->update(['stopped_at' => now(), 'stopped_reason' => 'Discharged']);
+
+            $transactions = VisitTransaction::where('visit_id', $admission->visit_id)->where('created_at', '>=', $admission->admitted_at)->get();
+
+            foreach ($transactions as $transaction) {
+                $adminAmount = $transaction->amount * 0.20;
+                VisitTransaction::create([
+                    'visit_id'     => $admission->visit_id,
+                    'item_id'      => config('emr.admin_charge_item_id'),
+                    'description'  => 'Administrative Charge (20%)',
+                    'amount'       => $adminAmount,
+                    'quantity'     => 1,
+                    'unit_price'   => $adminAmount,
+                    'created_by'   => auth('api')->id() ?? Auth::id(),
+                    'updated_by'   => auth('api')->id() ?? Auth::id(),
+                ]);
+            }
+
+            $admission->update([ 
+                'discharged_at' => now(), 
+                'discharge_directions' => $data['directions'] ?? null,
+                'discharge_diet' => $data['diet'] ?? null,
+                'updated_by'   => auth('api')->id() ?? Auth::id(),
+            ]);
+
+            if (!empty($data['appointments'])) {
+                foreach ($data['appointments'] as $appt) {
+                    Consultation::create([
+                        'admission_request_id' => $admission->id,
+                        'doctor_name' => $appt['doctor_name'] ?? null,
+                        'appointment_date' => $appt['date'] ?? null,
+                        'appointment_time' => $appt['time'] ?? null,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            $this->log_user_activity('Admission Discharge initiated', $id, true);
+            return $this->admission_request_get_by(null, $id, true);
+        } 
+        catch (Exception $e) {
+            DB::rollBack();
+            $this->log_user_activity('Admission Discharge initiated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
     public function admission_request_get_all($type, $specific, $detailed, $paginated){
         $query = AdmissionRequest::query();
 
@@ -673,11 +777,17 @@ trait AdmissionTrait{
             case 'admitted':
                 $query = $query->where('status', '=', AdmissionRequest::StatusAdmitted);
             break;
-            case 'bed':
+            case 'bed_assigned':
                 $query = $query->where('status', '=', AdmissionRequest::StatusBedAssigned);
             break;
+            case 'billed':
+                $query = $query->where('status', '=', AdmissionRequest::StatusBilled);
+            break;
+            case 'confirmed':
+                $query = $query->where('status', '=', AdmissionRequest::StatusConfirmed);
+            break;
             case 'deleted':
-                $query = $query->where('status', '=', AdmissionRequest::StatusDeleted);
+                $query = $query->where('status', '=', AdmissionRequest::StatusDeleted)->withTrashed();
             break;
             case 'discharged':
                 $query = $query->where('status', '=', AdmissionRequest::StatusDischarged);
@@ -717,8 +827,10 @@ trait AdmissionTrait{
     public function admission_request_get_by($type, $id, $detailed){
         try{
             $query = AdmissionRequest::where('id', '=', $id);
-            $query = $detailed ? $query->with(['bed_assignment.bed.ward', 'bed_assignment.bed.room', 'bed_assignment.bed.room_type', 'patient.user', 'visit']) : $query->select('id', 'name');
+            $query = $detailed ? $query->with(['admission_type', 'bed_assignment.bed.ward', 'bed_assignment.bed.room', 'bed_assignment.bed.room_type', 'patient.user', 'pre_admission_checks', 'requester', 'visit']) : $query->select('id', 'name');
             $query = $query->firstOrFail();
+
+            return $query;
         }
         catch(Exception $e){
             return $e->getMessage();

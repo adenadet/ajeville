@@ -17,7 +17,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-warning">
                     <h3 class="card-title">Laboratory Result Templates</h3>
                 </div>
                 <div class="card-body p-0 table-responsive" style="height:500px;">

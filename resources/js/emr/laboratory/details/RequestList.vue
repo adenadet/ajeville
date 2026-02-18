@@ -1,7 +1,7 @@
 <template>
     <section class="overlay-wrapper p-0">
         <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
-        <!--div class="modal fade" id="requestFormModal">
+        <div class="modal fade" id="requestFormModal">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header bg-dark">
@@ -9,11 +9,11 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="text-white">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <EMRFormBranch :branch.sync="branch" :editMode="editMode" :source="source" @refreshBranchForm="refreshPage"/>
+                        <EMRLaboratoryFormRequest :request.sync="request" :editMode="editMode" @refreshLaboratoryRequestForm="refreshPage"/>
                     </div>
                 </div>
             </div>
-        </div-->
+        </div>
         <table class="table table-head-fixed text-nowrap table-stripped table-hover" :id="actionable == 'yes' ? 'example1' : ''">
             <thead>
                 <tr>
@@ -23,7 +23,9 @@
                     <th>Category</th>
                     <th>Item</th>
                     <th>Status</th>
-                    <th v-if="source == 'laboratory'"><button class="btn btn-xs btn-primary" @click="addRequest"><i class="fa fa-plus"></i></button></th>
+                    <th>
+                        <!--button class="btn btn-xs btn-primary" @click="addRequest"><i class="fa fa-plus"></i></button-->
+                    </th>
                 </tr>
             </thead>
             <tbody v-if="requests.length > 0">
@@ -55,21 +57,28 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryFormRequest from '@/emr/laboratory/forms/Request.vue'
 export default {
+    components:{EMRLaboratoryFormRequest},
     data() {
         return {
             editMode: true,
             loading: false,
+            request: {},
         }
     },
-    mounted() {
-        
-    },
+    emits:['refreshLaboratoryRequestList'],
+    mounted() {},
     methods: {
         addRequest(){
             this.loading = true;
-
+            this.request = {};
+            $('#requestFormModal').modal('show');
             this.loading = false;
+        },
+        closeModals(){
+            $('#requestFormModal').modal('hide');
+            this.$emit('refreshLaboratoryRequestList');
         },
         pay_from_wallet(id){
             this.$swal.fire({
@@ -94,7 +103,10 @@ export default {
                     });
                 }
             });
-        }
+        },
+        refreshPage(){
+            this.closeModals();
+        },
     },
     props: {
         actionable: String,

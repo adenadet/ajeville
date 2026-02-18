@@ -15,13 +15,18 @@
         <tbody v-if="requests.length > 0">
             <tr v-for="(request, index) in requests">
                 <td>{{ addOne(index) }}</td>
-                <td>{{ request.date }}</td>
+                <td>{{ ExcelDate(request.date) }}</td>
                 <td>{{ patientName(request.patient)  }}</td>
-                <td><span class="tag tag-success">Approved</span></td>
+                <td>{{ request.item?.category?.name }}</td>
+                <td>{{ request.item?.name }}</td>
+                <td>
+                    <span v-if="request.status == 1" class="badge badge-success">Approved</span>
+                    <span v-else-if="request.status == 0" class="badge badge-warning">Unprocessed</span>
+                </td>
                 <td>
                     <button class="nav-link btn btn-tool" data-toggle="dropdown" type="button"><i class="fa fa-ellipsis-v text-dark"></i></button>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <button class="dropdown-item btn btn-block btn-sm" @click="viewRequest(request)"><i class="fa fa-eye mr-1 text-primary"></i> View Request</button>
+                        <router-link class="dropdown-item btn btn-block btn-sm" :to="'/emr/radiology/requests/'+request.id"><i class="fa fa-eye mr-1 text-primary"></i> View Request</router-link>
                         <button class="dropdown-item btn btn-block btn-sm" @click="updateRequest(request)"><i class="fa fa-edit mr-1 text-warning"></i> Update Request</button>
                         <button class="dropdown-item btn btn-block btn-sm" @click="cancelRequest(request)"><i class="fa fa-times mr-1 text-danger"></i> Cancel Request</button>
                     </div>

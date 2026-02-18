@@ -121,6 +121,22 @@ class VisitationController extends Controller
         return response('Cookie has been set'.$visit['id'])->cookie($cookie);
     }
 
+    public function show($id)
+    {
+        if (!empty($id)){
+            $visit = $this->emr_visit_get_by(null, $id, true);
+            $patient = is_string($visit) ? null : $visit->patient;
+            return response()->json([
+                'visit' => $visit,
+                'patient' => $patient,
+                'transactions' => $this->emr_visit_transaction_get_all('all', ['visit_id' => $visit->id], true, true),
+            ], is_string($visit) ? 500 : 200);
+        }
+        else{
+            return response()->json(['visit' => null, 'patient' => null,]);
+        }
+    }
+
     public function start(Request $request, $id)
     {
         $visit = $this->visit_start($id);
@@ -160,22 +176,6 @@ class VisitationController extends Controller
             'visit' => $visit,
             'patient' => $this->emr_patient_get_by_id(null, $visit->patient_id, true),
         ], is_string($visit) ? 500 : 201);
-    }
-
-    public function show($id)
-    {
-        if (!empty($id)){
-            $visit = $this->emr_visit_get_by(null, $id, true);
-            $patient = is_string($visit) ? null : $visit->patient;
-                
-            return response()->json([
-                'visit' => $visit,
-                'patient' => $patient,
-            ], is_string($visit) ? 500 : 200);
-        }
-        else{
-            return response()->json(['visit' => null, 'patient' => null,]);
-        }
     }
 
     public function transactions(Request $request)

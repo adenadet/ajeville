@@ -3,9 +3,8 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Fixed Header Table</h3>
-
+                <div class="card-header bg-warning">
+                    <h3 class="card-title">Specimens</h3>
                     <div class="card-tools">
                         <div class="input-group" style="width: 550px;">
                             <input type="text" name="table_search" class="form-control float-right" placeholder="Search">

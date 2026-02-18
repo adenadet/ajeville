@@ -17,10 +17,10 @@ class VisitPayment extends Structure
 
     const DefaultPaymentMethod = 0;
 
-    protected $table = 'visit_payments';
+    protected $table = 'emr_visit_payments';
 
     protected $fillable = [
-        'visit_id', 'patient_id', 'amount', 'payment_method', 'reference', 'received_by', 'received_at', 'status', 'notes',
+        'visit_id', 'patient_id', 'amount', 'payment_method', 'reference', 'received_by', 'received_at', 'status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at', 
     ];
 
     protected $casts = [
