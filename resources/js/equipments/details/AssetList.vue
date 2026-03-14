@@ -83,7 +83,13 @@
 </section>
 </template>
 <script>
+import EquipmentFormAsset from '@/equipments/forms/Asset.vue';
+import EquipmentDetailAsset from '@/equipments/details/Asset.vue';
+
 export default {
+    components:{
+        EquipmentDetailAsset, EquipmentFormAsset,
+    },
     data() {
         return {
             asset: {},

@@ -48,7 +48,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailInvoiceList from '@/finance/details/InvoiceList.vue';
+import FinanceFormInvoice from '@/finance/forms/Invoice.vue';
 export default {
+    components:{
+        FinanceDetailInvoiceList, FinanceFormInvoice
+    },
     data() {
         return {
             active_visits: 0,

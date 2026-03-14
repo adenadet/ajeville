@@ -29,6 +29,12 @@
                     </select>
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Analytes</label>
+                    <Multiselect id="tagging" v-model="serviceForm.analytes" tag-placeholder="Add this as new tag" placeholder="Search or add a tag" label="name" track-by="id" :options="analytes" :multiple="true" :close-on-select="false" :clear-on-select="false" :taggable="true" @tag="addTag" />
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="form-group">
                     <label>Bottle Type</label>
@@ -54,7 +60,7 @@
                 </div>
             </div>
         </div>    
-        <button type="submit" class="btn btn-primary" >Submit</button>
+        <button type="submit" class="btn btn-primary">{{editMode ? 'Update' :'Submit'}}</button>
     </form>
 </section>
 </template>
@@ -62,12 +68,14 @@
 export default {
     data() {
         return {
+            analytes: [],
             bottle_types: [],
             categories: [],
             loading: false,
             result_templates: [],
             specimen_types: [],
             serviceForm: new Form({
+                analytes: [],
                 bottle_type_id: '',
                 category_id: '',
                 description: '',
@@ -80,6 +88,14 @@ export default {
     },
     emits:['refreshServiceForm'],
     methods: {
+        addTag (newTag) {
+            const tag = {
+                name: newTag,
+                code: newTag.substring(0, 2) + Math.floor((Math.random() * 10000000))
+            }
+            this.analytes.push(tag)
+            this.serviceForm.analytes.push(tag)
+        },
         createService(){
             this.loading = true;
             this.serviceForm.post('/api/emr/laboratory/services')
@@ -103,6 +119,7 @@ export default {
             });
         },
         refreshPage(response) {
+            this.analytes = response.data.analytes;
             this.bottle_types = response.data.bottle_types;
             this.categories = response.data.categories;
             this.result_templates = response.data.result_templates;
@@ -111,7 +128,7 @@ export default {
         updateService(){
             this.loading = true;
             this.serviceForm.put('/api/emr/laboratory/services/'+this.serviceForm.id)
-            .then(response => {
+            .then(() => {
                 this.$emit('refreshServiceForm');
             })
             .catch(() => {
@@ -132,7 +149,6 @@ export default {
     watch:{
         service(){
             this.serviceForm.fill(this.service);
-
             this.serviceForm.name = this.service?.service?.item?.name || '';
         }
     }

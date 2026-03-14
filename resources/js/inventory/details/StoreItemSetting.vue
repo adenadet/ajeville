@@ -44,7 +44,11 @@
 </section>
 </template>
 <script>
+import InventoryFormStoreItemSetting from '@/inventory/forms/StoreItemSetting.vue';
 export default {
+    components:{
+        InventoryFormStoreItemSetting
+    },
     data(){
         return  {
             editMode: false,

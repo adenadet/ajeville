@@ -2,10 +2,11 @@
 
 namespace App\Models\Insurance;
 
+use App\Models\Structure;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ContactPerson extends Model
+class ContactPerson extends Structure
 {
     protected $primaryKey = 'id';
     protected $table = 'hmo_provider_contact_persons';

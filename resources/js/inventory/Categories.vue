@@ -62,7 +62,11 @@
 </section>
 </template>
 <script>
+import InventoryFormCategory from '@/inventory/forms/Category.vue';
 export default {
+    components:{
+        InventoryFormCategory
+    },
     data(){
         return  {
             categories: {},

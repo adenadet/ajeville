@@ -11,11 +11,15 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
     Route::get( '/consultations/visit/{id}',         'ConsultationController@visit')->name('consultations.visit');
     Route::get( '/drugs/initials',                   'DrugController@initials')->name('drugs.initials');
     Route::get( '/drugs/search',                     'DrugController@search')->name('drugs.search');
+    Route::get( '/insurances/initials',              'InsuranceController@initials')->name('insurances.initials');
     Route::get( '/investigations/initials/{id}',     'InvestigationController@initials')->name('investigations.initials');
     Route::get( '/laboratory/initials',              'LaboratoryController@initials')->name('laboratory.initials');
     Route::get( '/patients/all',                     'PatientController@all')->name('patients.all');
     Route::get( '/patients/initials',                'PatientController@initials')->name('patients.initials');
     Route::get( '/patients/{id}/insurances',         'PatientController@insurances')->name('patients.insurances');
+    Route::post('/patients/merge',                   'PatientController@merge')->name('patients.merge');
+    Route::get( '/patients/merge_preview',           'PatientController@merge_preview')->name('patients.merge_preview');
+    Route::get( '/patients/search',                  'PatientController@search')->name('patients.search');
     Route::post('/patients/set_cookie',              'PatientController@set_cookie')->name('patients.set_cookie');
     Route::get( '/prescriptions/initials',           'PrescriptionController@initials')->name('prescriptions.initials');
     Route::get( '/queues/doctor',                    'QueueController@doctor')->name('queues.doctor');
@@ -45,6 +49,7 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
         'dashboard'             => 'DashboardController',
         'drugs'                 => 'DrugController',
         'laboratory'            => 'LaboratoryController',
+        'insurances'            => 'InsuranceController',
         'investigations'        => 'InvestigationController',
         'patients'              => 'PatientController',
         'prescriptions'         => 'PrescriptionController',

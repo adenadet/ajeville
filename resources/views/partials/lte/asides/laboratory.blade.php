@@ -10,10 +10,10 @@
                 <li class="nav-item"><router-link to="/emr/laboratory/queues/hmo" class="nav-link"><i class="nav-icon far fa-circle"></i><p>Awaiting Insurance</p></router-link></li>
             </ul>
         </li-->
-        <li class="nav-item"><router-link to="/emr/laboratory/insurance" class="nav-link"><i class="nav-icon fas fa-users"></i><p>HMO Desk</p></router-link></li>  
+        <li class="nav-item"><router-link to="/emr/laboratory/insurance" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Insurance Desk</p></router-link></li>  
         <li class="nav-item"><router-link to="/emr/laboratory/point_of_sale" class="nav-link"><i class="nav-icon fas fa-cash-register"></i><p>Create Request</p></router-link></li>  
-        <!--li class="nav-item"><router-link to="/emr/laboratory/patient_search" class="nav-link"><i class="nav-icon fas fa-search"></i><p>Search for Patient</p></router-link></li>  
-        <li class="nav-item"><router-link to="/emr/laboratory/linked_images" class="nav-link"><i class="nav-icon fas fa-search"></i><p>See Image</p></router-link></li>  
+        <li class="nav-item"><router-link to="/emr/laboratory/specimens" class="nav-link"><i class="nav-icon fas fa-vials"></i><p>Specimen Management</p></router-link></li>  
+        <!--li class="nav-item"><router-link to="/emr/laboratory/linked_images" class="nav-link"><i class="nav-icon fas fa-search"></i><p>See Image</p></router-link></li>  
         <li class="nav-item"><router-link to="/emr/laboratory/completed" class="nav-link"><i class="nav-icon fas fa-search"></i><p>See Report</p></router-link></li-->  
         <li class="nav-item"><router-link to="/emr/laboratory/referred_out" class="nav-link"><i class="nav-icon fas fa-outdent"></i><p>Referred Out</p></router-link></li>  
         <li class="nav-item"><router-link to="/emr/laboratory/referred_in" class="nav-link"><i class="nav-icon fas fa-indent"></i><p>Referred In</p></router-link></li>  

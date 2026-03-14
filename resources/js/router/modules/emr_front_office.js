@@ -1,14 +1,19 @@
-const EMRFrontOfficeDashboard                  = () => import('../../emr/front_office/Dashboard.vue');
-const EMRFrontOfficeAppointment                = () => import('../../emr/front_office/Appointment.vue');
-const EMRFrontOfficeAppointments               = () => import('../../emr/front_office/Appointments.vue');
-const EMRFrontOfficeVisitBill                  = () => import('../../emr/front_office/VisitBill.vue');
-const EMRFrontOfficeVisit                      = () => import('../../emr/front_office/Visit.vue');
-const EMRFrontOfficeVisits                     = () => import('../../emr/front_office/Visits.vue');
+const EMRFrontOfficeDashboard                  = () => import('@/emr/front_office/Dashboard.vue');
+const EMRFrontOfficeAntenatals                 = () => import('@/emr/front_office/Antenatals.vue');
+const EMRFrontOfficeAppointment                = () => import('@/emr/front_office/Appointment.vue');
+const EMRFrontOfficeAppointments               = () => import('@/emr/front_office/Appointments.vue');
+const EMRFrontOfficeConsentForm                = () => import('@/emr/front_office/ConsentForm.vue');
+const EMRFrontOfficeConsentForms               = () => import('@/emr/front_office/ConsentForms.vue');
+const EMRFrontOfficePackages                   = () => import('@/emr/front_office/Packages.vue');
+const EMRFrontOfficeQueues                     = () => import('@/emr/front_office/Queues.vue');
+const EMRFrontOfficeVisitBill                  = () => import('@/emr/front_office/VisitBill.vue');
+const EMRFrontOfficeVisit                      = () => import('@/emr/front_office/Visit.vue');
+const EMRFrontOfficeVisits                     = () => import('@/emr/front_office/Visits.vue');
 
-    const EMRFrontOfficeDetailAppointmentList      = () => import('../../emr/front_office/details/AppointmentList.vue');    
-    const EMRFrontOfficeDetailTransactionList      = () => import('../../emr/front_office/details/TransactionList.vue');       
-    const EMRFrontOfficeDetailVisit                = () => import('../../emr/front_office/details/Visit.vue'); 
-    const EMRFrontOfficeDetailVisitList            = () => import('../../emr/front_office/details/VisitList.vue'); 
+    const EMRFrontOfficeDetailAppointmentList      = () => import('@/emr/front_office/details/AppointmentList.vue');    
+    const EMRFrontOfficeDetailTransactionList      = () => import('@/emr/front_office/details/TransactionList.vue');       
+    const EMRFrontOfficeDetailVisit                = () => import('@/emr/front_office/details/Visit.vue'); 
+    const EMRFrontOfficeDetailVisitList            = () => import('@/emr/front_office/details/VisitList.vue'); 
     
     const EMRFrontOfficeFormAppointment            = () => import('../../emr/front_office/forms/Appointment.vue');
     const EMRFrontOfficeFormCheckIn                = () => import('../../emr/front_office/forms/CheckIn.vue');
@@ -18,7 +23,7 @@ const EMRFrontOfficeVisits                     = () => import('../../emr/front_o
 const EMRPatientAll                             = () => import('../../emr/patients/All.vue');
 const EMRPatientAllergies                       = () => import('../../emr/patients/Allergies.vue');  
 const EMRPatientContacts                        = () => import('../../emr/patients/Contacts.vue'); 
-const EMRPatientPrescriptions                   = () => import('../../emr/patients/Prescriptions.vue');  
+const EMRPatientPrescriptions                   = () => import('../../emr/patients/Prescriptions.vue');
 const EMRPatientSearch                          = () => import('../../emr/patients/Search.vue');
 const EMRPatientSingle                          = () => import('../../emr/patients/Single.vue');  
 const EMRPatientVitals                          = () => import('../../emr/patients/Vitals.vue'); 
@@ -48,9 +53,18 @@ const EMRPatientVitals                          = () => import('../../emr/patien
 
 export default[
     {path: '/emr/front_office',                                 component: EMRFrontOfficeDashboard},
+    {path: '/emr/front_office/antenatals',                      component: EMRFrontOfficeAntenatals},
+    {path: '/emr/front_office/appointments',                    component: EMRFrontOfficeAppointments},
+    {path: '/emr/front_office/appointments/:id',                component: EMRFrontOfficeAppointment},
+    {path: '/emr/front_office/consent_forms',                   component: EMRFrontOfficeConsentForms},
+    {path: '/emr/front_office/consent_forms/:id',               component: EMRFrontOfficeConsentForm},
     {path: '/emr/front_office/dashboard',                       component: EMRFrontOfficeDashboard},
+    {path: '/emr/front_office/packages',                        component: EMRFrontOfficePackages},
     {path: '/emr/front_office/patients',                        component: EMRPatientAll},
     {path: '/emr/front_office/patients/new',                    component: EMRPatientFormRegistration},
     {path: '/emr/front_office/patients/search',                 component: EMRPatientSearch},
     {path: '/emr/front_office/patients/:id',                    component: EMRPatientSingle},
+    {path: '/emr/front_office/queues/:id',                      component: EMRFrontOfficeQueues},
+    {path: '/emr/front_office/visits',                          component: EMRFrontOfficeVisits},
+    {path: '/emr/front_office/visits/:id',                      component: EMRFrontOfficeVisit},
 ];

@@ -30,7 +30,7 @@ export default {
             this.$Progress.start();
             this.editMode = false;
             //this.applicant = {};
-            Fire.$emit('ApplicantDataFill', {});
+            //Fire.$emit('ApplicantDataFill', {});
             $('#applicantModal').modal('show');
             this.$Progress.finish();
         },

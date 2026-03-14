@@ -181,37 +181,26 @@ trait VisitTransactionTrait{
 
 
     public function emr_visit_transaction_create_multiple($data){
-        DB::beginTransaction();
-
-        try{   
-            $visit_transactions = [];      
-            foreach($data['items'] as $service){
-                $transaction = new TransactionService();
+        return DB::transaction(function () use ($data) {
+            $visit_transactions = [];
+            foreach ($data['items'] as $service) {
+                $transaction = app(TransactionService::class);
                 $visit_transaction = $transaction->create_transaction([
                     'consultation_id' => $data['consultation_id'] ?? null,
-                    'date' => $data['date'] ?? date('Y-m-d'),
-                    'item_id' => $service['item_id'], 
+                    'date' => $data['date'] ?? now(),
+                    'item_id' => $service['item_id'],
                     'patient_id' => $data['patient_id'],
                     'quantity' => $data['quantity'] ?? 1,
                     'request_type_id' => $data['request_type_id'] ?? 0,
                     'special' => $data['special'] ?? 0,
-                    'type_id' => $data['request_type_id'] ?? null,
                     'visit_id' => $data['visit_id'] ?? null,
                 ]);
 
-                if(is_string($visit_transaction)){
-                    throw new Exception('Something went wrong');
-                }
-                array_push($visit_transactions, $visit_transaction);
+                $visit_transactions[] = $visit_transaction;
             }
 
-            DB::commit();
             return $visit_transactions;
-        }
-        catch(Exception $e){
-            DB::rollBack();
-            return $e->getMessage();
-        }
+        });
     }
 
     public function emr_visit_transaction_deactivate($id){
@@ -350,6 +339,7 @@ trait VisitTransactionTrait{
         return DB::transaction(function () use ($data) {
             $userId = auth('api')->id() ?? Auth::id();
             $payment = VisitPayment::create([
+                'date'           => $data['date'] ?? date('Y-m-d'),
                 'visit_id'       => $data['visit_id'],
                 'patient_id'     => $data['patient_id'],
                 'amount'         => $data['amount'],
@@ -365,9 +355,9 @@ trait VisitTransactionTrait{
 
             //Add to Ledger
             $ledger = new EMRLedgerService();
-            $payment_ledger = $ledger->createLedgerEntry($data['patient_id'], $data['visit_id'], null, $payment->id, 'credit', 'credit');
+            $ledger->createLedgerEntry($data['patient_id'], $data['visit_id'], null, $payment->id, 'credit', 'credit');
 
-            return $payment->fresh(['allocations']);
+            return $payment->fresh();
         });
     }
 

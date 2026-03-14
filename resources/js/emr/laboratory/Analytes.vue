@@ -1,63 +1,13 @@
 <template>
     <section class="container-fluid">
-        <div class="modal fade" id="analyteFormModal">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-dark">
-                        <h4 class="modal-title">Analyte Details</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="text-white">&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <EMRLaboratoryFormAnalyte :analyte.sync="analyte" :editMode="editMode" @refreshAnalyteForm="getInitials"/>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-primary">
                         <h3 class="card-title">Laboratory Analytes</h3>
                     </div>
                     <div class="card-body table-responsive p-0">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Default Unit</th>
-                                    <th>Input Type</th>
-                                    <th>Option</th>
-                                    <th>Status</th>
-                                    <th><button class="btn btn-xs btn-primary" @click="createAnalyte()"><i class="fa fa-plus"></i></button></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(analyte, index) in analytes.data" :key="analyte.id">
-                                    <td>{{addOne(index)}}</td>
-                                    <td>{{analyte.name}}</td>
-                                    <td v-html="readMore(analyte.description, 50, '...')"></td>
-                                    <td>{{ analyte.default_unit }}</td>
-                                    <td>{{ analyte.input_type }}</td>
-                                    <td v-html="analyte.options"></td>
-                                    <td>
-                                        <span v-if="analyte.deleted_at == null" class="badge badge-success">Active</span>
-                                        <span v-else class="badge badge-danger">Inactive</span>
-                                    </td>
-                                    <td>
-                                        <span class="nav-link" data-toggle="dropdown" href="#">
-                                            <i class="fa fa-ellipsis-v"></i>
-                                        </span>
-                                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                            <router-link class="btn btn-block dropdown-item" :to="'/emr/laboratory/settings/analytes/'+analyte.id"><i class="fas fa-eye mr-2 text-primary"></i> See Reference Ranges</router-link> 
-                                            <button class="btn btn-block dropdown-item" @click="editAnalyte(analyte)"><i class="fas fa-edit mr-2 text-primary"></i> Edit Analyte Type</button>
-                                            <button class="btn btn-block dropdown-item" @click="deactivateAnalyte(analyte.id)"><i class="fas fa-power-off mr-2"></i> Deactivate Analyte Type</button>
-                                        </div>
-                                    </td>  
-                                </tr>    
-                            </tbody>
-                        </table>
+                        <EMRLaboratoryDetailAnalyteList :analytes.sync="analytes.data" />
                     </div>
                 </div>
             </div>
@@ -65,10 +15,11 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryDetailAnalyteList from '@/emr/laboratory/details/AnalyteList.vue';
 import EMRLaboratoryFormAnalyte from '@/emr/laboratory/forms/Analyte.vue';
 
 export default {
-    components:{EMRLaboratoryFormAnalyte},
+    components:{EMRLaboratoryDetailAnalyteList, EMRLaboratoryFormAnalyte},
     data() {
         return {
             analytes: {},

@@ -38,8 +38,10 @@
 <script>
 import useInvoiceTools from '@/globalMethods/useInvoiceTools';
 import {ref} from 'vue';
-
+import ApprovalFormSalesOrder from '@/approvals/forms/SalesOrder.vue';
+import SalesDetailOrder from '@/sales_orders/details/Order.vue';
 export default {
+    components:{ApprovalFormSalesOrder, SalesDetailOrder},
     computed:{
         sub_total(){
             if (!this.order.order_items?.length) return 0;

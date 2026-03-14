@@ -12,6 +12,7 @@ use App\Http\Traits\EMR\VisitTransactionTrait;
 use App\Http\Traits\EMR\RadiologyTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Models\EMR\Consultation\Consultation;
+use App\Models\EMR\Consultation\RequestTemplate;
 use App\Models\EMR\Consultation\Specialty;
 use App\Models\EMR\Consultation\SpecialtyDoctor;
 
@@ -69,6 +70,122 @@ trait ConsultationTrait{
 
     public function emr_consultant_update($data, $id){
         //Update a Consultant's details
+    }
+
+    /*
+    -------------------------------------------------------------
+    Consultant Request Templates 
+    -------------------------------------------------------------
+    */
+    public function emr_consultation_request_template_create($data){
+        DB::beginTransaction();
+
+        try{
+            $query = RequestTemplate::create([
+                'name' => $data['name'],
+                'owner_id' => $data['owner_id'],
+                'payload' => $data['payload'],
+                'status' => 1,
+                'created_by' => auth('api')->id() ?? Auth::id(),
+                'updated_by' => auth('api')->id() ?? Auth::id(),
+            ]);
+
+            $this->log_user_activity('Consultant Request Template created', $query->id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            $this->log_user_activity('Consultant Request Template created', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_consultation_request_template_deactivate($id){
+        DB::beginTransaction();
+
+        try{
+            $query = RequestTemplate::findOrFail($id);
+
+            $query->deleted_by = auth('api')->id() ?? Auth::id();
+            $query->updated_by = auth('api')->id() ?? Auth::id();
+            $query->deleted_at = now();
+
+            $query->save();
+
+            $this->log_user_activity('COnsultant Request Template deactivated', $query->id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            $this->log_user_activity('Consultant Request Template deactivated', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_consultation_request_template_get_all($type, $specific, $detailed, $paginated){
+        $query = RequestTemplate::query();
+
+        switch($type){
+            case 'all':
+                $query = $query->withTrashed();
+            break;
+            case 'mine':
+                $query = $query->where('owner_id', '=', auth('api')->id() ?? Auth::id())->orWhereNull('owner_id');
+            break;
+        }
+
+        if(is_array($specific)){
+            if (!empty($specific['query'])){
+                $search = $specific['query'];
+                $query = $query->where('name', 'LIKE', "%$search%");
+            }
+            if (!empty($specific['status'])){
+                $query = $query->where('status', '=', $specific['status']);
+            }
+        }
+
+        $query = $detailed ? $query->with(['creator', 'deleter', 'owner', 'updater']) : $query->select('id', 'name', 'payload');
+        $query = $query->orderBy('name', 'ASC');
+        $query = $paginated ? $query->paginate(10) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_consultation_request_template_get_by($type, $id, $detailed){
+        try{
+            $query = RequestTemplate::where('id', '=', $id);
+            $query = $detailed ? $query->with(['creator', 'deleter', 'owner', 'updater']) : $query->select('id', 'name', 'payload');
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_consultation_request_template_update($data, $id){
+        DB::beginTransaction();
+
+        try{
+            $query = RequestTemplate::findOrFail($id);
+
+            $query->name = $data['name'] ?? $query->name;
+            $query->owner_id = $data['owner_id'] ?? $query->owner_id;
+            $query->payload = $data['payload'] ?? $query->payload;
+            $query->status = $data['status'] ?? $query->status;
+            
+            $query->save();
+
+            DB::commit();
+            $this->log_user_activity('COnsultant Request Template updated', $query->id, true);
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            $this->log_user_activity('Consultant Request Template updated', null, false);
+            return $e->getMessage();
+        }
     }
 
     /*
@@ -319,7 +436,6 @@ trait ConsultationTrait{
     }
 
     public function emr_specialty_deactivate($id){
-        //Deactivate a Consultant
         DB::beginTransaction();
 
         try{

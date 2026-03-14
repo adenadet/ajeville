@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\APi\EMR\Laboratory;
+namespace App\Http\Controllers\Api\EMR\Laboratory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\LaboratoryTrait;

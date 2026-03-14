@@ -3,40 +3,33 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-primary">
                         <h3 class="card-title">Insurance Desk</h3>
+                        <div class="card-tools">
+                            <div class="input-group" style="width: 750px;">
+                                <input type="text" name="query" v-model="query" class="form-control float-right" placeholder="Search">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-default mr-1" @click="getInitials"><i class="fas fa-search"></i></button>
+                                    <select class="form-control mr-1" name="type" id="type" v-model="status" @change="getInitials">
+                                        <option value="">--Select Status--</option>
+                                        <option value="0">Booked</option>
+                                        <option value="1">Accepted</option>
+                                        <option value="2">Started</option>
+                                        <option value="4">Sample Collected</option>
+                                        <option value="5">Ongoing</option>
+                                        <option value="15">Referred Out</option>
+                                        <option value="20">Confirmed</option>
+                                        <option value="30">Completed</option>
+                                        <option value="100">Cancelled</option>
+                                    </select>
+                                    <input type="date" class="form-control mr-1" v-model="start_date" />
+                                    <input type="date" class="form-control mr-1" v-model="end_date" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body table-responsive p-0" style="height:600px;">
-                        <table class="table table-hover table-striped text-nowrap">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Patient</th>
-                                    <th>Category</th>
-                                    <th>Item</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="request in requests.data" :key="request.id"  :class="request.special != null ? 'bg-danger' : ''" @click="updateRequest(request)">
-                                    <td>{{ excelDate(request.date) }}</td>
-                                    <td>{{ patientName(request.patient) }}</td>
-                                    <td>{{ request.item.category != null ? request.item.category.name : 'No Category Yet' }}</td>
-                                    <td>{{ request.item.name }}</td>
-                                    <td>{{ request.status }}</td>
-                                    <td>
-                                        <span class="nav-link" data-toggle="dropdown" href="#">
-                                            <i class="fa fa-ellipsis-v"></i>
-                                        </span>
-                                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                            <router-link :to="'/laboratory/requests/'+request.id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Request</router-link>
-                                            <button v-if="request.status == 0" class="btn btn-block dropdown-item"><i class="fas fa-cash-register mr-2"></i> Receive Deposit</button>
-                                        </div>
-                                    </td>  
-                                </tr>
-                            </tbody>
-                        </table>
+                        <EMRLaboratoryDetailRequestList actionable="yes" :requests="requests.data" source="insurance" />
                     </div>
                     <div class="card-footer">
                         <div class="col-12">
@@ -49,13 +42,21 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryDetailRequestList from '@/emr/laboratory/details/RequestList.vue'
 export default {
+    components:{EMRLaboratoryDetailRequestList},
     data() {
         return {
             current_page: 1,
-            request: {},
-            requests: {},
             editMode: true,
+            end_date: '',
+            loading: false,
+            query: '',
+            request: {},
+            requests: {data: [],total: 0,},
+            start_date: '',
+            status: '',
+            type: '',
         }
     },
     mounted() {
@@ -63,7 +64,8 @@ export default {
     },
     methods: {
         getInitials(page=1) {
-            axios.get('/api/emr/laboratory/requests/insurance?page='+page)
+            axios.get('/api/emr/laboratory/requests?end_date='+this.end_date+'&page='+this.current_page+'&query='+this.query+'&start_date='+this.start_date+'&status='+this.status+'&type=insurance')
+            
             .then(response => {
                 this.refreshQueue(response)
             })

@@ -1,86 +1,58 @@
 <template>
-<section>
+<section class="overlay-wrapper p-0">
+    <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
     <form @submit.prevent="editMode ? editDrug() : createDrug()">
         <alert-error :form="drugForm"></alert-error>
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
                     <label>Drug Name*</label>
-                    <input type="date" class="form-control" id="name" name="name" v-model="drugForm.name" :class="{ 'is-invalid': drugForm.errors.has('name') }" :min="today" />
+                    <input type="text" class="form-control" id="name" name="name" v-model="drugForm.name" :class="{ 'is-invalid': drugForm.errors.has('name') }" :min="today" />
                     <has-error :form="drugForm" field="name"></has-error>
-                </div>
-            </div>
-            <div class="col-sm-3">
-                <div class="form-group">
-                    <label>Domiciliary Service</label>
-                    <select class="form-control" id="domiciliary" name="domiciliary"
-                        :class="{ 'is-invalid': drugForm.errors.has('domiciliary') }">
-                        <option value=''>--Select If Domiciliary--</option>
-                        <option value='1'>Yes</option>
-                        <option value='0'>No</option>
-                    </select>
-                    <has-error :form="drugForm" field="domiciliary"></has-error>
                 </div>
             </div>  
         </div>
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-12">
                 <div class="form-group">
-                    <label>Task</label>
-                    <select class="form-control" id="task_id" name="task_id" v-model="drugForm.task_id"
-                        :class="{ 'is-invalid': drugForm.errors.has('task_id') }">
-                        <option value=''>--Select Task--</option>
-                        <option v-for="task in tasks" :value='task.id'>{{ task.name }}</option>
+                    <label>Interactions</label>
+                    <select class="form-control" id="specific_drugs[]" name="specific_drugs[]" v-model="drugForm.specific_drugs"
+                        :class="{ 'is-invalid': drugForm.errors.has('specific_drugs') }">
+                        <option value=''>--Select Drug--</option>
+                        <option v-for="item in items" :value='item.id'>{{ item.name }}</option>
                     </select>
-                    <has-error :form="drugForm" field="task_id"></has-error>
+                    <has-error :form="drugForm" field="specific_drugs"></has-error>
                 </div>
             </div>
             <div class="col-sm-6">
                 <div class="form-group">
-                    <label>Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" v-model="drugForm.start_date" :class="{ 'is-invalid': drugForm.errors.has('start_date') }" :min="today" />
+                    <label>High Alert Medication</label>
+                    <select class="form-control" id="ham" name="ham" v-model="drugForm.ham" :class="{ 'is-invalid': drugForm.errors.has('ham') }">
+                        <option value="">--Select HAM Status--</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                    <has-error :form="drugForm" field="ham"></has-error>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control" id="status" name="status" v-model="drugForm.status" :class="{ 'is-invalid': drugForm.errors.has('status') }">
+                        <option value="">--Select Status--</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
                     <has-error :form="drugForm" field="start_date"></has-error>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <div class="form-group">
-                    <label>Repeating </label>
-                    <select class="form-control" id="repeating" name="repeating" v-model="drugForm.repeating"
-                        :class="{ 'is-invalid': drugForm.errors.has('repeating') }">
-                        <option value=''>--Select If Repeating</option>
-                        <option value='1'>Yes</option>
-                        <option value='0'>No</option>
-                    </select>
-                    <has-error :form="drugForm" field="repeating"></has-error>
-                </div>
-            </div>
-            <div class="col-sm-4" v-show="drugForm.repeating == 1">
-                <div class="form-group">
-                    <label>Frequency</label>
-                    <select class="form-control" id="frequency_id" name="frequency_id" v-model="drugForm.frequency_id"
-                        :class="{ 'is-invalid': drugForm.errors.has('frequency_id') }">
-                        <option value=''>--Select Frequency--</option>
-                        <option v-for="frequency in frequencies" :value='frequency.id'>{{ frequency.name }}</option>
-                    </select>
-                    <has-error :form="drugForm" field="frequency_id"></has-error>
-                </div>
-            </div>
-            <div class="col-sm-4" v-show="drugForm.repeating == 1">
-                <div class="form-group">
-                    <label>Amount</label>
-                    <input type="number" class="form-control" id="quantity" name="quantity" v-model="drugForm.quantity" :class="{ 'is-invalid': drugForm.errors.has('quantity') }" :min="today" />
-                    <has-error :form="drugForm" field="quantity"></has-error>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
-                    <label>Details</label>
-                    <wysiwyg id="details" name="details" v-model="drugForm.details" :class="{ 'is-invalid': drugForm.errors.has('details') }"/>
-                    <has-error :form="drugForm" field="details"></has-error>
+                    <label>Description</label>
+                    <QuillEditor id="description" name="description" theme="snow" content-type="html" v-model:content="drugForm.description" :class="{ 'is-invalid': drugForm.errors.has('description') }"/>
+                    <has-error :form="drugForm" field="description"></has-error>
                 </div>
             </div>
         </div>
@@ -90,5 +62,71 @@
 
 </template>
 <script>
-
+export default {
+    data() {
+        return {
+            current_page: 1,
+            drugForm: new Form({
+                id: '',
+                name: '',
+                description:'',
+                ham: '',
+                status: 1,
+                interactions: [],
+            }), 
+            query: '',
+            type: 'active',
+        }
+    },
+    emits:['refreshDrugForm'],
+    mounted() {},
+    methods: {
+        createDrug(){
+            this.loading = true;
+            this.drugForm.post('/api/emr/pharmacy/drugs')
+            .then( () =>{
+                this.$emit('refreshDrugForm');
+                this.$swal.fire({
+                    icon: 'success',
+                    title: 'The Drug detail has been captured',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            })
+            .catch(()=>{
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loading = false;    
+            });
+        },
+        updateDrug(){
+            this.loading = true;
+            this.drugForm.put('/api/emr/pharmacy/drugs/'+this.drugForm.id)
+            .then( () =>{
+                this.$emit('refreshDrugForm');
+                this.$swal.fire({
+                    icon: 'success',
+                    title: 'The Drug detail has been updated',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            })
+            .catch(()=>{
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loading = false;    
+            });
+        },
+    },
+    props: {
+        drug: Object,
+    },
+    watch:{
+        drug(){
+            this.drugForm.fill(this.drug);
+        }
+    }
+}
 </script>

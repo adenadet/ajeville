@@ -1,33 +1,37 @@
 <template>
-    <div class="card">
-            <div class="card-header bg-dark">
-            <h4 class="card-title">{{ title }}</h4>
-            <div class="card-tools">
-            <button class="btn btn-sm btn-light float-right" type="button" @click="add">Add</button></div>
-        </div>
-        <div class="card-body table-responsive p-0">
-            <table class="table table-head-fixed table-bordered table-striped text-nowrap">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Address</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(c, i) in modelValue" :key="i" class="p-0">
-                        <td><input class="form-control" v-model="c.name" placeholder="Name" /></td>
-                        <td><input class="form-control" v-model="c.address" placeholder="Address" /></td>
-                        <td><input class="form-control" v-model="c.phone" placeholder="Phone" /></td>
-                        <td><input class="form-control" v-model="c.email" placeholder="Email" /></td>
-                        <td><button class="btn btn-danger btn-sm" @click="remove(i)"><i class="fa fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
+<div class="card">
+    <div class="card-header bg-dark">
+        <h4 class="card-title">Contacts</h4>
+        <div class="card-tools">
+            <button class="btn btn-sm btn-light" @click="$emit('add')">Add</button>
         </div>
     </div>
+
+    <div class="card-body table-responsive p-0">
+        <table class="table table-head-fixed text-nowrap">
+            <thead>
+                <tr>
+                    <th>S/N</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <tr></tr>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(c,index) in contacts" :key="index">
+                    <td>{{ addOne(index) }}</td>
+                    <td><input type="text" v-model="c.name" class="form-control"></td>
+                    <td><input type="text" v-model="c.address" class="form-control"></td>
+                    <td><input type="tel" v-model="c.phone" class="form-control"></td>
+                    <td><input type="email" v-model="c.email" class="form-control"></td>
+                    <td><button class="btn btn-danger" @click="$emit('remove',index)"><i class="fa fa-trash mr-1"></i>Delete </button></td>
+                </tr>
+            </tbody>
+        </table> 
+    </div>
+</div>
 </template>
 
 <script>

@@ -81,7 +81,9 @@
 </section>
 </template>
 <script>
+import SalesDetailOrderSummary from '@/sales_orders/details/OrderSummary.vue'; 
 export default {
+    components:{SalesDetailOrderSummary},
     data(){
         return {
             banks: [],

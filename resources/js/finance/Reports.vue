@@ -66,10 +66,11 @@
 </template>
 <script>
 import Multiselect from 'vue-multiselect'
-
+import FinanceDetailReportAgingAnalysisReceivables from '@/finance/details/ReportAgingAnalysisReceivables.vue';
+import FinanceDetailReportBalanceSheet from '@/finance/details/ReportBalanceSheet.vue';
 export default {
     components: {
-        Multiselect
+        Multiselect, FinanceDetailReportAgingAnalysisReceivables, FinanceDetailReportBalanceSheet
     },
     data() {
         return {

@@ -12,7 +12,7 @@
     </div>
 </template>
 <script>
-import Consultant from './forms/Consultant.vue';
+import Consultant from '@/emr/consultant/forms/Consultant.vue';
 import { createEmptyConsultation } from './special_functions/consultation';
 export default {
     components: { Consultant },

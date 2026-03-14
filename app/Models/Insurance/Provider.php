@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Provider extends Model
 {
+    
     protected $primaryKey = 'id';
     protected $table = 'hmo_providers';
     protected $fillable = array('name', 'description', 'hmo_type_id', 'website', 'portal', 'phone', 'created_by', 'updated_by', 'contact_person', 'cp_phone', 'cp_email', 'status');

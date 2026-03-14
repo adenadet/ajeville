@@ -41,7 +41,7 @@
                 <th>Specialty</th>
                 <th>Consultant</th>
                 <th>Status</th>
-                <th class="text-end"><button class="btn btn-primary btn-sm float-right" @click="addAppointment"><i class="fa fa-plus mr-1"></i>Add </button></th>
+                <th class="text-end"><button class="btn btn-primary btn-xs float-right" @click="addAppointment"><i class="fa fa-plus mr-1"></i>Add </button></th>
             </tr>
         </thead>
         <tbody>
@@ -49,25 +49,18 @@
                 <td colspan="8" class="text-center py-4">Loading appointments...</td>
             </tr>
             <tr v-for="a in appointments" :key="a.id">
-                <td v-if="a.patient != null">
-                    <strong>{{ FullName(a.patient.user) }}</strong><br />
-                    <small class="text-muted">{{ a.patient.unique_id }}</small>
-                </td>
-                <td v-else>
-                    Strange
-                </td>
+                <td v-if="a.patient != null"><strong>{{ FullName(a.patient.user) }}</strong><br /><small class="text-muted">{{ a.patient.unique_id }}</small></td>
+                <td v-else>Strange</td>
                 <td>{{ ExcelDate(a.date) }}</td>
                 <td>{{ a.time_slot }}</td>
                 <td>{{ a.service_type.name }}</td>
                 <td>{{ a.specialty?.name ?? '—' }}</td>
                 <td>{{ a.consultant?.name ?? '—' }}</td>
-                <td><span class="badge" :class="statusClass(a.status)">{{ a.status }}</span></td>
+                <td><span class="badge" :class="statusClass(a.status)">{{ firstUp(a.status) }}</span></td>
                 <td class="text-end">
-                    <span class="nav-link" data-toggle="dropdown" href="#">
-                        <i class="fa fa-ellipsis-v"></i>
-                    </span>
+                    <span class="nav-link float-right" data-toggle="dropdown" href="#"><i class="fa fa-ellipsis-v"></i></span>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <router-link :to="'/appointments/'+a.unique_id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-1 text-primary"></i> View Appointment</router-link>
+                        <router-link :to="'/emr/front_office/appointments/'+a.unique_id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-1 text-primary"></i> View Appointment</router-link>
                         <button class="btn btn-block dropdown-item" v-if="canCheckIn(a)" @click="checkIn(a)"><i class="fas fa-calendar-check mr-1 text-success"></i> Check In Appointment</button>
                         <button class="btn btn-block dropdown-item" v-if="a.status == 'pending'"><i class="fas fa-calendar-alt mr-1 text-warning"></i> Reschedule</button>
                         <button class="btn btn-block dropdown-item" v-if="canCancel(a)" @click="cancelAppointment(a)"><i class="fas fa-trash mr-1 text-danger"></i> Delete</button>
@@ -84,7 +77,12 @@
 </section>
 </template>
 <script>
+import EMRFrontOfficeFormAppointment from '@/emr/front_office/forms/Appointment.vue';
+import EMRFrontOfficeFormCheckIn from '@/emr/front_office/forms/CheckIn.vue';
 export default {
+    components:{
+        EMRFrontOfficeFormAppointment, EMRFrontOfficeFormCheckIn
+    },
     data() {
         return {
             loading: false,

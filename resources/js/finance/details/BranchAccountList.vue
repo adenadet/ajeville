@@ -57,7 +57,11 @@
 </section>
 </template>
 <script>
+import FinanceFormBranchAccount from '@/finance/forms/BranchAccount.vue';
 export default {
+    components:{
+        FinanceFormBranchAccount,
+    },
     data() {
         return {
             branch_account: {},

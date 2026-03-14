@@ -10,12 +10,14 @@ use App\Models\EMR\Laboratory\Analyte;
 use App\Models\EMR\Laboratory\Request as LaboratoryRequest;
 use App\Models\EMR\Laboratory\Bottle;
 use App\Models\EMR\Laboratory\Category;
+use App\Models\EMR\Laboratory\Panel;
 use App\Models\EMR\Laboratory\ReferenceRange;
 use App\Models\EMR\Laboratory\Result;
 use App\Models\EMR\Laboratory\ResultTemplate;
 use App\Models\EMR\Laboratory\ResultTemplateAnalyte;
 use App\Models\EMR\Laboratory\ResultTemplateVersion;
 use App\Models\EMR\Laboratory\Service;
+use App\Models\EMR\Laboratory\ServiceAnalyte;
 use App\Models\EMR\Laboratory\Specimen;
 use App\Models\EMR\Laboratory\SpecimenType;
 use App\Models\EMR\Service as EMRService;
@@ -23,7 +25,10 @@ use App\Models\EMR\Visit;
 use App\Models\EMR\VisitTransaction;
 use App\Models\Inventory\Item;
 use App\Models\Procurement\Vendor;
-
+use App\Services\EMR\LaboratoryRequestService;
+use App\Services\EMR\LaboratorySpecimenService;
+use App\Services\EMR\LedgerService;
+use App\Services\EMR\TransactionService;
 use Exception;
 
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +42,47 @@ trait LaboratoryTrait{
     Laboratory Analytes
     ---------------------------------------------------------
     */
+    public function emr_laboratory_generateRandomString($length = 10){
+        $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[random_int(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    public function emr_laboratory_setting_generate_unique_id($type){
+        $code = $this->emr_laboratory_generateRandomString(10);
+        switch($type){
+            case 'analyte':
+                $prefix = 'ANL';
+                $query = Analyte::where('unique_id', '=', $prefix.'-'.$code)->first();
+                if($query){ return $this->emr_laboratory_setting_generate_unique_id('analyte');}
+                else{ return $prefix.'-'.$code;}
+            case 'bottle':
+                $prefix = 'BTL';
+                $query = Bottle::where('unique_id', '=', $prefix.'-'.$code)->first();
+                if($query){return $this->emr_laboratory_setting_generate_unique_id('bottle');}
+                else{ return $prefix.'-'.$code;}
+            case 'panel':
+                $prefix = 'PNL';
+                $query = Panel::where('unique_id', '=', $prefix.'-'.$code)->first();
+                if($query){ return $this->emr_laboratory_setting_generate_unique_id('panel');}
+                else{ return $prefix.'-'.$code;}
+            case 'service':
+                $prefix = 'SRC';
+                $query = Service::where('unique_id', '=', $prefix.'-'.$code)->first();
+                if($query){ return $this->emr_laboratory_setting_generate_unique_id('service');}
+                else{ return $prefix.'-'.$code;}
+            case 'specimen':
+                $prefix = 'SPC';
+                $query = Specimen::where('unique_id', '=', $prefix.'-'.$code)->first();
+                if($query){ return $this->emr_laboratory_setting_generate_unique_id('specimen');}
+                else{ return $prefix.'-'.$code;}
+        }
+    }
+
     public function emr_laboratory_analyte_create($data){
         DB::beginTransaction();
         
@@ -504,64 +550,62 @@ trait LaboratoryTrait{
     ---------------------------------------------------------
     */
 
-    public function emr_laboratory_request_create($patient_id, $item_id, $visit_id =null, $consultation_id = null, $date = null, $special = 0){
-        DB::beginTransaction();
-        
-        try{
+    public function emr_laboratory_request_create($patient_id, $item_id, $visit_id = null, $consultation_id = null, $date = null, $special = 0){
+        try {
             $transaction = $this->emr_visit_transaction_create($item_id, $patient_id, 1, false, $visit_id);
 
-            $visit = Visit::findOrFail($visit_id);
-            if(is_string($transaction)){
-                $this->log_user_activity('EMR Laboratory Request Create', true, null);
-                return $transaction." Can not create transaction"; 
-            }  
-
-            $query = LaboratoryRequest::create([
-                'date' => $date ?? date('Y-m-d'),
-                'visit_id' => $visit_id,
-                'branch_id' => $visit->branch_id ?? request()->cookie('current_branch'),
-                'consultation_id' => $consultation_id,
-                'request_type_id' => null,
-                'patient_id' => $patient_id,
-                'transaction_id' => $transaction->id,
-                'quantity' => 1,
-                'item_id' => $item_id,
-                'status' => $transaction->status == 1 ? 1 : 0,
-                'special' => $special,
-                'created_by' => auth('api')->id() ?? Auth::id(),
-                'updated_by' => auth('api')->id() ?? Auth::id(),
-            ]);
-
+            if (!$transaction) {throw new Exception('Visit transaction creation failed');}
+            /*
+            ---------------------------------------------------
+            Initialize the Service Requests 
+            ---------------------------------------------------
+            */
+            $laboratory_manager = new LaboratoryRequestService(new TransactionService(new LedgerService()));
+            $query = $laboratory_manager->create( $visit_id, $patient_id, $consultation_id, $transaction, $item_id, $special, $date );
+            
             $this->log_user_activity('EMR Laboratory Request Create', $query->id, true);
-            DB::commit();
 
             return $transaction;
-        }
-        catch (Exception $e){
-            DB::rollback();
+        } 
+        catch (Exception $e) {
             $this->log_user_activity('EMR Laboratory Request Create', null, false);
-            return $e->getMessage();
-        }  
+            throw $e;
+        }
     }
 
     public function emr_laboratory_request_get_all($type, $specific, $detailed, $paginated){
         $query = LaboratoryRequest::query();
 
-        if(is_array($specific)){
-            if(!empty($specific['end_date'])){
-                $query = $query->whereDate('date', '>=', $specific['end_date']);
-            }
+        switch($type){
+            case 'emergency':
+                $query = $query->where('special', '=', 1);
+            break;
+            case 'insurance':
+                /*
+                1. Get all active visits
+                2. Get all patients with active insurance plans
+                3. Get all transactions of those patients
+                
+                */
+                $visits = Visit::whereIn('status',  [Visit::StatusOngoing, Visit::StatusOpen, Visit::StatusAwaitingBilling])->whereNotNull('plan_id')->pluck('id');
+                $visit_transactions = VisitTransaction::whereIn('visit_id', $visits)->pluck('id');
+                $query =  $query->whereIn('transaction_id', $visit_transactions);              
+            break;
+            case 'paid':
+                 
+            break;
 
-            if(!empty($specific['start_date'])){
-                $query = $query->whereDate('date', '>=', $specific['start_date']);
-            }
-
-            if (!empty($specific['status'])){
-                $query = $query->whereDate('status', '=', $specific['status']);
-            }
         }
 
-        $query = $detailed ? $query->with([]) : $query->select('id', );
+        if(is_array($specific)){
+            if(!empty($specific['end_date'])){
+                $query = $query->whereDate('date', '>=', $specific['end_date']);}
+            if(!empty($specific['start_date'])){$query = $query->whereDate('date', '>=', $specific['start_date']);}
+            if (!empty($specific['status'])){$query = $query->where('status', '=', $specific['status']);}
+        }
+
+        $query = $detailed ? $query->with(['creator', 'lab_service.analytes', 'lab_service.bottle_type', 'lab_service.emr_service.item', 'lab_service.specimen_type', 'patient.user', 'requester', 'specimens', 'transaction.coverage', 'visit']) : $query->select('id', );
+        $query = $query->orderBy('date', 'DESC');
         $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
@@ -571,7 +615,7 @@ trait LaboratoryTrait{
         try{
             $query = LaboratoryRequest::where('id', '=', $id)->orWhere('unique_id', '=', $id);
 
-            $query = $detailed ? $query->with(['item', 'service.service', 'patient.user', 'transaction.payments']) : $query->select('id', 'unique_id')->with(['transaction.payments']);
+            $query = $detailed ? $query->with(['creator', 'lab_service.analytes', 'lab_service.bottle_type', 'lab_service.emr_service.item', 'lab_service.specimen_type', 'patient.user', 'requester', 'result.versions.values.specimen','result.latestVersion.values.specimen', 'specimens.specimen_type', 'transaction', 'visit']) : $query->select('id', 'unique_id')->with(['transaction']);
             return $query->firstOrFail();
         }
         catch(Exception $e){
@@ -861,6 +905,14 @@ trait LaboratoryTrait{
                 'updated_by'        => Auth::id() ?? auth('api')->id(),
             ]);
 
+            $analytes = collect($data['analytes'])->unique();
+            foreach ($analytes as $analyte) {
+                ServiceAnalyte::create([
+                    'service_id' => $service->id,
+                    'analyte_id' => $analyte->id,
+                ]);
+            }
+
             $item = Item::create([
                 'name'                  => $data['name'],
                 'type_id'               => $data['type_id'] ?? 6,
@@ -903,7 +955,7 @@ trait LaboratoryTrait{
             }
         }
 
-        $query = $detailed ? $query->with(['bottle_type', 'category', 'creator', 'deleter', 'result_template', 'service.item', 'specimen_type', 'updater']) : $query->with(['service.item']);
+        $query = $detailed ? $query->with(['bottle_type', 'category', 'creator', 'deleter', 'emr_service.item', 'specimen_type', 'updater']) : $query->with(['service.item']);
         $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
@@ -912,7 +964,7 @@ trait LaboratoryTrait{
     public function emr_laboratory_service_get_by($type, $id, $detailed){
         try{
             $query = Service::where('id', '=', $id);
-            $query = $detailed ? $query->with(['bottle_type', 'category', 'creator', 'deleter', 'reference_ranges', 'result_template', 'service.item', 'specimen_type', 'updater']) : $query->with(['service.item']);
+            $query = $detailed ? $query->with(['analytes', 'bottle_type', 'category', 'creator', 'deleter', 'emr_service.item', 'specimen_type', 'updater']) : $query->with(['service.item']);
             
             return $query->firstOrFail();
         }
@@ -936,6 +988,25 @@ trait LaboratoryTrait{
         
             $service->save();
             
+            $analytes = collect($data['analytes'])->unique();
+            $analyte_ids = [];
+
+            foreach ($analytes as $analyte) {
+                $serviceAnalyte = ServiceAnalyte::withTrashed()->where('service_id', $service->id)->where('analyte_id', $analyte['id'])->first();
+                $analyte_ids[] = $analyte['id'];
+                if ($serviceAnalyte) {
+                    if ($serviceAnalyte->trashed()) {$serviceAnalyte->restore();}
+                } 
+                else {
+                    ServiceAnalyte::create([
+                        'service_id' => $service->id,
+                        'analyte_id' => $analyte['id']
+                    ]);
+                }
+            }
+
+            ServiceAnalyte::where('service_id', $service->id)->whereNotIn('analyte_id', $analyte_ids)->delete();
+            
             //Check if there is an existing EMR Service for this Laboratory Service
             if (is_null($service->service_id)){
                 $emr_service = EMRService::create([
@@ -955,10 +1026,12 @@ trait LaboratoryTrait{
                 $emr_service = EMRService::findOrFail($service->service_id);
                 
                 $emr_service->service_type_id = $data['type_id'] ?? 6;
-                $emr_service->reference_id = $id;
+                $emr_service->referenceable_type = Service::class;
+                $emr_service->referenceable_id = $id;
                 $emr_service->description = $data['description'];
                 $emr_service->status = EMRService::StatusActive;
                 $emr_service->updated_by =  Auth::id() ?? auth('api')->id();
+
                 $emr_service->save();
             }
 
@@ -1008,24 +1081,141 @@ trait LaboratoryTrait{
         }
     }
 
+
+        /*
+    -----------------------------------------------------------------------
+    Laboratory Services
+    -----------------------------------------------------------------------
+    */
+    public function emr_laboratory_service_analyte_create($data){
+        DB::beginTransaction();
+
+        try{
+            $query = ServiceAnalyte::create([
+                'service_id' => $data['service_id'],
+                'analyte_id' => $data['analyte_id'],
+            ]);
+            
+            $this->log_user_activity('EMR Laboratory Service Analyte Create', $query->id, true);
+            DB::commit();
+            return $query;
+
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Service Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_laboratory_service_analyte_get_all($type, $specific, $detailed, $paginated){
+        $query = ServiceAnalyte::query();
+
+        switch($type){
+            case 'active':
+            break;
+            case 'all':
+                $query = $query->withTrashed();
+            break; 
+        }
+        if (is_array($specific)){
+            if(!empty($specific['analyte_id'])){
+                $query = $query->where('analyte_id', '=', $specific['analyte_id']);
+            }
+            if(!empty($specific['query'])){
+                $search = $specific['query'];
+                $item_list = Item::where('name', 'LIKE', "%$search%")->pluck('id');
+                $service_lists = EMRService::whereIn('item_id', $item_list)->pluck('id');
+                $query = $query->whereIn('service_id', $service_lists);
+            }
+            if(!empty($specific['service_id'])){
+                $query = $query->where('service_id', '=', $specific['service_id']);
+            }
+        }
+
+        $query = $detailed ? $query->with(['service.emr_service.item', 'analyte']) : $query->with(['service.emr_service.item']);
+        $query = $paginated ? $query->paginate(50) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_laboratory_service_analyte_get_by($type, $id, $detailed){
+        try{
+            $query = ServiceAnalyte::where('id', '=', $id);
+            $query = $detailed ? $query->with(['service.emr_service.item', 'analyte',]) : $query->with(['service.emr_service.item']);
+            
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_laboratory_service_analyte_update($data, $id){
+        DB::beginTransaction();
+
+        try{
+            $query = ServiceAnalyte::findOrFail($id);
+            $query->service_id = $data['service_id'] ?? $query->service_id;
+            $query->analyte_id = $data['analyte_id'] ?? $query->analyte_id;
+            
+            $query->save();
+            
+            $this->log_user_activity('EMR Laboratory Service Analyte Update', $id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('EMR Laboratory Service Analyte Update', $id, false);
+            return $e->getMessage();
+        }
+    }
+
     /*
     -----------------------------------------------------------------------
     Laboratory Specimen Types
     -----------------------------------------------------------------------
     */
+    public function emr_laboratory_specimen_action($data){
+        DB::beginTransaction();
+
+        try{
+            $specimen = Specimen::findOrFail($data['specimen_id']);
+
+            //$lab_request = LaboratoryRequest::findOrFail($data['request_id']);
+            
+            $specimen_manager = new LaboratorySpecimenService();
+            $query = $data['decision'] == 'confirm' ? $specimen_manager->receive($specimen, $data['remarks']) : $specimen_manager->reject($specimen, $data);
+            
+            DB::commit();
+            $this->log_user_activity('Laboratory Specimen Create', $query->id, true);
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollback();
+            $this->log_user_activity('Laboratory Specimen Type Create', null, false);
+            return $e->getMessage();
+        }
+    }
+
     public function emr_laboratory_specimen_create($data){
         DB::beginTransaction();
 
         try{
-            $query = Specimen::create([
+            $lab_request = LaboratoryRequest::findOrFail($data['request_id']);
+            $specimen_manager = new LaboratorySpecimenService();
+            $query = $specimen_manager->collect($lab_request, $data);
+            
+            /*$query = Specimen::create([
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'status' => $data['status'] ?? 1,
                 'created_by' => Auth::id() ?? auth('api')->id(),
                 'updated_by' => Auth::id() ?? auth('api')->id(),
-            ]);
+            ]);*/
             DB::commit();
-            $this->log_user_activity('Laboratory Specimen Type Create', $query->id, true);
+            $this->log_user_activity('Laboratory Specimen Create', $query->id, true);
             return $query;
         }
         catch(Exception $e){
@@ -1071,10 +1261,16 @@ trait LaboratoryTrait{
 
         switch($type){
             case 'active':
-                $query = $query->where('status', '=', 1);
+                $query = $query->where('status', '=', Specimen::StatusCollected);
             break;
-            case 'inactive':
-                $query = $query->where('status', '=', 0)->withTrashed();
+            case 'pending':
+                $query = $query->where('status', '=', Specimen::StatusCollected);
+            break;
+            case 'received':
+                $query = $query->where('status', '=', Specimen::StatusReceived);
+            break;
+            case 'rejected':
+                $query = $query->where('status', '=', Specimen::StatusRejected)->withTrashed();
             break;
             default:
                 $query = $query->withTrashed();
@@ -1086,9 +1282,12 @@ trait LaboratoryTrait{
                 $search = $specific['query'];
                 $query = $query->where('name', 'LIKE', "%$search%");
             }
+            if (!empty($specific['request_id'])){
+                $query = $query->where('request_id', '=', $specific['request_id']);
+            }
         }
 
-        $query = $detailed ? $query->with(['creator', 'deleter', 'updater']) : $query->select('id', 'name');
+        $query = $detailed ? $query->with(['bottle', 'collector', 'receiver', 'rejection', 'request.patient.user', 'specimen_type']) : $query->select('id', 'unique_id')->with(['specimen_type']);
         $query = $paginated ? $query->paginate(30) : $query->get();
 
         return $query;
@@ -1097,8 +1296,8 @@ trait LaboratoryTrait{
     public function emr_laboratory_specimen_get_by($type, $id, $detailed){
         try{
             $query = Specimen::where('id', '=', $id);
-            $query = $detailed ? $query->with(['creator', 'deleter', 'updater']) : $query->select('id', 'name');
-            return $query->firstORFail();    
+            $query = $detailed ? $query->with(['collector', 'receiver', 'rejection', 'request.patient.user', 'specimen_type']) : $query->select('id', 'name');
+            return $query->firstOrFail();    
         }
         catch(Exception $e){
             return $e->getMessage();

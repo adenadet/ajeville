@@ -27,6 +27,10 @@ class Appointment extends Structure
     public function branch(){
     	return $this->belongsTo('App\Models\Branch', 'branch_id', 'id');
 	}
+
+	public function care_plan(){
+    	return $this->belongsTo('App\Models\Insurance\Plan', 'plan_id', 'id');
+	}
     
 	public function consultant(){
     	return $this->belongsTo('App\Models\User', 'consultant_id', 'id');

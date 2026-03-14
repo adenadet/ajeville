@@ -1,7 +1,7 @@
 <template>
 <section class="card overlay-wrapper p-0">
     <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>    
-    <!--div class="modal fade" id="expenseModal">
+    <div class="modal fade" id="expenseModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -15,7 +15,7 @@
                 </div>
             </div>
         </div>
-    </div-->
+    </div>
     <div class="card-header bg-dark">
         <h3 class="card-title">Expenses</h3>
         <div class="card-tools">
@@ -43,7 +43,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailExpense from '@/finance/details/Expense.vue';
+import FinanceDetailExpenseList from '@/finance/details/ExpenseList.vue';
+import FinanceFormExpense from '@/finance/forms/Expense.vue';
 export default {
+    components: {FinanceDetailExpense, FinanceDetailExpenseList, FinanceFormExpense},
+
     data() {
         return {
             current_page: 1,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\EMR\Laboratory;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\LaboratoryTrait;
 use App\Http\Traits\EMR\SettingsTrait;
+use App\Models\EMR\Laboratory\ServiceAnalyte;
 use App\Models\EMR\Settings\LaboratoryBottle;
 use Illuminate\Http\Request;
 
@@ -24,17 +25,18 @@ class ServiceController extends Controller
     public function initials()
     {
         return response()->json([
+            'analytes' => $this->emr_laboratory_analyte_get_all('active', null, false, false),
             'bottle_types' => $this->emr_laboratory_bottles_get_all('active', null, false, false),
             'categories' => $this->emr_laboratory_category_get_all($_GET['status'] ?? 'active', $_GET, false, false),
             'result_templates' => $this->emr_laboratory_result_template_get_all('active', null, false, false),
             'specimen_types' => $this->emr_laboratory_specimen_type_get_all('active', null, false, false),
-
         ]);
     }
 
     public function store(Request $request)
     {
         $this->validate($request, [
+            'analytes' => 'required|array',
             'bottle_type_id'=> 'required|numeric',
             'category_id'=> 'required|numeric',
             'description' => 'sometimes',
@@ -76,6 +78,7 @@ class ServiceController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
+            'analytes' => 'required|array',
             'bottle_type_id'=> 'required|numeric',
             'category_id'=> 'required|numeric',
             'description' => 'sometimes',
@@ -86,10 +89,11 @@ class ServiceController extends Controller
 
         $service = $this->emr_laboratory_service_update($request, $id);
 
+        
+
         return response()->json([
             'service' => $service,
         ], is_string($service) ? 500 : 201);
-
 
     }
 

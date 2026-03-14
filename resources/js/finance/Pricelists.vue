@@ -34,7 +34,10 @@
 </section>
 </template>
 <script>
+import FinanceFormPricelist from '@/finance/forms/PriceList.vue';
+import FinanceDetailPricelistList from '@/finance/details/PricelistList.vue';
 export default {
+    components:{FinanceDetailPricelistList, FinanceFormPricelist},
     data() {
         return {
             current_page: 1,

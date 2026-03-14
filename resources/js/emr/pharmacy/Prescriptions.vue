@@ -1,57 +1,31 @@
 <template>
-    <section class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Prescriptions</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                <th style="width: 10px">#</th>
-                                <th>Unique ID</th>
-                                <th>Patient</th>
-                                <th>Doctor</th>
-                                <th>Requested At</th>
-                                <th>Label</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(prescription, index) in prescriptions">
-                                    <td>{{ index | addOne }}</td>
-                                    <td>{{ prescription.id }}</td>
-                                    <td>{{ prescription.patient != null ? (prescription.patient | patientName) : 'Old Patient' }}</td>
-                                    <td>{{ prescription.doctor != null ? (prescription.doctor | fullName) : prescription.doctor_name }}</td>
-                                    <td>{{ prescription.created_at | excelDate }}</td>
-                                    <td>
-                                        <span class="nav-link" data-toggle="dropdown" href="#">
-                                            <i class="fa fa-ellipsis-v"></i>
-                                        </span>
-                                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                            <router-link :to="'/pharmacy/prescriptions/'+prescription.id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Request</router-link>
-                                            <!--button v-if="request.status == 0" class="btn btn-block dropdown-item"><i class="fas fa-cash-register mr-2"></i> Receive Deposit</button-->
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="card-footer">
+<section class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h3 class="card-title">Prescriptions</h3>
+                    <div class="card-tools">
 
                     </div>
                 </div>
+                <div class="card-body p-0" style="height:600px;">
+                    <EMRPharmacyDetailPrescriptionList :prescriptions.sync="prescriptions.data" />
+                </div>
+                <!--div class="card-footer">
+                    <pagination v-model="current_page" @paginate="getInitials" :per-page="prescriptions.per_page != null ? prescriptions.per_page : 52" :records="prescriptions.total != null ? prescriptions.total : 550" ></pagination>
+                </div-->
             </div>
         </div>
-    </section>
+    </div>
+</section>
 </template>
 <script>
-import VueBootstrapTable from 'vue-bootstrap-table2';
+import EMRPharmacyDetailPrescriptionList from '@/emr/pharmacy/details/PrescriptionList.vue';
 
 export default {
     components: {
-        VueBootstrapTable
+        EMRPharmacyDetailPrescriptionList
     },
     data() {
         return {

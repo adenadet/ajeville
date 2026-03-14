@@ -54,6 +54,7 @@
                         <li><a href="/emr/insurance" class="dropdown-item"><i class="mr-1 fas fa-file-alt"></i> Managed Care</a></li>
                         <li><a href="/emr/nursing" class="dropdown-item"><i class="mr-1 fas fa-user-nurse"></i> Nursing Care</a></li>
                         <li><a href="/emr/operations" class="dropdown-item"><i class="mr-1 fas fa-cogs"></i> Operations</a></li>
+                        <li><a href="/emr/pharmacy" class="dropdown-item"><i class="mr-1 fas fa-pills"></i> Pharmacy</a></li>
                         <li><a href="/emr/procedures" class="dropdown-item"><i class="mr-1 fas fa-user-md"></i> Procedures</a></li>
                         <li><a href="/emr/radiology" class="dropdown-item"><i class="mr-1 fas fa-x-ray"></i> Radiology</a></li>
                         <li><a href="/emr/records" class="dropdown-item"><i class="mr-1 fas fa-file-medical"></i> Records</a></li>

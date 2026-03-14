@@ -15,6 +15,15 @@ class Plan extends Structure
     public function branches(){
         return $this->hasManyThrough('App\Models\Operations\Branch', 'App\Models\Insurance\PlanBranch', 'plan_id', 'id', 'id', 'branch_id');
     }
+
+    public function creator(){
+        return $this->belongsTo('App\Models\User', 'created_by', 'id');
+    }
+
+    public function deleter(){
+        return $this->belongsTo('App\Models\User', 'deleted_by', 'id');
+    }
+
     public function patients(){
         return $this->hasManyThrough('App\Models\EMR\Patient', 'App\Models\EMR\PatientInsurance', 'plan_id', 'id', 'id', 'patient_id');
     }
@@ -27,9 +36,7 @@ class Plan extends Structure
     	return $this->belongsTo('App\Models\Insurance\Provider', 'provider_id', 'id');
 	}
 
-    public function patient(){
-        return $this->belongsTo('App\Models\EMR\Patient', 'patient_id', 'id');
+    public function updater(){
+        return $this->belongsTo('App\Models\User', 'updated_by', 'id');
     }
-
-    
 }

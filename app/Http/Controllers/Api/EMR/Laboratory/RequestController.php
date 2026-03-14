@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Api\EMR\Laboratory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\LaboratoryTrait;
+use App\Services\EMR\LedgerService;
 use Illuminate\Http\Request;
 
 use App\Models\EMR\Laboratory\Request as LaboratoryRequest;
 use App\Models\EMR\Visit;
 use App\Models\Finance\Transaction;
 use App\Models\Inventory\Item;
-
+use App\Services\EMR\LaboratoryRequestService;
+use App\Services\EMR\TransactionService;
 
 class RequestController extends Controller
 {
@@ -87,6 +89,33 @@ class RequestController extends Controller
         ]);
     }
 
+    public function show($id)
+    {
+        $lab_request = $this->emr_laboratory_request_get_by(null, $id, true);
+
+        return response()->json([
+            'request' => $lab_request,
+        ], is_string($lab_request) ? 404 : 200);
+    }
+
+    public function start($id)
+    {
+        $lab_request = LaboratoryRequest::findOrFail($id);
+        $lab_service = new LaboratoryRequestService(new TransactionService( new LedgerService()));
+        return response()->json([
+            'request' => $lab_service->accept($lab_request),
+        ]);
+    }
+
+    public function start_report($id)
+    {
+        $lab_request = LaboratoryRequest::findOrFail($id);
+        $lab_service = new LaboratoryRequestService(new TransactionService( new LedgerService()));
+        return response()->json([
+            'request' => $lab_service->start($lab_request),
+        ]);
+    }
+
     public function store(Request $request)
     {
         foreach ($request->input('investigations') as $investigation){
@@ -95,13 +124,6 @@ class RequestController extends Controller
 
         return response()->json([
             'pending_requests' => $this->laboratory_request_get_all('pending', null, true, true, $_GET['page']??1),
-        ]);
-    }
-
-    public function show($id)
-    {
-        return response()->json([
-            'request' => LaboratoryRequest::where('id', '=', $id)->with([ 'approver', 'collector', 'patient.user', 'branch', 'creator', 'item', 'reporter', 'requester.user', 'secondary_reporter', 'transaction.payments'])->first(),
         ]);
     }
 

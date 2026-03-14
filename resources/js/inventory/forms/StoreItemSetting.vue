@@ -167,7 +167,6 @@ export default {
     watch:{
         store_item_setting(){
             this.storeItemSettingData.fill(this.store_item_setting);
-            console.log(this.store_item_setting);
         }
     }
 }

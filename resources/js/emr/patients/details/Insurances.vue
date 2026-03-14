@@ -4,14 +4,14 @@
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header"><h4 class="modal-title" v-html="editMode ? 'Edit Insurance' : 'Create Insurance'"></h4><button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button></div>
-                    <div class="modal-body"><PatientFormInsurance :editMode="editMode" :insurance="insurance" /></div>
+                    <div class="modal-body"><EMRPatientFormInsurance :editMode="editMode" :insurance.sync="insurance" :patient="patient" /></div>
                 </div>
             </div>
         </div>
         <div class="card-header bg-dark">
             Insurances 
             <div class="card-tools">
-                <button  class="btn btn-sm btn-success">Add New</button>
+                <button  class="btn btn-sm btn-success" @click="addInsurance">Add New</button>
             </div>
         </div>
         <div class="card-body table-responsive p-0">
@@ -40,7 +40,9 @@
     </section>
 </template>
 <script>
+import EMRPatientFormInsurance from '@/emr/patients/forms/Insurance.vue';
 export default {
+    components:{EMRPatientFormInsurance},
     computed:{
         patient(){
             var patient = this.$store.getters.currentPatient;
@@ -59,23 +61,11 @@ export default {
             loading: false,
         }
     },
-    mounted() {
-        /*Fire.$on('Reload', response =>{this.refreshProfile(response);});
-        Fire.$on('pageReload', () => {
-            this.getInitials();
-            this.closeModal();
-        });
-        Fire.$on('getPatient', patient_id => {
-            this.getInitials(patient_id);
-        });*/
-        //Fire.$on('patientReset', () => {this.getInitials(this.patient.id);});
-    },
     methods:{
         addInsurance(){
             this.loading = true;
             this.editMode = false;
             this.insurance = {};
-            //Fire.$emit('InsuranceDataFill', {});
             $('#insuranceModal').modal('show');
             this.loading =false;
         },
@@ -84,22 +74,6 @@ export default {
             $('#contactModal').modal('hide');
             $('#contactModal').modal('hide');
         },
-        /*editAllergy(allergy){
-            this.loading = true;
-            this.editMode = true;
-            let details = {'allergy': allergy, 'patient':this.user};
-            Fire.$emit('AllergyDataFill', (details));
-            $('#allergyModal').modal('show');
-            this.loading =false;
-        },
-        editContact(contact){
-            this.loading = true;
-            this.editMode = true;
-            let details = {'patient': this.patient, 'contact': contact};
-            Fire.$emit('ContactDataFill', details);
-            $('#contactModal').modal('show');
-            this.loading =false;
-        },*/
         getInitials(id){
             this.loading = true;
             axios.get('/api/emr/hims/patients/'+id+'/insurances').then(response =>{
@@ -115,5 +89,6 @@ export default {
             this.insurances = response.data.insurances; 
         },
     },
+    mounted() {},
 }
 </script>

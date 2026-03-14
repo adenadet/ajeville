@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Operations;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\EMR\ConsultantTrait;
+use App\Http\Traits\EMR\ConsultationTrait;
 use App\Http\Traits\EMR\DrugTrait;
 use App\Http\Traits\EMR\LaboratoryTrait;
 use App\Http\Traits\EMR\PharmacyTrait;
@@ -20,7 +20,7 @@ use App\Models\User;
 
 class ServiceController extends Controller
 {
-    use ItemTrait, ConsultantTrait, ServiceTrait;
+    use ItemTrait, ConsultationTrait, ServiceTrait;
 
     public function destroy($id)
     {

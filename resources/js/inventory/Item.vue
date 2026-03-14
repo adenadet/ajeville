@@ -167,7 +167,11 @@
 </section>
 </template>
 <script>
+import InventoryFormItem from '@/inventory/forms/Item.vue';
 export default {
+    components:{
+        InventoryFormItem
+    },
     data(){
         return  {
             editMode: false,

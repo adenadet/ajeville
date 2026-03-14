@@ -22,7 +22,9 @@
 </section>
 </template>
 <script>
+import ProcurementDetailWorkOrderList from '@/procurement/details/WorkOrderList.vue';
 export default {
+    components:{ProcurementDetailWorkOrderList},
     data(){
         return {
             current_page: 1,

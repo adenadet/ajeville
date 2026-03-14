@@ -68,7 +68,9 @@
     </section>
 </template>
 <script>
+import SalesDetailDeliveryNote from '@/sales_orders/details/DeliveryNote.vue';
 export default {
+    components:{SalesDetailDeliveryNote},
     data(){
         return {
             customers: {total: 0,},

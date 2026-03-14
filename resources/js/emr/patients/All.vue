@@ -1,19 +1,7 @@
 <template>
 <section>
     <div class="container-fluid">
-        <div class="modal fade" id="patientModal">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header bg-navy">
-                        <h4 class="modal-title" v-html="editMode ? 'Edit Patient' : 'Create Patient'"></h4>
-                        <button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <EMRPatientFormRegistration :editMode="editMode" :patient="patient" /> 
-                    </div>
-                </div>
-            </div>
-        </div>
+        
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -29,23 +17,15 @@
                                         <option value="in_visit">In Visit</option>
                                         <option value="deceased">Deceased</option>
                                     </select>
-                                    <button class="nav-link btn btn-sm btn-primary" type="button" @click="addPatient">
+                                    <!--button class="nav-link btn btn-sm btn-primary" type="button" @click="addPatient">
                                         <i class="fa fa-plus"></i>
-                                    </button>
-                                    <!--div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                        <router-link :to="'./transactions/'+patient.id"><button class="dropdown-item btn btn-block btn-sm"><i class="fa fa-eye mr-1"></i> View Transaction</button></router-link>
-                                        <button class="dropdown-item btn btn-block btn-sm" @click="createDispute(patient)"><i class="fa fa-exclamation-circle mr-1 text-warning"></i> Create Dispute</button>
-                                        <button class="dropdown-item btn btn-block btn-sm" @click="confirmTransaction(patient)"><i class="fa fa-handshake mr-1 text-info"></i> Agree to Contract</button>
-                                        <button class="dropdown-item btn btn-block btn-sm" @click="makePayment(patient)"><i class="fa fa-hand-holding-usd mr-1 text-warning"></i> Make Payment</button>
-                                        <button class="dropdown-item btn btn-block btn-sm" @click="updateTransaction(patient)"><i class="fa fa-edit mr-1 text-success"></i> Update Transaction</button>
-                                        <button class="dropdown-item btn btn-block btn-sm" @click="deactivateTransaction(patient)"><i class="fa fa-times mr-1 text-danger"></i> Cancel Transaction</button>
-                                    </div-->
+                                    </button-->
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="card-body table-responsive p-0" style="height: 500px;">
-                        <EMRPatientDetailPatientList :patients="patients.data" source="front_office" @refreshPatientList="getInitials"/>
+                        <EMRPatientDetailPatientList :patients="patients.data" source="front_office" @reloadPatientList="getInitials"/>
                     </div>
                     <div class="card-footer"><pagination v-model="current_page" @paginate="getInitials" :per-page="patients.per_page != null ? patients.per_page : 52" :records="patients.total != null ? patients.total : 550" ></pagination></div>
                 </div>
@@ -55,47 +35,53 @@
 </section>
 </template>
 <script>
+import EMRPatientDetailPatientList from '@/emr/patients/details/PatientList.vue';
+import EMRPatientFormRegistration from '@/emr/patients/forms/Registration.vue';
+import EMRPatientFormRegister from '@/emr/patients/forms/Register.vue';
 export default {
-data() {
-    return {
-        current_page: 1,
-        editMode: false,
-        loading: false,
-        patient: {},
-        patients: {data: [], total: 0,},
-        query: '',
-        services: [],
-        status: '',
-        user: {},
-    }
-},
-mounted() {
-    this.getInitials();
-},
-methods: {
-    addPatient(){
-        this.loading = true;
-        this.editMode = false;
-        this.patient = {};
-        $('#patientModal').modal('show');
-        this.loading = false;
+    components:{
+        EMRPatientDetailPatientList, EMRPatientFormRegister, EMRPatientFormRegistration
     },
-    closeModal(){
-        $('#patientModal').modal('hide');
+    data() {
+        return {
+            current_page: 1,
+            editMode: false,
+            loading: false,
+            patient: {},
+            patients: {data: [], total: 0,},
+            query: '',
+            services: [],
+            status: '',
+            user: {},
+        }
     },
-    getInitials() {
-        this.loading = true;
-        axios.get('/api/emr/hims/patients?query='+this.query+'&status='+this.status)
-        .then(response => {this.loading = false; this.refreshPatients(response)})
-        .catch(() => {
+    mounted() {
+        this.getInitials();
+    },
+    methods: {
+        addPatient(){
+            this.loading = true;
+            this.editMode = false;
+            this.patient = {};
+            $('#patientModal').modal('show');
             this.loading = false;
-            this.$toast.fire({icon: 'error', title: 'Patients were not loaded successfully',})
-        });
+        },
+        closeModal(){
+            $('#patientModal').modal('hide');
+        },
+        getInitials() {
+            this.loading = true;
+            axios.get('/api/emr/hims/patients?query='+this.query+'&status='+this.status)
+            .then(response => {this.loading = false; this.refreshPatients(response)})
+            .catch(() => {
+                this.loading = false;
+                this.$toast.fire({icon: 'error', title: 'Patients were not loaded successfully',})
+            });
+        },
+        refreshPatients(response) {
+            this.patients = response.data.patients;
+        }
     },
-    refreshPatients(response) {
-        this.patients = response.data.patients;
-    }
-},
-props: {}
+    props: {}
 }
 </script>

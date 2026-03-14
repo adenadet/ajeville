@@ -4,7 +4,7 @@
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header"><h4 class="modal-title" v-html="editMode ? 'Edit User' : 'Create User'"></h4><button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button></div>
-                    <div class="modal-body"><HrUserFormBioData :editMode="editMode"/></div>
+                    <div class="modal-body"><UmsFormBioData :editMode="editMode" :user.sync="patient.user" @reloadUser="refreshPage"/></div>
                 </div>
             </div>
         </div>
@@ -52,13 +52,13 @@
                 <div class="col-md-4 col-sm-6">
                     <div class="form-group">
                         <label>State</label>
-                        <div class="form-control" v-html="patient.user.state_id"></div>
+                        <div class="form-control" v-html="patient.user?.state?.name || patient.user?.state_id"></div>
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6">
                     <div class="form-group">
                         <label>Area</label>
-                        <div class="form-control" v-html="patient.user.area_id"></div>
+                        <div class="form-control" v-html="patient.user?.area?.name || patient.user?.area_id"></div>
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-12">
@@ -105,7 +105,11 @@
     </section>
 </template>
 <script>
+import UmsFormBioData from '@/users/forms/BioData.vue';
 export default {
+    components:{
+        UmsFormBioData
+    },
     computed:{
         patient(){
             var patient = this.$store.getters.currentPatient;
@@ -119,27 +123,27 @@ export default {
     data(){
         return  {
             editMode: false,
-            insurance: {},
-            insurances: [], 
+            loading: false,
+            user: {},
         }
     },
-    mounted() {
-        /*Fire.$on('patientReset', () => {
-            this.getInitials(this.patient.id);
-        });*/
-    },
+    emits:['reloadPatient'],
     methods:{
         closeModal(){
             $('#bioDataModal').modal('hide');
         },
-        editUser(user){
-            this.$Progress.start();
+        editUser(){
+            this.loading = true;
             this.editMode = true;
-            //Fire.$emit('BioDataFill', user);
             $('#bioDataModal').modal('show');
-            this.$Progress.finish();
+            this.loading = false;
         },
+        refreshPage(){
+            this.closeModal();
+            this.$emit('reloadPatient');
+        }
     },
+    mounted() {},
     props:{
         
     },

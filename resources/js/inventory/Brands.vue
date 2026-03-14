@@ -73,7 +73,12 @@
 </section>
 </template>
 <script>
+import InventoryDetailBrand from '@/inventroy/details/Brand.vue';
+import InventoryFormBrand from '@/inventroy/forms/Brand.vue';
 export default {
+    components:{
+        InventoryDetailBrand, InventoryFormBrand
+    },
     data(){
         return  {
             brand: {},

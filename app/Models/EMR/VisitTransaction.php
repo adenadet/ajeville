@@ -10,23 +10,27 @@ class VisitTransaction extends Structure
 {
     use HasFactory;
 
+    const PaidByPatient = 1;
+    const PaidByInsurance = 2;
+    const PaidByCoPayment = 3;
+    
+    const StatusPending = 1;
+    const StatusAwaitingApproval = 4;
+    const StatusAwaitingCoPayment = 5;
+    const StatusPaid = 10;
+    const StatusCompleted = 100;
+    const StatusDeferred = 50;
+    const StatusCancelled = 400;
+    const StatusTransferred = 1000;    
+	
+    
     protected $primaryKey = 'id';
     protected $table = 'emr_visit_transactions';
     protected $fillable = array('date', 'trans_type', 'classification', 'customer_id', 'reference_id', 'visit_id', 'patient_id', 'item_id', 'service_type_id', 'item_name', 'item_qty', 'item_unit_cost', 'item_total', 'discount', 'description', 'status', 'service_status', 'paid_by', 'care_id', 'verified_by', 'verified_at', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
     protected $casts = ['billable' => 'boolean', 'metadata' => 'array', 'performed_at' => 'datetime',];
 
-    const PaidByPatient = 1;
-    const PaidByInsurance = 2;
-    const PaidByCoPayment = 3;
     
-    const StatusPending     = 1;
-    const StatusPaid = 10;
-    const StatusCompleted   = 100;
-    const StatusDeferred   = 50;
-    const StatusCancelled   = 400;
-    const StatusTransferred = 1000;    
-	
     public function coverage(){
     	return $this->hasOne('App\Models\EMR\VisitTransactionCoverage', 'visit_transaction_id', 'id');
 	}
@@ -46,6 +50,10 @@ class VisitTransaction extends Structure
     public function patient(){
     	return $this->belongsTo('App\Models\EMR\Patient\Patient', 'patient_id', 'id');
 	}
+
+    public function ledger_entries(){
+        return $this->hasMany('App\Models\EMR\Patient\Ledger', 'visit_transaction_id', 'id');
+    }
 
     public function paymentAllocations(){
         return $this->hasMany('App\Models\EMR\VisitPaymentAllocation', 'visit_transaction_id', 'id');

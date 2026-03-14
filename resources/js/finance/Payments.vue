@@ -46,7 +46,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailPaymentList from '@/finance/details/PaymentList.vue';
+import FinanceFormPayment from '@/finance/forms/Payment.vue';
 export default {
+    components:{
+        FinanceDetailPaymentList, FinanceFormPayment
+    },
     data() {
         return {
             current_page: 1,

@@ -21,7 +21,7 @@ class VisitTransactionCoverage extends Structure
 
     protected $table = 'emr_visit_transaction_coverages';
 
-    protected $fillable = ['visit_transaction_id', 'provider_id', 'plan_id', 'authorization_code', 'covered_amount', 'patient_payable', 'coverage_percent', 'approval_status', 'claim_status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['visit_transaction_id', 'provider_id', 'plan_id', 'authorization_code', 'insurance_authorization_id', 'covered_amount', 'patient_payable', 'coverage_percent', 'approval_status', 'claim_status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'];
 
     public function creator(){
         return $this->belongsTo('App\Models\User', 'created_by', 'id');

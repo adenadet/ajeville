@@ -34,15 +34,21 @@
                     <td>{{ request.date }}</td>
                     <td v-if="request.patient != null">{{ patientName(request.patient) }}</td>
                     <td v-else>{{request.patient_id}}</td>
-                    <td>{{ (request.item != null && request.item.category != null) ? request.item.category.name : 'No Category Yet' }}</td>
-                    <td>{{ request.item != null ? request.item.name : '' }}</td>
-                    <td>{{ request.status == 0 ? 'Unpaid' : 'Cleared' }}</td>
+                    <td>{{ request.lab_service?.category?.name || 'No Category Yet' }}</td>
+                    <td>{{ request?.lab_service?.emr_service?.item?.name || '' }}</td>
+                    <td>
+                        <span class="badge badge-dark" v-if="request?.status == 0">Booked</span>
+                        <span class="badge badge-info" v-else-if="request?.status == 1">Accepted</span>
+                        <span class="badge badge-info" v-else-if="request?.status == 2">Started</span>
+                        <span class="badge bg-purple" v-else-if="request?.status == 4">Sample Collected</span>
+                        <span class="badge badge-primary" v-else-if="request?.status == 5">Ongoing</span>
+                        <span class="badge badge-success" v-else-if="request?.status >= 20 && request?.status <= 40">Completed</span>
+                        <span class="badge badge-danger" v-else>Cancelled</span>
+                    </td>
                     <td v-if="source == 'laboratory'">
-                        <span class="nav-link" data-toggle="dropdown" href="#">
-                            <i class="fa fa-ellipsis-v"></i>
-                        </span>
+                        <span class="nav-link" data-toggle="dropdown" href="#"><i class="fa fa-ellipsis-v"></i></span>
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                            <router-link :to="'/laboratory/requests/'+request.id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Request</router-link>
+                            <router-link :to="'/emr/laboratory/requests/'+request.id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Request</router-link>
                             <button v-if="request.status == 0 && (request.transaction == null || request.transaction.paid_by == 1)" class="btn btn-block dropdown-item" @click="pay_from_wallet(request.transaction.id)"><i class="fas fa-cash-register mr-2"></i> Pay from Wallet</button>
                         </div>
                     </td>
@@ -89,17 +95,17 @@ export default {
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
-                })
+            })
             .then((result) => {
                 //Send Delete request
                 if(result.value){
                     this.form.delete('/api/lms/courses/'+id)
                     .then(response=>{
-                    Swal.fire('Deleted!', 'Category has been deleted.', 'success');
-                    Fire.$emit('CatRefresh', response);   
+                        this.$swal.fire('Deleted!', 'Category has been deleted.', 'success');
+                        this.$emit('CatRefresh', response);   
                     })
                     .catch(()=>{
-                    Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: '<a href>Why do I have this issue?</a>'});
+                        this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: '<a href>Why do I have this issue?</a>'});
                     });
                 }
             });

@@ -10,26 +10,25 @@ class Request extends Structure
 {
 
     const StatusBooked = 0;
-    const StatusStarted = 1;
-    const StatusSampleCollected = 2;
-    const StatusOngoing = 4;
+    const StatusAccepted = 1;
+    const StatusStarted = 2;
+    const StatusSampleCollected = 4;
+    const StatusOngoing = 5;
     const StatusConfirmed = 20;
+    const StatusCompleted = 30;
     const StatusCancelled = 100;
 
     protected $primaryKey = 'id';
     protected $table = 'emr_laboratory_requests';
-    protected $fillable = array('visit_id', 'date', 'patient_id', 'item_id', 'consultation_id', 'transaction_id', 'branch_id', 'quantity', 'status', 'result', 'sample_by', 'sample_at', 'sample_remark', 'reported_by', 'reported_at', 'report_remark', 'secondary_report_by', 'secondary_report_at', 'secondary_report_remark', 'approved_by', 'approved_at', 'approval_remark', 'outsourced_type', 'outsourced_to_id', 'outsourced_status_id', 'outsourced_remark', 'insourced_remark', 'insourced_final_remark', 'outsource_result_file', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
-
-    public function approver(){
-        return $this->belongsTo('App\Models\User', 'approved_by', 'id');
-    }
+    protected $fillable = array('unique_id', 'date', 'visit_id', 'branch_id', 'consultation_id', 'laboratory_service_id', 'patient_id', 'transaction_id', 'quantity', 'item_id', 'description', 'status', 'special', 'accepted_by', 'accepted_at', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
     
     public function branch(){
         return $this->belongsTo('App\Models\User', 'approved_by', 'id');
     }
-    
-    public function collector(){
-        return $this->belongsTo('App\Models\User', 'sample_collected_by', 'id');
+
+    public function canBeAccepted()
+    {
+        return $this->status === self::StatusBooked;
     }
 
     public function creator(){
@@ -40,28 +39,27 @@ class Request extends Structure
         return $this->belongsTo('App\Models\Inventory\Item', 'item_id', 'id');
     }
 
-    public function patient(){
-        return $this->belongsTo('App\Models\EMR\Patient', 'patient_id', 'id');
+    public function lab_service(){
+        return $this->belongsTo('App\Models\EMR\Laboratory\Service', 'laboratory_service_id', 'id');
     }
-
-    public function reporter(){
-        return $this->belongsTo('App\Models\User', 'reported_by', 'id');
+    public function patient(){
+        return $this->belongsTo('App\Models\EMR\Patient\Patient', 'patient_id', 'id');
     }
 
     public function requester(){
         return $this->belongsTo('App\Models\User', 'requested_by', 'id');
     }
     
-    public function secondary_reporter(){
-        return $this->belongsTo('App\Models\User', 'secondary_reported_by', 'id');
+    public function result(){
+        return $this->belongsTo('App\Models\EMR\Laboratory\Result', 'id', 'request_id');
     }
 
-    public function tests(){
-        return $this->hasMany('App\Models\EMR\LaboratoryRequestDetail', 'request_id', 'id');
+    public function specimens(){
+        return $this->hasMany('App\Models\EMR\Laboratory\Specimen', 'request_id', 'id');
     }
     
     public function transaction(){
-        return $this->belongsTo('App\Models\Finance\Transaction', 'transaction_id', 'id');
+        return $this->belongsTo('App\Models\EMR\VisitTransaction', 'transaction_id', 'id');
     }
 
     public function visit(){

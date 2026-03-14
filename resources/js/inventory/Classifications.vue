@@ -60,7 +60,11 @@
 </section>
 </template>
 <script>
+import InventoryFormClassification from '@/inventory/forms/Classification.vue';
 export default {
+    components:{
+        InventoryFormClassification
+    },
     data(){
         return  {
             classifications: {},

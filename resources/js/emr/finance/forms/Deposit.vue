@@ -2,7 +2,7 @@
 <section class="row">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Pending Transactions</div>
+            <div class="card-header">Pending Transactions {{ patient?.user?.first_name || 'Test' }}</div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-head-fixed text-nowrap">
                     <thead>
@@ -62,14 +62,14 @@
                     <div class="col-sm-6">
                         <div class="form-group">
                             <label>Payment Mode*</label>
-                            <model-list-select class="form-control" :list="modes" v-model="DepositData.mode_id" option-value="id" option-text="name" placeholder="Select Payment Type" required/>
-                            <has-error :form="DepositData" field="mode_id"></has-error> 
+                            <model-list-select class="form-control" :list="modes" v-model="DepositData.payment_method" option-value="id" option-text="name" placeholder="Select Payment Type" required/>
+                            <has-error :form="DepositData" field="payment_method"></has-error> 
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="form-group">
                             <label>Bank</label>
-                            <model-list-select class="form-control" :list="banks" v-model="DepositData.bank_id" option-value="id" option-text="name" placeholder="Select Bank" />
+                            <model-list-select class="form-control" :list="banks" v-model="DepositData.bank_id" option-value="id" option-text="account_name" placeholder="Select Bank" />
                             <has-error :form="DepositData" field="bank_id"></has-error> 
                         </div>
                     </div>
@@ -109,7 +109,7 @@ export default {
             DepositData: new Form({
                 amount: 0,
                 bank_id: '',
-                mode_id: '',
+                payment_method: '',
                 notes: '',
                 patient_id:'', 
                 received_by: '',
@@ -182,18 +182,20 @@ export default {
             });
         },
         getPendingTransactions(){
-            this.loading = true;
-            axios.get('/api/emr/hims/visit_transactions/'+this.patient.id+'/pending')
-            .then(response =>{
-                this.trans = response.data.transactions;
-            })
-            .catch(()=>{
-                this.$toast.fire({
-                    icon: 'error',
-                    title: 'Dashboard not loaded successfully',
+            if (this.patient != null){
+                this.loading = true;
+                axios.get('/api/emr/hims/visit_transactions/'+this.patient.id+'/pending')
+                .then(response =>{
+                    this.trans = response.data.transactions;
                 })
-            });
-            this.loading = false;
+                .catch(()=>{
+                    this.$toast.fire({
+                        icon: 'error',
+                        title: 'Dashboard not loaded successfully',
+                    })
+                });
+                this.loading = false;
+            }
         },
         resetForm(){
             this.DepositData.reset();

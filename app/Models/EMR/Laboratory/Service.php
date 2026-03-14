@@ -12,6 +12,10 @@ class Service extends Structure
     protected $table = 'emr_laboratory_services';
     protected $fillable = array('service_id', 'category_id', 'bottle_type_id', 'result_template_id', 'specimen_type_id', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
+    public function analytes(){
+        return $this->hasManyThrough('App\Models\EMR\Laboratory\Analyte', 'App\Models\EMR\Laboratory\ServiceAnalyte', 'service_id','id', 'id', 'analyte_id');
+    }
+
     public function bottle_type(){
         return $this->belongsTo('App\Models\EMR\Laboratory\Bottle', 'bottle_type_id', 'id');
     }
@@ -28,18 +32,14 @@ class Service extends Structure
         return $this->belongsTo('App\Models\User', 'deleted_by', 'id');
     }
 
-    public function reference_ranges(){
-        return $this->hasMany('App\Models\EMR\Laboratory\ReferenceRange', 'service_id', 'id');
-    }
-    
-    public function result_template(){
-        return $this->belongsTo('App\Models\EMR\Laboratory\ResultTemplate', 'result_template_id', 'id');
-    }
-
-    public function service(){
+    public function emr_service(){
         return $this->belongsTo('App\Models\EMR\Service', 'service_id', 'id');
     }
 
+    public function service_analytes(){
+        return $this->hasMany('App\Models\EMR\Laboratory\ServiceAnalyte', 'service_id', 'id');
+    }
+    
     public function specimen_type(){
         return $this->belongsTo('App\Models\EMR\Laboratory\SpecimenType', 'specimen_type_id', 'id');
     }
@@ -47,5 +47,4 @@ class Service extends Structure
     public function updater(){
         return $this->belongsTo('App\Models\User', 'updated_by', 'id');
     }
-
 }

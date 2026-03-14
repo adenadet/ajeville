@@ -6,14 +6,19 @@
             <EMRFrontOfficeDetailVisit source="front_office" />
         </div>
         <div class="col-md-8">
-            <EMRFrontOfficeDetailTransactionList v-if="$store.getters.currentVisit" :transactions.sync="transactions" @refreshTransactionList="loadVisit"/>
+            <EMRFinanceDetailTransactionList v-if="$store.getters.currentVisit" :transactions.sync="transactions.data" @refreshTransactionList="loadVisit"/>
         </div>
     </div>
 </section>
 </template>
 
 <script>
+import EMRFrontOfficeDetailVisit from '@/emr/front_office/details/Visit.vue';
+import EMRFinanceDetailTransactionList from '@/emr/finance/details/TransactionList.vue';
 export default {
+    components:{
+        EMRFinanceDetailTransactionList, EMRFrontOfficeDetailVisit
+    },
     data() {
         return {
             current_page: 1,

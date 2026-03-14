@@ -2,13 +2,12 @@
 <section class="overlay-wrapper p-0">
     <form @submit.prevent="submit">
         <div class="row">
-        <!-- SOAP -->
             <div class="col-md-12">
                 <Complaint v-model="consultationData.complaint" :durations.sync="durations" :symptoms.sync="symptoms"/>
             </div>
-            <!--div class="col-md-12">
+            <div class="col-md-12">
                 <History v-model="consultationData.history" :symptoms="symptoms"/>
-            </div-->
+            </div>
             <div class="col-md-6">
                 <Diagnosis :icd_10_codes="icd_10_codes" v-model="consultationData.initial_icd_10" type="initials" />
             </div>
@@ -17,9 +16,7 @@
             </div>
             <div class="col-md-12">
                 <Plan v-model="consultationData.action_plan" />
-            </div>
-            
-            <!-- REQUESTS -->
+            </div>    
             <div class="col-md-12">
                 <Requests v-model="consultationData.requests" />
             </div>
@@ -30,7 +27,6 @@
             <button class="btn btn-secondary me-2" @click="review = true">Review</button>
             <button class="btn btn-primary" @click="submit">Submit</button>
         </div>
-
     </form>
 </section>
 </template>

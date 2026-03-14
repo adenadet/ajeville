@@ -9,8 +9,8 @@ const ApprovalJobCompletions               = () => import('../../approvals/JobCo
 const ApprovalOrderReturn                  = () => import('../../approvals/OrderReturn.vue');
 const ApprovalOrderReturns                 = () => import('../../approvals/OrderReturns.vue');
 const ApprovalPurchaseOrders               = () => import('../../approvals/PurchaseOrders.vue');
-const ApprovalPurchaseRequests             = () => import('../../approvals/PurchaseRequests.vue');
 //const ApprovalPurchaseRequests             = () => import('../../approvals/PurchaseRequests.vue');
+
 const ApprovalSalesOrder                   = () => import('../../approvals/SalesOrder.vue');
 const ApprovalSalesOrders                  = () => import('../../approvals/SalesOrders.vue');
 
@@ -31,7 +31,7 @@ export default[
     {path: '/approvals/returns/:id',                            component: ApprovalOrderReturn},
     {path: '/approvals/purchase_orders',                        component: ApprovalPurchaseOrders},
     //{path: '/approvals/purchase_orders/:id',                     component: ApprovalPurchaseOrder},
-    {path: '/approvals/purchase_requests',                      component: ApprovalPurchaseRequests},
+    //{path: '/approvals/purchase_requests',                      component: ApprovalPurchaseRequests},
     //{path: '/approvals/purchase_requests/:id',                   component: ApprovalPurchaseRequest},
     {path: '/approvals/sales_orders',                           component: ApprovalSalesOrders},
     {path: '/approvals/sales_orders/:id',                       component: ApprovalSalesOrder},

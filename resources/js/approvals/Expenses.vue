@@ -40,7 +40,9 @@
 </section>
 </template>
 <script>
+import FinanceDetailExpenseList from '@/inventory/details/ExpenseList.vue';
 export default {
+    components:{FinanceDetailExpenseList},
     data(){
         return  {
             current_page: 1,

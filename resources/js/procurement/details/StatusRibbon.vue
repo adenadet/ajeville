@@ -29,22 +29,15 @@
 <script>
 export default {
     data() {
-        return {
-        };
+        return {};
     },
-    methods: {
-        
-    },
-    mounted(){
-        //this.getAllInitials();
-    },
+    methods: {},
+    mounted(){},
     props:{
         order: Object,
     },
     watch:{
-        order() {
-        
-        },
+        order() {},
     },
 };
 </script>

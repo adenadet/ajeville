@@ -4,6 +4,8 @@ use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\General\FileManagerTrait;
 use App\Http\Traits\General\LogTrait;
 use App\Models\EMR\Drugs\Drug;
+use App\Models\EMR\Drugs\Form as DrugForm;
+use App\Models\EMR\Drugs\Route as DrugRoute;
 use App\Models\EMR\Patient\Patient;
 use App\Models\EMR\Pharmacy\Prescription;
 use App\Models\EMR\Pharmacy\PrescriptionDrug;
@@ -32,7 +34,7 @@ trait PharmacyTrait
                 'created_by' => Auth::id() ?? auth('api')->id(),
                 'updated_by' => Auth::id() ?? auth('api')->id(),
             ]);    
-            $this->$this->log_user_activity('Drug created', $drug->id, true);
+            $this->log_user_activity('Drug created', $drug->id, true);
             DB::commit();
             return $drug;
         }
@@ -43,17 +45,55 @@ trait PharmacyTrait
         }
     }
 
-    public function emr_pharmacy_drug_get_all($type, $specific, $detailed, $paginated, $page){
+    public function emr_pharmacy_drug_deactivate($id){
+        DB::beginTransaction();
+        try{    
+            $drug = Drug::findOrFail($id);
+            
+            if ($drug->status == 1){
+                $drug->deleted_by = auth('api')->id() ?? Auth::id();
+                $drug->deleted_at = date('Y-m-d H:i:s');
+                $drug->status = 0;
+            }
+            else{
+                $drug->deleted_by = null;
+                $drug->deleted_at = null;
+                $drug->status = 1;
+            }
+
+            $drug->updated_by = auth('api')->id() ?? Auth::id();
+            $drug->save();
+            
+            $this->log_user_activity('Pharmacy Drug deactivated', $id, true);
+            DB::commit();
+            return $drug;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug deactivated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_get_all($type, $specific, $detailed, $paginated){
+        $query = Drug::query();
         switch($type){
             case 'active':
-                $query = Drug::where('status', '=', 1);
+                $query = $query->where('status', '=', 1);
             break;
             case 'all':
-                $query = Drug::withTrashed();
+                $query = $query->withTrashed();
             break;
             case 'inactive':
-                $query = Drug::where('status', '!=', 1)->withTrashed();
+                $query = $query->where('status', '!=', 1)->withTrashed();
             break;
+        }
+
+        if(is_array($specific)){
+            if (!empty($_GET['query'])){
+                $search = $_GET['query'];
+                $query = $query->where('name', 'LIKE', "%$search%");
+            }
         }
 
         $query = $query->orderBy('name', 'ASC');
@@ -79,7 +119,7 @@ trait PharmacyTrait
 
             $drug->save();
                
-            $this->$this->log_user_activity('Drug updated', $id, true);
+            $this->log_user_activity('Drug updated', $id, true);
             DB::commit();
             return $drug;
         }
@@ -89,6 +129,244 @@ trait PharmacyTrait
             return $e->getMessage();
         }
     }
+
+    /*
+    -------------------------------------------------------------
+    Drug Form Function
+    -------------------------------------------------------------
+    */
+    public function emr_pharmacy_drug_form_create($data){
+        DB::beginTransaction();
+
+        try{
+            $query = DrugForm::create([
+                'name' => $data['name'],
+                'status' => $data['status'],
+                'description' => $data['description'],
+            ]);    
+            $this->log_user_activity('Pharmacy Drug Form created', $query->id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form created', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_form_deactivate($id){
+        DB::beginTransaction();
+        try{    
+            $query = DrugForm::findOrFail($id);
+            
+            if ($query->status == 1){
+                $query->deleted_at = date('Y-m-d H:i:s');
+                $query->status = 0;
+            }
+            else{
+                $query->deleted_at = null;
+                $query->status = 1;
+            }
+
+            $query->save();
+            
+            $this->log_user_activity('Pharmacy Drug Form deactivated', $id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form deactivated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_form_get_all($type, $specific, $detailed, $paginated){
+        $query = DrugForm::query();
+        switch($type){
+            case 'active':
+                $query = $query->where('status', '=', 1);
+            break;
+            case 'all':
+                $query = $query->withTrashed();
+            break;
+            case 'inactive':
+                $query = $query->where('status', '!=', 1)->withTrashed();
+            break;
+        }
+
+        if(is_array($specific)){
+            if (!empty($_GET['query'])){
+                $search = $_GET['query'];
+                $query = $query->where('name', 'LIKE', "%$search%");
+            }
+        }
+
+        $query = $query->orderBy('name', 'ASC');
+
+        $query = $detailed ? $query : $query->select('id', 'name');
+        $query = $paginated ? $query->paginate(50) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_pharmacy_drug_form_get_by($id, $detailed){
+        try{
+            $query = DrugForm::where('id', '=', $id);
+            $query = $detailed ? $query : $query->select('id', 'name');
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_form_update($data, $id){
+        DB::beginTransaction();
+
+        try{
+            $drug = DrugForm::find($id);
+            
+            $drug->name = $data['name'];
+            $drug->status = $data['status'];
+            $drug->description = $data['description'];
+            
+            $drug->save();
+               
+            $this->log_user_activity('Pharmacy Drug Form updated', $id, true);
+            DB::commit();
+            return $drug;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form updated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    /*
+    -------------------------------------------------------------
+    Drug Form Function
+    -------------------------------------------------------------
+    */
+    public function emr_pharmacy_drug_item_create($data){
+        DB::beginTransaction();
+
+        try{
+            $query = DrugForm::create([
+                'name' => $data['name'],
+                'status' => $data['status'],
+                'description' => $data['description'],
+            ]);    
+            $this->log_user_activity('Pharmacy Drug Form created', $query->id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form created', null, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_item_deactivate($id){
+        DB::beginTransaction();
+        try{    
+            $query = DrugForm::findOrFail($id);
+            
+            if ($query->status == 1){
+                $query->deleted_at = date('Y-m-d H:i:s');
+                $query->status = 0;
+            }
+            else{
+                $query->deleted_at = null;
+                $query->status = 1;
+            }
+
+            $query->save();
+            
+            $this->log_user_activity('Pharmacy Drug Form deactivated', $id, true);
+            DB::commit();
+            return $query;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form deactivated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_item_get_all($type, $specific, $detailed, $paginated){
+        $query = DrugForm::query();
+        switch($type){
+            case 'active':
+                $query = $query->where('status', '=', 1);
+            break;
+            case 'all':
+                $query = $query->withTrashed();
+            break;
+            case 'inactive':
+                $query = $query->where('status', '!=', 1)->withTrashed();
+            break;
+        }
+
+        if(is_array($specific)){
+            if (!empty($_GET['query'])){
+                $search = $_GET['query'];
+                $query = $query->where('name', 'LIKE', "%$search%");
+            }
+        }
+
+        $query = $query->orderBy('name', 'ASC');
+
+        $query = $detailed ? $query : $query->select('id', 'name');
+        $query = $paginated ? $query->paginate(50) : $query->get();
+
+        return $query;
+    }
+
+    public function emr_pharmacy_drug_item_get_by($id, $detailed){
+        try{
+            $query = DrugForm::where('id', '=', $id);
+            $query = $detailed ? $query : $query->select('id', 'name');
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    public function emr_pharmacy_drug_item_update($data, $id){
+        DB::beginTransaction();
+
+        try{
+            $drug = DrugForm::find($id);
+            
+            $drug->name = $data['name'];
+            $drug->status = $data['status'];
+            $drug->description = $data['description'];
+            
+            $drug->save();
+               
+            $this->log_user_activity('Pharmacy Drug Form updated', $id, true);
+            DB::commit();
+            return $drug;
+        }
+        catch(Exception $e){
+            DB::rollBack();
+            $this->log_user_activity('Pharmacy Drug Form updated', $id, false);
+            return $e->getMessage();
+        }
+    }
+
+    /*
+    --------------------------------------------------------------------------------
+    Pharmacy Prescription Function
+    --------------------------------------------------------------------------------
+    */
+
+    public function emr_pharmacy_prescription_confirm($data, $id){}
 
     public function emr_pharmacy_prescription_create($data)
     {
@@ -130,7 +408,7 @@ trait PharmacyTrait
                 }
             }
 
-            $this->$this->log_user_activity('Prescription created', $prescription->id, true);
+            $this->log_user_activity('Prescription created', $prescription->id, true);
             DB::commit();
             return $prescription;
         }
@@ -150,32 +428,14 @@ trait PharmacyTrait
 
     public function emr_pharmacy_prescription_fulfillment($data, $id)
     {
-        $prescription = PrescriptionDrug::where('id', '=', $id)->first();
+        $prescription_drug = PrescriptionDrug::where('id', '=', $id)->first();
         
         $prescription_drug_fulfill = "";
-        /*if ($drug) {
-            // Mark the prescription drug as fulfilled
-            $prescription_drug->fulfilled = true;
-            $prescription_drug->save();
-
-            // Create a transaction for the patient
-            $transaction_data = [
-                'user_id' => $user_store->user_id,
-                'amount' => $prescription_drug->price,
-                'description' => 'Prescription fulfillment for drug ID: ' . $prescription_drug->drug_id,
-            ];
-
-            $this->finance_transaction_create($item_id, $patient_id, $quantity, $auto_debit = false, $visit_id = NULL);
-
-            return true;
-        }
-
-        return false;
-        */
+        
     }
 
-    public function emr_pharmacy_prescription_get_all($type, $specific, $detailed, $paginated, $page)
-    {
+    public function emr_pharmacy_prescription_get_all($type, $specific, $detailed, $paginated){
+        $query = Prescription::query();
         switch ($type) {
             case 'all':
                 $query = is_null($specific) || !isset($specific) ? Prescription::withTrashed() : Prescription::withTrashed()->whereDate('date', '>=', $specific['start_date'])->whereDate('date', '<=', $specific['end_date']);
@@ -227,9 +487,25 @@ trait PharmacyTrait
             break;
         }
 
+        if(is_array($specific)){
+            if(!empty($specific['query'])){}
+        }
+
         $query = $detailed ? $query->with(['consultation', 'doctor', 'prescription_drugs', 'patient', 'visit']) : $query->select('id', 'visit_id', 'consultation_id', 'patient_id', 'date', 'doctor_id', 'refill_count', 'valid_till', 'status');
         $query = $paginated ? $query->paginate(30) : $query->get();
         
         return $query;
+    }
+
+    public function emr_pharmacy_prescription_get_by($type, $id, $detailed){
+        try{
+            $query = Prescription::where('id', '=', $id)->orWhere('unique_id', '=', $id);
+            $query = $detailed ? $query->with(['consultation', 'doctor', 'prescription_drugs', 'patient', 'visit']) : $query->select('id', 'visit_id', 'consultation_id', 'patient_id', 'date', 'doctor_id', 'refill_count', 'valid_till', 'status');
+            
+            return $query->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 }

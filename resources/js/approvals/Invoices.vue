@@ -27,7 +27,11 @@
 </section>
 </template>
 <script>
+import FinanceDetailInvoiceList from '@/inventory/InvoiceList.vue';
 export default {
+    components:{
+        FinanceDetailInvoiceList
+    },
     data(){
         return  {
             current_page: 1,

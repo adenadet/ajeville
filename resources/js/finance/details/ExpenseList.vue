@@ -89,7 +89,11 @@
 </section>
 </template>
 <script>
+import FinanceDetailExpense from '@/finance/details/Expense.vue';
+import FinanceFormExpense from '@/finance/forms/Expense.vue';
+import FinanceFormPayOut from '@/finance/forms/PayOut.vue';
 export default {
+    components: {FinanceDetailExpense, FinanceFormExpense, FinanceFormPayOut},    
     data() {
         return {
             editMode: false,

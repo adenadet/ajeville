@@ -9,7 +9,9 @@
 </section>
 </template>
 <script>
+import InventoryDetailTransferOrder from '@/inventory/details/TransferOrder.vue';
 export default {
+    components:{InventoryDetailTransferOrder},
     data(){
         return  {
             editMode: false,

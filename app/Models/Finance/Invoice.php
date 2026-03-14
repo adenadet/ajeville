@@ -47,7 +47,6 @@ class Invoice extends Structure
         return $this->morphOne('App\Models\Finance\Expense', 'expenseable');
     }
 
-
     public function updater(){
         return $this->belongsTo('App\Models\User', 'updated_by', 'id');
     }

@@ -16,7 +16,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-primary">
                         <h3 class="card-title">Laboratory Bottles</h3>
                     </div>
                     <div class="card-body table-responsive p-0">

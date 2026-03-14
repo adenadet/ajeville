@@ -22,7 +22,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailPricelist from '@/finance/details/Pricelist.vue';
+import FinanceFormPricelist from '@/finance/forms/PriceList.vue';
+import FinanceFormPricelistItemBulk from '@/finance/forms/PriceListItemBulk.vue';
+import InventoryFormItemSearch from '@/inventory/forms/ItemSearch.vue';
 export default {
+    components:{FinanceDetailPricelist, FinanceFormPricelist, FinanceFormPricelistItemBulk, InventoryFormItemSearch },
     data(){
         return  {
             categories: [],

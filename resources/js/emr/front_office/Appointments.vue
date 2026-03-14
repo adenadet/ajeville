@@ -48,17 +48,26 @@
         <div class="card-body border-bottom table-responsive p-0 overlay-wrapper" style="height: 600px;">
             <EMRFrontOfficeDetailAppointmentList :appointments="appointments.data" @refreshAppointmentList="getAllInitials()" />
         </div>
-        
+        <div class="card-footer">
+            <div class="col-12">
+                <pagination v-model="current_page" @paginate="getAllInitials" :per-page="appointments.per_page != null ? appointments.per_page : 52" :records="appointments.total != null ? appointments.total : 550" ></pagination>
+            </div>
+        </div>
     </div>
   </section>
 </template>
 <script>
+import EMRFrontOfficeDetailAppointmentList from '@/emr/front_office/details/AppointmentList.vue';
 export default {
+    components:{
+        EMRFrontOfficeDetailAppointmentList
+    },
     data() {
         return {
             loading: false,
             appointment: {},
             appointments: [],
+            current_page: 1,
             departments: [],
             editMode: false,
             service_types: [],

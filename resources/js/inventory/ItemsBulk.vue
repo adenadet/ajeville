@@ -12,7 +12,12 @@
 </section>
 </template>
 <script>
+import InventoryFormItemBulk from '@/inventory/forms/ItemBulk.vue';
+import InventoryFormItemSearch from '@/inventory/forms/ItemSearch.vue';
 export default {
+    components:{
+        InventoryFormItemBulk, InventoryFormItemSearch
+    },
     data(){
         return  {
             categories: [],

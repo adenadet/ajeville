@@ -25,6 +25,7 @@
                 <div class="col-md-3">
                     <label>Date of Birth</label>
                     <input type="date" class="form-control" v-model="form.dob" />
+                    <span class="text-info">{{ current_age }}</span>
                 </div>
                 <div class="col-md-3">
                     <label>Sex</label>
@@ -96,5 +97,14 @@
     </div>
 </template>
 <script>
-export default { props: ['form', 'nations', 'states', 'areas'] }
+export default { 
+    computed:{
+        current_age(){
+            if(!this.form.dob) return ''
+            let diff = new Date() - new Date(this.form.dob)
+            return Math.floor(diff / (365.25*24*60*60*1000))
+        }
+    },
+    props: ['form', 'nations', 'states', 'areas'] 
+}
 </script>

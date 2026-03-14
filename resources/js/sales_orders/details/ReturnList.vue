@@ -85,7 +85,10 @@
 </section>
 </template>
 <script>
+import ApprovalFormAction from '@/approvals/forms/Action.vue';
+import SalesFormReturn from '@/sales_orders/forms/Return.vue';
 export default {
+    components:{ApprovalFormAction, SalesFormReturn},
     data() {
         return {
             return_order: {id: null, unique_id: ''},

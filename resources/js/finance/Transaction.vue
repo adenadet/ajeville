@@ -3,10 +3,6 @@
     <div class="card">
         <div class="card-header bg-dark">
             <h3 class="card-title">Transaction Details</h3>
-            <!--div class="card-tools">
-                <button type="button" class="btn btn-tool"><i class="fas fa-minus"></i></button>
-                <button type="button" class="btn btn-tool"><i class="fas fa-times"></i></button>
-            </div-->
         </div>
         <div class="card-body" style="height: 600px;">
             <div class="row">
@@ -45,7 +41,11 @@
 </section>
 </template>
 <script>
+import FinanceDetailTransaction from '@/finance/details/Transaction.vue';
 export default {
+    components: {
+        FinanceDetailTransaction, 
+    },
     data() {
         return {
             counterparty: {},

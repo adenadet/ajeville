@@ -5,9 +5,10 @@
     <!--form-->
         <div class="row">
             <div class="col-md-3 mb-3">
+                {{ editMode ? 'Welcome' : 'Not Working' }}
                 <label class="form-label">Patient</label>
                 <select v-model.number="appointmentData.patient_type_id" class="form-control">
-                    <option value="1">Exsiting</option>
+                    <option value="1">Existing</option>
                     <option value="0">Create New Patient</option>
                 </select>
             </div>
@@ -15,35 +16,23 @@
                 <div class="form-group">
                     <label>Select Patient</label>
                     <model-list-select class="form-control" :list="patients" v-model="appointmentData.patient_id" option-value="id" :custom-text="codeAndNameAndDesc" />
-                    <!--model-list-select class="form-control" :list="patients" v-model="patient_id" option-value="unique_id" :custom-text="codeAndNameAndDesc" placeholder="Select Applicant" /-->
-                
                 </div>
             </div>
-        </div>
-        
-        <!--div class="row" v-if="selectedPatient && selectedPatient.hmo_plan">
-            <div class="alert alert-info">
-                <strong>Insurance:</strong>{{ selectedPatient.hmo_plan.provider.name }} – {{ selectedPatient.hmo_plan.name }}
-            </div>
-        </div>
-        <div class="row" v-else-->
-        <div class="row" v-if="appointmentData.patient_type_id == '0'">
-            <div class="border rounded p-3 mb-3">
-                <h6 class="mb-3">New Patient Details</h6>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+            <div class="col-md-9 mb-3" v-else>
+                <div class="row" v-if="appointmentData.patient_type_id == '0'">
+                    <div class="col-md-3 mb-3 form-group">
                         <label class="form-label">First Name</label>
                         <input v-model="appointmentData.patient.first_name" class="form-control" />
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-3 mb-3 form-group">
                         <label class="form-label">Last Name</label>
                         <input v-model="appointmentData.patient.last_name" class="form-control" />
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-3 mb-3 form-group">
                         <label class="form-label">Phone</label>
                         <input v-model="appointmentData.patient.phone" class="form-control" />
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-3 mb-3 form-group">
                         <label class="form-label">Sex</label>
                         <select v-model="appointmentData.patient.sex" class="form-control">
                             <option value="">-- Select --</option>
@@ -51,31 +40,7 @@
                             <option value="female">Female</option>
                         </select>
                     </div>
-                    <!--div class="col-md-4 mb-3">
-                        <div class="form-group">
-                            <label>Payment Method</label>
-                            <select v-model="appointmentData.patient.provider_type_id" class="form-control">
-                                <option value="">-- Select Payment Method --</option>
-                                <option value="0">Cash</option>
-                                <option v-for="pm in provider_types" :value="pm.id">{{ pm.name }}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-sm-4" v-if="!isCashPayment">
-                        <label>Provider</label>
-                        <select class="form-control" v-model="appointmentData.patient.insurance.provider_id">
-                            <option value="">--Select Provider--</option>
-                            <option v-for="provider in filtered_providers" :key="provider.id" :value="provider.id">{{ provider.name }}</option>
-                        </select>
-                    </div>
-                    <div class="col-sm-4" v-if="!isCashPayment">
-                        <label>Plan</label>
-                        <select class="form-control" v-model="appointmentData.patient.insurance.plan_id">
-                            <option value="">--Select Plan--</option>
-                            <option v-for="plan in filtered_plans" :key="plan.id" :value="plan.id">{{ plan.name }}</option>
-                        </select>
-                    </div-->
-                </div>
+                </div>   
             </div>
         </div>
         <div class="row">
@@ -84,9 +49,7 @@
                 <label class="form-label">Branch</label>
                 <select v-model="appointmentData.branch_id" class="form-control" @change="maybeFetchSlots">
                     <option value="">-- Select Branch --</option>
-                    <option v-for="b in branches" :key="b.id" :value="b.id">
-                    {{ b.name }}
-                    </option>
+                    <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
                 </select>
             </div>
 
@@ -129,6 +92,7 @@
                 <label class="form-label">Preferred Time Slot </label>
                 <select v-model="appointmentData.time_slot" class="form-control" :disabled="loadingSlots">
                     <option value="">-- Select Time --</option>
+                    <option :value="appointment.time_slot" disabled>{{ appointment.time_slot }}</option>
                     <option v-for="slot in timeSlots" :key="slot.start" :value="slot.start" :disabled="slot.booked">{{ slot.start }} - {{ slot.end }} {{ slot.booked ? '(Booked)' : '' }}</option>
                 </select>
                 <small v-if="loadingSlots" class="text-muted">
@@ -173,28 +137,28 @@ export default {
     data() {
         return {
             appointmentData: new Form({
-            patient_type_id: 1, // 1 = existing, 0 = new
-            patient_id: '',
-            branch_id: '',
-            consultant_id: '',
-            date: '',
-            patient: {
-                first_name: '',
-                last_name: '',
-                email: '',
-                phone: '',
-                sex: '',
-                provider_type_id: 0, // default CASH
-                insurance: {
-                    provider_id: '',
-                    plan_id: '',
+                patient_type_id: 1, // 1 = existing, 0 = new
+                patient_id: '',
+                branch_id: '',
+                consultant_id: '',
+                date: '',
+                patient: {
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone: '',
+                    sex: '',
+                    provider_type_id: 0, // default CASH
+                    insurance: {
+                        provider_id: '',
+                        plan_id: '',
+                    },
                 },
-            },
-            remarks: '',
-            specialty_id: '',
-            time_slot: '',
-            service_type_id: '',
-        }),
+                remarks: '',
+                specialty_id: '',
+                time_slot: '',
+                service_type_id: '',
+            }),
             branches: [],
             consultants: [],
             filteredConsultants: [],
@@ -347,6 +311,9 @@ export default {
         appointment(){
             this.loading = true;
             this.appointmentData.fill(this.appointment);
+            if (this.appointment.patient != null ){
+                this.appointmentData.patient_type_id = 1;
+            }
             this.appointmentData.patient = this.appointment != null && !this.editMode ? this.appointment.patient :  {first_name: '', last_name: '', email: '', phone: '', sex: '', provider_type_id: '', insurance: { provider_id: '', plan_id: '',}},
             this.loading = false;
         },

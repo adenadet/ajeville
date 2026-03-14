@@ -88,7 +88,17 @@
 </section>
 </template>
 <script>
+import ProcurementDetailWorkOrder from '@/procurement/details/WorkOrder.vue';
+import ProcurementFormAdditionalCost from '@/procurement/forms/AdditionalCost.vue';
+import ProcurementFormOtherCost from '@/procurement/forms/OtherCost.vue';
+import ProcurementFormAssignStore from '@/procurement/forms/AssignStore.vue';
+import ProcurementFormAssignVendor from '@/procurement/forms/AssignVendor.vue';
+import ProcurementFormPurchaseOrderApproval from '@/procurement/forms/PurchaseOrderApproval.vue';
+import ProcurementFormPurchaseOrder from '@/procurement/forms/PurchaseOrder.vue';
 export default {
+    components:{
+        ProcurementDetailWorkOrder, ProcurementFormAdditionalCost, ProcurementFormOtherCost, ProcurementFormAssignStore, ProcurementFormAssignVendor, ProcurementFormPurchaseOrderApproval, ProcurementFormPurchaseOrder
+    },
     data() {
         return {
             editMode: false,

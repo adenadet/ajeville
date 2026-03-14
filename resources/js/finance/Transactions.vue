@@ -3,9 +3,7 @@
     <div class="card">
         <div class="card-header bg-dark">
             <h3 class="card-title">Transactions</h3>
-            <div class="card-tools">
-
-            </div>
+            <div class="card-tools"></div>
         </div>
         <div class="card-body p-0 table-responsive" style="height: 600px;">
             <FinanceDetailTransactionList :transactions.sync="transactions.data" />
@@ -17,7 +15,11 @@
 </section>
 </template>
 <script>
+import FinanceDetailTransactionList from '@/finance/details/TransactionList.vue';
 export default {
+    components: {
+        FinanceDetailTransactionList
+    },
     data() {
         return {
             current_page: 1,

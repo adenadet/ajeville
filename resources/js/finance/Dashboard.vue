@@ -157,30 +157,16 @@
             </div>
         </div>
     </div>
-    <!--div class="row">
-        <div class="col-md-6 col-lg-6">
-            <div class="card">
-                <div class="card-header bg-danger">
-                    <h3 class="card-title">Notifications</h3>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="text-sm">
-                        <li v-for="note in notifications" :key="note.id" class="mb-1">
-                        <span :class="note.type === 'error' ? 'text-red-600' : note.type === 'warning' ? 'text-yellow-600' : 'text-blue-600'">
-                            {{ note.message }}
-                        </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div> 
-    </div-->
 </section>
 </template>
 <script>
 import VueApexCharts from "vue3-apexcharts";
+import FinanceDetailBranchAccountList from '@/finance/details/BranchAccountList.vue';
+import FinanceDetailTransactionList from '@/finance/details/TransactionList.vue';
+
 export default {
-    components: {
+    components:{
+        FinanceDetailBranchAccountList, FinanceDetailTransactionList,
         apexchart: VueApexCharts,
     },
     data() {

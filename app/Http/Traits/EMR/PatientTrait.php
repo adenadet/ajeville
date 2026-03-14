@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 trait PatientTrait{
 
     use LogTrait, VisitTransactionTrait, UserTrait;
+    
     /*
     ---------------------------------------------------------------------------------------------------
     Patient Basics
@@ -103,12 +104,26 @@ trait PatientTrait{
     public function emr_patient_get_by_id($type, $id, $detailed){
         try{
             $query = Patient::where('unique_id', '=', $id)->orWhere('id', '=', $id);
-            $query = $detailed ? $query->with(['user.next_of_kin', 'allergies', 'contacts', 'insurances.plan.provider', 'transactions.service_type']) : $query;
+            $query = $detailed ? $query->with(['user.area','user.next_of_kin', 'user.state', 'allergies', 'contacts', 'insurances.plan.provider', 'transactions.item.service_type']) : $query;
             return $query->firstOrFail();
         }
         catch(Exception $e){
             return $e->getMessage();
         }
+    }
+
+    public function emr_patient_search_patients($type){
+        $users = User::where('first_name', 'LIKE', "%$type%")
+        ->orWhere('last_name', 'LIKE', "%$type%")
+        ->orWhere('middle_name', 'LIKE', "%$type%")
+        ->pluck('id');
+
+        $patients = Patient::where('id', 'LIKE', "%$type%")
+        ->orWhere('unique_id', 'LIKE', "%$type%")
+        ->orWhereIn('user_id', $users)
+        ->with(['user'])->get();
+
+        return $patients;
     }
 
     public function emr_patient_update($data, $id){

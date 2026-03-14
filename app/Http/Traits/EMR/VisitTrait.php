@@ -212,8 +212,9 @@ trait VisitTrait{
             }
         }
 
-        $query = $detailed ? $query->with(['branch', 'consultant', 'patient.user', 'patient.insurances', 'specialty', 'service_type']) : $query->select('id', 'unique_id', 'patient_id')->with(['patient.user']);
-        $query = $paginated ? $query->latest()->paginate(50) : $query->latest()->get();
+        $query = $detailed ? $query->with(['branch', 'care_plan.provider', 'consultant', 'patient.user', 'patient.insurances', 'specialty', 'service_type']) : $query->select('id', 'unique_id', 'patient_id')->with(['patient.user']);
+        $query = $query->orderBy('date', 'ASC')->orderBy('time_slot', 'ASC');
+        $query = $paginated ? $query->paginate(50) : $query->get();
 
         return $query;
     }
@@ -221,7 +222,7 @@ trait VisitTrait{
     public function emr_appointment_get_by($type, $id, $detailed){
         try{
             $query = Appointment::where('unique_id', '=', $id)->orWhere('id', '=', $id);
-            $query = $detailed ? $query->with(['branch', 'patient.user', 'whom_to_see', 'specialty', 'service']) : $query->with(['patient.user']);
+            $query = $detailed ? $query->with(['branch', 'care_plan.provider', 'patient.user', 'consultant', 'specialty', 'service_type']) : $query->with(['patient.user']);
             return $query->firstOrFail();
         }
         catch(Exception $e){
@@ -455,6 +456,15 @@ trait VisitTrait{
         }
         else{
             return null;
+        }
+    }
+
+    public function emr_visit_patient_active_visit($patient_id){
+        try{
+            return Visit::where('patient_id', '=', $patient_id)->whereNotIn('status', [Visit::StatusClosed, Visit::StatusBooked])->latest()->with(['branch', 'patient.user', 'price_list'])->firstOrFail();
+        }
+        catch(Exception $e){
+            return $e->getMessage();
         }
     }
 

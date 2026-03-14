@@ -9,7 +9,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" v-if="patient.patient_type == 2">
+            <div class="col-md-12" v-if="patient?.patient_type == 2">
                 <label class="form-label">Payment Plan</label>
                 <select class="form-control" id="payment_type" name="payment_type" v-model="checkInData.patient_insurance.payment_type">
                     <option value=''>Cash</option>
@@ -17,7 +17,7 @@
                 </select>            
             </div>
         </div>
-        <div class="row" v-if="patient.patient_type == 2 && checkInData.patient_insurance.payment_type != ''">
+        <div class="row" v-if="patient?.patient_type == 2 && checkInData.patient_insurance.payment_type != ''">
             <div class="col-md-3">
                 <label class="form-label">Provider</label>
                 <select class="form-control" id="provider_id" name="provider_id" v-model="checkInData.patient_insurance.provider_id">
@@ -48,11 +48,9 @@
                 </select>            
             </div>
         </div>
-
         <button class="btn btn-success btn-sm mt-3" :disabled="loading">
             <i class="fas fa-check"></i> Check In
         </button>
-
     </form>
 </section>
 </template>
@@ -167,7 +165,6 @@ export default {
 
         appointment(){
             this.loading = true;
-            console.log(this.appointment)
             this.checkInData.appointment_id = this.appointment.id;
             this.checkInData.branch_id = this.appointment.branch_id;
             this.checkInData.consultant_id = this.appointment.consultant_id;
@@ -178,7 +175,7 @@ export default {
             this.checkInData.service_type_id = this.appointment.service_type_id;
             this.checkInData.specialty_id = this.appointment.specialty_id;
             this.patient = this.appointment.patient;
-            if (this.patient.insurance == null){
+            if (this.patient == null || this.patient.insurance == null){
                 this.checkInData.patient_insurance = {
                     payment_type: '',
                     plan_id: '',

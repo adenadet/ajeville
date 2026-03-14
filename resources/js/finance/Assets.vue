@@ -50,7 +50,12 @@
 </section>
 </template>
 <script>
+import EquipmentDetailAssetList from '@/equipments/details/AssetList.vue';
+import EquipmentFormAsset from '@/equipments/forms/Asset.vue';
 export default {
+    components:{
+        EquipmentDetailAssetList, EquipmentFormAsset
+    },
     data() {
         return {
             asset: {},

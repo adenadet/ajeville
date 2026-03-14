@@ -63,7 +63,11 @@
 </section>
 </template>
 <script>
+import InventoryFormItemType from '@/inventory/forms/ItemType.vue';
 export default {
+    components:{
+        InventoryFormItemType
+    },
     data(){
         return  {
             current_page: 1,

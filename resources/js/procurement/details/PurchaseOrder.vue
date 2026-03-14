@@ -190,7 +190,15 @@
     </section>
 </template>
 <script>
+import ProcurementDetailStatusRibbon from '@/procurement/details/StatusRibbon.vue';
+import ProcurementFormAdditionalCost from '@/procurement/forms/AdditionalCost.vue';
+import ProcurementFormAssignStore from '@/procurement/forms/AssignStore.vue';
+import ProcurementFormAssignVendor from '@/procurement/forms/AssignVendor.vue';
+import ProcurementFormOtherCost from '@/procurement/forms/OtherCost.vue';
+import ProcurementFormPurchaseOrder from '@/procurement/forms/PurchaseOrder.vue';
+import ProcurementFormPurchaseOrderItem from '@/procurement/forms/PurchaseOrderItem.vue';
 export default {
+    components:{ProcurementFormAdditionalCost, ProcurementFormAssignVendor, ProcurementFormOtherCost,  ProcurementDetailStatusRibbon, ProcurementFormAssignStore, ProcurementFormPurchaseOrder, ProcurementFormPurchaseOrderItem},
     computed:{
         sub_total(){
             if (this.purchase_order.items == null){

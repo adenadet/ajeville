@@ -62,6 +62,7 @@
 </section>
 </template>
 <script>
+import InventoryFormStore from '@/inventory/forms/Store.vue';
 export default {
     data(){
         return  {

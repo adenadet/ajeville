@@ -4,6 +4,8 @@ const EMRConsultantQueue                   = () => import('../../emr/consultant/
 const EMRConsultantQueueDepartment         = () => import('../../emr/consultant/Queue.vue');
 const EMRConsultantQueueMy                 = () => import('../../emr/consultant/Queue.vue');
 const EMRConsultantQueueDoctor             = () => import('../../emr/consultant/QueueDoctor.vue');
+const EMRConsultantRequestTemplate         = () => import('../../emr/consultant/RequestTemplate.vue');
+const EMRConsultantRequestTemplates        = () => import('../../emr/consultant/RequestTemplates.vue');
 const EMRConsultantMyPastConsultations     = () => import('../../emr/consultant/MyPastConsultations.vue');
 
     const EMRConsultantDetailConsultation    = () => import('../../emr/consultant/details/Consultation.vue');
@@ -31,5 +33,7 @@ export default[
     {path: '/emr/consultations/doctor_queue',                   component: EMRConsultantQueueDoctor},
     {path: '/emr/consultations/my_previous_consultations',      component: EMRConsultantMyPastConsultations},
     {path: '/emr/consultations/my_queue',                       component: EMRConsultantQueueMy},
+    {path: '/emr/consultations/request_templates',              component: EMRConsultantRequestTemplates},
+    {path: '/emr/consultations/request_templates/:id',          component: EMRConsultantRequestTemplate},
     {path: '/emr/consultations/start/:id',                      component: EMRConsultantConsultation},
 ];

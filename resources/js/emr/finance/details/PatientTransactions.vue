@@ -107,7 +107,13 @@
     </section>
 </template>
 <script>
+import EMRFinanceDetailPatientTransaction from '@/emr/finance/details/PatientTransaction.vue';
+import EMRFinanceFormDeposit from '@/emr/finance/forms/Deposit.vue';
+import EMRFrontOfficeFormPatientService from '@/emr/front_office/forms/PatientService.vue';
 export default {
+    components:{
+        EMRFrontOfficeFormPatientService, EMRFinanceFormDeposit, EMRFinanceDetailPatientTransaction
+    },
     computed:{
         patient(){
             var patient = this.$store.getters.currentPatient;
@@ -223,6 +229,7 @@ export default {
     },
     props:{
         source: String,
+        transactions:{default: [], type:Array},
     },
     watch:{
         

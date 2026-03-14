@@ -43,7 +43,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailPayOutList from '@/finance/details/PayOutList.vue';
+import FinanceFormPayOut from '@/finance/forms/PayOut.vue';
 export default {
+    components:{
+        FinanceDetailPayOutList, FinanceFormPayOut
+    },
     data() {
         return {
             current_page: 1,

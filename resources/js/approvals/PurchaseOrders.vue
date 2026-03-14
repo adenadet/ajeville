@@ -13,7 +13,11 @@
 </section>
 </template>
 <script>
+import ProcurementDetailPurchaseOrderList from '@/procurement/details/PurchaseOrderList.vue';
 export default {
+    components:{
+        ProcurementDetailPurchaseOrderList
+    },
     data() {
         return {
             editMode: false,

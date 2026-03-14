@@ -62,7 +62,12 @@
 </section>
 </template>
 <script>
+import InventoryDetailItemList from '@/inventory/details/ItemList.vue';
+import InventoryFormItem from '@/inventory/forms/Item.vue';
 export default {
+    components:{
+        InventoryDetailItemList, InventoryFormItem
+    },
     data(){
         return  {
             current_page: 1,

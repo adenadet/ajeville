@@ -31,7 +31,13 @@
 </section>
 </template>
 <script>
+import FinanceDetailIncome from '@/finance/details/Income.vue';
+import FinanceDetailPaymentAllocationList from '@/finance/details/PaymentAllocationList.vue';
+import FinanceFormIncome from '@/finance/forms/Income.vue';
 export default {
+    components:{
+        FinanceDetailIncome, FinanceFormIncome, FinanceDetailPaymentAllocationList
+    },
     data() {
         return {
             current_page: 1,

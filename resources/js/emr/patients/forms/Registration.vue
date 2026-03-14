@@ -11,7 +11,9 @@
                                     <div class="input-group input-group-sm" style="width: 150px;">
                                         <select name="patient_type" id="patient_type" class="form-control float-right" v-model="PatientData.patient_type" required>
                                             <option value=''>Select Registration Type</option>
-                                            <option v-for="reg in registration_types" :value="reg.id">{{ reg.name}}</option>
+                                            <!--option v-for="reg in registration_types" :value="reg.id">{{ reg.name}}</option-->
+                                            <option value="0">Temporary Registration</option>
+                                            <option value="1">Full Registration</option>
                                         </select>
                                     </div>
                                 </div>
@@ -112,7 +114,6 @@
                                                         <option value=''>--Select State--</option>
                                                         <option v-for="state in states" :key="state.id" :value="state.id">{{ state.name }}</option>
                                                     </select> 
-                                                    <!--model-list-select class="form-control" :list="states" v-model="PatientData.state_id" option-value="id" option-text="name" placeholder="Select State of Residence" @change="changedState()"/-->
                                                 </div>
                                             </div>
                                             <div class="col-md-4 col-sm-6">
@@ -132,13 +133,13 @@
                                             <div class="col-md-3 col-sm-12">
                                                 <div class="form-group">
                                                     <label>Phone Number <span class="text-danger">*</span></label>
-                                                    <input type="number" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" required v-model="PatientData.phone" :class="{'is-invalid' : PatientData.errors.has('phone') }">
+                                                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" required v-model="PatientData.phone" :class="{'is-invalid' : PatientData.errors.has('phone') }">
                                                 </div>
                                             </div>
                                             <div class="col-md-3 col-sm-12">
                                                 <div class="form-group">
                                                     <label>Alternate Phone</label>
-                                                    <input type="text" class="form-control" id="alt_phone" name="alt_phone" placeholder="Alternate Phone Number" v-model="PatientData.alt_phone" :class="{'is-invalid' : PatientData.errors.has('alt_phone') }">
+                                                    <input type="tel" class="form-control" id="alt_phone" name="alt_phone" placeholder="Alternate Phone Number" v-model="PatientData.alt_phone" :class="{'is-invalid' : PatientData.errors.has('alt_phone') }">
                                                 </div>
                                             </div>
                                             <div class="col-md-3 col-sm-12">
@@ -150,7 +151,7 @@
                                         </div>   
                                     </div>   
                                 </div>
-                                <div class="card">
+                                <div class="card" v-if="PatientData.patient_type == 1">
                                     <div class="card-header bg-dark">
                                         <h4 class="card-title w-100"><a class="d-block w-100 text-white" data-toggle="collapse" href="#collapseTwo">Insurance</a></h4>
                                     </div>
@@ -168,14 +169,14 @@
                                                                 <label>Insurance Type</label>
                                                                 <select class="form-control" v-model="insuranceForm.insurance_type_id" @change="changedInsuranceType">
                                                                     <option value="">--Select Insurance Type--</option>
-                                                                    <option v-for="provider_type in provider_types" :value="provider_type.id">{{ provider_type.name }}</option>
+                                                                    <option v-for="provider_type in provider_types" :value="provider_type.id">{{ provider_type?.name }}</option>
                                                                 </select>
                                                             </div>
                                                             <div class="form-group">
                                                                 <label>Providers</label>
                                                                 <select class="form-control" v-model="insuranceForm.provider_type_id" @change="changedProvider">
                                                                     <option value="">--Select Provider--</option>
-                                                                    <option v-for="provider in insurance_forms_providers" :value="provider.id">{{ provider.name }}</option>
+                                                                    <option v-for="provider in insurance_forms_providers" :value="provider.id">{{ provider?.name }}</option>
                                                                 </select>
                                                             </div>
                                                             <div class="form-group">
@@ -198,16 +199,16 @@
                                                                     <tr>
                                                                         <th style="width: 10px">#</th>
                                                                         <th>Plan Name</th>
-                                                                        <th>Provider Name</th>
+                                                                        <!--th>Provider Name</th-->
                                                                         <th>Enrollee Number</th>
                                                                         <th>Expiry Date</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    <tr v-for="(plan, index) in PatientData.insurances" :key="plan.id">
+                                                                    <tr v-for="(plan, index) in PatientData.insurances" :key="plan.uid">
                                                                         <td>{{ addOne(index) }}</td>
                                                                         <td>{{ plan.name }}</td>
-                                                                        <td>{{ plan.provider.name }}</td>
+                                                                        <!--td>{{ plan.provider.name }}</td-->
                                                                         <td><input type="text" class="form-control" v-model="PatientData.insurances[index].enrollee_id" /></td>
                                                                         <td><input type="date" class="form-control" v-model="PatientData.insurances[index].expiry_date" :min="today" /></td>
                                                                     </tr>
@@ -220,7 +221,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
+                                <div class="card" v-if="PatientData.patient_type == 1">
                                     <div class="card-header bg-dark">
                                         <h4 class="card-title w-100"><a class="d-block w-100 text-white" data-toggle="collapse" href="#collapseFour">Next of Kin</a></h4>
                                     </div>
@@ -242,7 +243,7 @@
                                                 <div class="col-md-4 col-sm-12">
                                                     <div class="form-group">
                                                         <label>Phone Number*</label>
-                                                        <input type="number" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" value="" v-model="PatientData.nok.phone" >
+                                                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" value="" v-model="PatientData.nok.phone" >
                                                     </div>
                                                 </div>
                                                 <div class="col-md-4 col-sm-12">
@@ -261,7 +262,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
+                                <div class="card" v-if="PatientData.patient_type == 1">
                                     <div class="card-header bg-dark">
                                         <h4 class="card-title w-100"><a class="d-block w-100 text-white" data-toggle="collapse" href="#collapseThree">Contacts</a></h4>
                                     </div>
@@ -290,7 +291,7 @@
                                                         <div class="col-md-2 col-sm-12">
                                                             <div class="form-group">
                                                                 <label>Phone Number*</label>
-                                                                <input type="number" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" value="" v-model="PatientData.contacts[index].phone" >
+                                                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number *" value="" v-model="PatientData.contacts[index].phone" >
                                                             </div>
                                                         </div>
                                                         <div class="col-md-3 col-sm-12">
@@ -300,7 +301,8 @@
                                                             </div>
                                                         </div>
                                                         <div class="col-md-1 col-sm-12">
-                                                            <div class="btn-group">
+                                                            <div class="form-group">
+                                                                <label>&nbsp; <br /></label>
                                                                 <button class="btn btn-sm btn-danger" @click="deleteContact(index)"><i class="fa fa-trash"></i></button>
                                                             </div>
                                                         </div>                                              
@@ -329,6 +331,11 @@ export default {
         Multiselect, ModelListSelect,
     },
     computed:{
+        current_age(){
+            if(!this.PatientData.dob) return '';
+            let diff = new Date() - new Date(this.PatientData.dob);
+            return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+        },
         today(){
             return new Date().toJSON().slice(0, 10);
         },
@@ -363,7 +370,6 @@ export default {
                 email: '',
                 first_name: '',
                 genotype: '',
-                image: '',
                 id:'', 
                 image:'',
                 insurances: [], 
@@ -371,7 +377,13 @@ export default {
                 last_name: '',
                 middle_name: '',
                 nation_id: '',
-                nok: {},
+                nok: {
+                    name: '',
+                    address: '',
+                    phone: '',
+                    email_address: '',
+                    relationship: '',
+                },
                 occupation: '',
                 old_emr_numbers: '',
                 other_details: '',
@@ -404,12 +416,30 @@ export default {
     },
     methods:{
         addContact(){
-            this.PatientData.contacts.push(this.blank_user);
+            this.PatientData.contacts.push({
+                name: '',
+                address: '',
+                email: '',
+                phone: '',
+            });
         },
-        addInsurance(){
-            var plan = this.plans.find(item => item.id === this.insuranceForm.plan_id);
-            console.log(plan)
-            this.PatientData.insurances.push(plan);
+        addInsurance() {
+            alert(this.insuranceForm.plan_id.name)
+            if (!this.insuranceForm.plan_id) return;
+
+            const selectedPlan = this.insuranceForm.plan_id;
+
+            this.PatientData.insurances.push({
+                uid: Date.now(), // unique key for Vue
+                plan_id: selectedPlan.id,
+                name: selectedPlan.name,
+                //provider: selectedPlan.provider,
+                enrollee_id: '',
+                expiry_date: ''
+            });
+
+            // Optional: clear selection after adding
+            this.insuranceForm.plan_id = '';
         },
         addTag (newTag) {
             const tag = {
@@ -444,7 +474,6 @@ export default {
                     showConfirmButton: false,
                     timer: 1500
                 });
-                this.$router.push('/hims/patients');
             })
             .catch(()=>{
                 this.$swal.fire({

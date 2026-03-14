@@ -16,4 +16,12 @@ class Analyte extends Structure
     {
         return $this->hasMany('App\Models\EMR\Laboratory\ReferenceRange', 'analyte_id', 'id');
     }
+
+    public function resolveReferenceRange($age, $gender)
+    {
+        return $this->reference_ranges()
+            ->where(function($q) use ($gender){
+                $q->where('gender', $gender)->orWhere('gender', '=', 'Any');
+            })->where('age_min','<=',$age)->where('age_max','>=',$age)->first();
+    }
 }

@@ -47,7 +47,13 @@
 </section>
 </template>
 <script>
+import ApprovalFormAction from '@/approvals/forms/Action.vue';
+import SalesDetailReturn from '@/sales_orders/details/Return.vue';
+import SalesFormReturn from '@/sales_orders/forms/Return.vue';
 export default {
+    components:{
+        ApprovalFormAction, SalesDetailReturn, SalesFormReturn
+    },
     data() {
         return {
             editMode: false,

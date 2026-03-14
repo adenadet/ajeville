@@ -4,16 +4,21 @@
         
     <div class="row">
         <div class="col-md-4 no-print">
-            <EMRVisitDetailSummary :visit="visit" :patient="patient"/>
+            <EMRFrontOfficeDetailVisitSummmary :visit="visit" :patient="patient"/>
         </div>
         <div class="col-md-8">
-            <FinanceDetailPatientTransactions source="visit" />
+            <EMRFinanceDetailPatientTransactions source="visit" />
         </div>
     </div>
 </section>
 </template>
 <script>
+import EMRFrontOfficeDetailVisitSummmary from '@/emr/front_office/details/Visit.vue';
+import EMRFinanceDetailPatientTransactions from '@/emr/finance/details/PatientTransactions.vue';
 export default {
+    components:{
+        EMRFinanceDetailPatientTransactions, EMRFrontOfficeDetailVisitSummmary
+    },
     data() {
         return {
             visit: {},

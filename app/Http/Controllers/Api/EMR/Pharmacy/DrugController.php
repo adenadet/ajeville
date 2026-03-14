@@ -23,19 +23,23 @@ class DrugController extends Controller
         }
 
         return response()->json([
-            'drugs' => $this->pharmacy_drug_get_all('excel', null, true, false, null),        
+            'drugs' => $this->emr_pharmacy_drug_get_all($_GET['type'] ?? 'excel', $_GET, true, false),        
         ]);
     }
 
     public function destroy($id)
     {
-        //
+        $drug = $this->emr_pharmacy_drug_deactivate($id);
+
+        return response()->json([
+            'drug' => $drug,        
+        ], is_string($drug) ? 500 : 200);
     }
 
     public function index()
     {
         return response()->json([
-            'drugs' => $this->pharmacy_drug_get_all('excel', null, true, false, null),        
+            'drugs' => $this->emr_pharmacy_drug_get_all($_GET['type'] ?? 'active', $_GET, true, true),        
         ]);
     }
 

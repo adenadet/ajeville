@@ -56,7 +56,12 @@
 </section>
 </template>
 <script>
+import EMRFinanceFormDeposit from '@/emr/finance/forms/Deposit.vue';
+import EMRFrontOfficeDetailVisitList from '@/emr/front_office/details/VisitList.vue';
 export default {
+    components:{
+        EMRFinanceFormDeposit, EMRFrontOfficeDetailVisitList
+    },
     data() {
         return {
             consultations: {},

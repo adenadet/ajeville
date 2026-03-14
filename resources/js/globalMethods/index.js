@@ -98,6 +98,9 @@ export const globalMethods = {
         ExcelTime(text) {
             return moment(text).format('hh:mm:ss A');
         },
+        ExcelTimestamp(text){
+            return moment(text).format('Do MMMM, YYYY hh:mm:ss A');
+        },
         FullName(text) {
             if (text == null) {
                 return 'Old User/Staff';

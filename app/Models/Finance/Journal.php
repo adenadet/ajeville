@@ -15,8 +15,7 @@ class Journal extends Structure
 
     protected $primaryKey = 'id';
     protected $table = 'finance_jornals';
-    protected $fillable = array(
-        'description', 'amount', 'transaction_type_id', 'cost_center_id', 'currency_id', 'date', 'reference_id', 'reference_type', 'confirmed_by', 'confirmed_at', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
+    protected $fillable = array('description', 'amount', 'transaction_type_id', 'cost_center_id', 'currency_id', 'date', 'reference_id', 'reference_type', 'confirmed_by', 'confirmed_at', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
 
     public function collector(){
         return $this->belongsTo('App\Models\User', 'collected_by', 'id');

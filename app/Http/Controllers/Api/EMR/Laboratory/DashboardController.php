@@ -20,6 +20,8 @@ class DashboardController extends Controller
             'completed_referred_out' => $this->emr_laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
             'emergency' => $this->emr_laboratory_request_get_all('emergency', null, false, false, $_GET['page'] ?? 1),
             'new' => $this->emr_laboratory_request_get_all('paid', null, false, false, $_GET['page'] ?? 1),
+            'pending' => $this->emr_laboratory_request_get_all('pending', null, true, true),
+            'pending_new' => $this->emr_laboratory_request_get_all('pending', ['start_date' => date('Y-m-d'),], true, true),
             'pending_referred_in' => $this->emr_laboratory_request_get_all('referred_in', 'pending', false, false, $_GET['page'] ?? 1),
             'pending_referred_out' => $this->emr_laboratory_request_get_all('referred_out', 'pending', false, false, $_GET['page'] ?? 1),
             'unapproved' => $this->emr_laboratory_request_get_all('unapproved', null, false, false, $_GET['page'] ?? 1),

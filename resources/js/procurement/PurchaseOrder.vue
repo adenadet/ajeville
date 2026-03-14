@@ -155,7 +155,11 @@
     </section>
 </template>
 <script>
+import ProcurementDetailPaymentList from '@/procurement/details/PaymentList.vue';
+import ProcurementFormPaymentTerm from '@/procurement/forms/PaymentTerm.vue';
+import ProcurementFormPurchaseOrder from '@/procurement/forms/PurchaseOrder.vue';
 export default {
+    components:{ProcurementDetailPaymentList, ProcurementFormPaymentTerm, ProcurementFormPurchaseOrder},
     data() {
         return {
             batch:{},

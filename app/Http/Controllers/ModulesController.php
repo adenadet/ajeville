@@ -316,6 +316,16 @@ class ModulesController extends Controller
         return view('app')->with($params);
     }
 
+    public function pharmacy()
+    {
+        $params = [
+            'page_title' => 'Pharmacy',
+            'icon' => 'fas fa-pills', 
+        ];
+        return view('app')->with($params);
+    
+    }
+
     public function policies()
     {
         $params = [

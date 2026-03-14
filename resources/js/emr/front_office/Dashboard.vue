@@ -58,7 +58,12 @@
 </section>
 </template>
 <script>
+import EMRFrontOfficeDetailAppointmentList from '@/emr/front_office/details/AppointmentList.vue';
+import EMRFrontOfficeDetailVisitList from '@/emr/front_office/details/VisitList.vue';
 export default {
+    components:{
+        EMRFrontOfficeDetailAppointmentList, EMRFrontOfficeDetailVisitList
+    },
     data() {
         return {
             appointments: {data:[], },

@@ -92,7 +92,11 @@
 </section>
 </template>
 <script>
+import InventoryDetailStoreItemList from '@/inventory/details/StoreItemList.vue';
 export default {
+    components:{
+        InventoryDetailStoreItemList
+    },
     data(){
         return {
             current_page: 1,

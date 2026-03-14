@@ -91,7 +91,13 @@
 </section>
 </template>
 <script>
+import InventoryDetailStoreItem from '@/inventory/details/StoreItem.vue';
+import InventoryFormItemSearch from '@/inventory/forms/ItemSearch.vue';
+import InventoryFormStoreItemSetting from '@/inventory/forms/StoreItemSetting.vue';
 export default {
+    components:{
+        InventoryDetailStoreItem, InventoryFormItemSearch, InventoryFormStoreItemSetting
+    },
     data() {
         return {
             current_page: 1,

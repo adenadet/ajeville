@@ -1,6 +1,32 @@
 <template>
 <section class="overlay-wrapper p-0">
     <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+    <div class="modal fade" id="patientFormModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-navy">
+                    <h4 class="modal-title" v-html="editMode ? 'Edit Patient' : 'Create Patient'"></h4>
+                    <button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <EMRPatientFormRegistration :editMode="editMode" :patient.sync="patient" /> 
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="patientMergeFormModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-navy">
+                    <h4 class="modal-title" v-html="editMode ? 'Edit Patient' : 'Create Patient'"></h4>
+                    <button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <EMRPatientFormPatientMerge :editMode="editMode" :target.sync="patient" @patientMergeReload="refreshPage"/> 
+                </div>
+            </div>
+        </div>
+    </div>
     <table class="table table-hover text-nowrap">
         <thead class="bg-dark">
             <tr>
@@ -37,6 +63,8 @@
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <router-link :to="'./patients/'+patient.unique_id" class="btn btn-block dropdown-item"><i class="fas fa-eye mr-2 text-primary"></i> View Patient</router-link>
                         <button class="btn btn-block dropdown-item" @click="editPatient(patient)"><i class="fas fa-edit mr-2"></i> Update Patient Details</button>
+                        <button class="btn btn-block dropdown-item" @click="mergePatient(patient)"><i class="fas fa-indent mr-2 text-warning"></i> Merge Patient Details</button>
+                    
                     </div>
                 </td>
             </tr>
@@ -45,22 +73,30 @@
 </section>
 </template>
 <script>
+import EMRPatientFormMerge from '@/emr/patients/forms/Merge.vue';
+import EMRPatientFormPatientMerge from '@/emr/patients/forms/PatientMerge.vue';
+import EMRPatientFormRegistration from '@/emr/patients/forms/Registration.vue';
 export default {
+    components:{
+        EMRPatientFormMerge, EMRPatientFormPatientMerge, EMRPatientFormRegistration
+    },
     data() {
         return {
+            editMode: false,
             loading: false,
             patient: {},
             status: '',
             user: {},
         }
     },
-    mounted() {
-        
+    emits:['reloadPatientList'],
+    mounted() {     
     },
     methods: {
         closeModal(){
             $('#patientDetailModal').modal('hide');
             $('#patientFormModal').modal('hide');
+            $('#patientMergeFormModal').modal('hide');
         },
         editPatient(patient){
             this.loading = false;
@@ -81,8 +117,18 @@ export default {
                 toast.fire({icon: 'error', title: 'Your appointments did not loaded successfully',})
             });
         },
+        mergePatient(patient){
+            this.loading = true;
+            this.patient = patient;
+            $('#patientMergeFormModal').modal('show');
+            this.loading = false;
+        },
         refreshPatients(response) {
             this.patients = response.data.patients;
+        },
+        refreshPage(){
+            this.closeModal();
+            this.$emit('reloadPatientList');
         }
     },
     props: {

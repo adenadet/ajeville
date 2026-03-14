@@ -57,25 +57,15 @@ import Form from 'vform';
         },
         methods:{
             updateNextofKin(){
-                this.$Progress.start();
                 this.nokForm.post('/api/hrms/nok')
                 .then(response =>{
-                    this.loading = false
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'The Next of Kin details has been updated',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
+                    this.$swal.fire({icon: 'success', title: 'The Next of Kin details has been updated', showConfirmButton: false, timer: 1500});
                 })
                 .catch(()=>{
-                    this.loading = false
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong!',
-                        footer: 'Please try again later!'
-                    });
+                    this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+                })
+                .finally(()=>{
+                    this.loading = false;
                 });        
             },
             

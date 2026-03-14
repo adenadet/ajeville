@@ -19,9 +19,7 @@ class VisitPayment extends Structure
 
     protected $table = 'emr_visit_payments';
 
-    protected $fillable = [
-        'visit_id', 'patient_id', 'amount', 'payment_method', 'reference', 'received_by', 'received_at', 'status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at', 
-    ];
+    protected $fillable = ['date', 'visit_id', 'patient_id', 'amount', 'payment_method', 'reference', 'received_by', 'received_at', 'status', 'notes', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at'];
 
     protected $casts = [
         'received_at' => 'datetime',

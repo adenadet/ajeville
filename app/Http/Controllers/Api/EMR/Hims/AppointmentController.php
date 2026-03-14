@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\EMR\Hims;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\EMR\ConsultantTrait;
+use App\Http\Traits\EMR\ConsultationTrait;
 use App\Http\Traits\EMR\InsuranceTrait;
 use App\Http\Traits\EMR\PatientTrait;
 use App\Http\Traits\EMR\VisitTrait;
@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    use ConsultantTrait, BranchTrait, PatientTrait, InsuranceTrait, ServiceTrait, VisitTrait;
+    use ConsultationTrait, BranchTrait, PatientTrait, InsuranceTrait, ServiceTrait, VisitTrait;
 
     public function available_slots(Request $request)
     {
@@ -127,7 +127,7 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            //'patient_id' => ['numeric', 'nullable', 'exists:emr_patients,id'],
+            'patient_id' => ['numeric', 'nullable', 'exists:emr_patients,id'],
             'consultant_id' => ['nullable', 'exists:users,id'],
             'service_type_id' => ['required', 'exists:emr_settings_service_types,id'],
             'specialty_id' => ['nullable', 'exists:emr_specialties,id'],

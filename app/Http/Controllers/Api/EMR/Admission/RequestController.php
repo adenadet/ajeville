@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\EMR\Admission;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EMR\AdmissionTrait;
-use App\Http\Traits\EMR\ConsultantTrait;
+use App\Http\Traits\EMR\ConsultationTrait;
 use App\Http\Traits\EMR\VisitTrait;
 use App\Models\EMR\Consultation\SpecialtyDoctor;
 use App\Models\User;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
-    use AdmissionTrait, ConsultantTrait, VisitTrait;
+    use AdmissionTrait, ConsultationTrait, VisitTrait;
 
     public function admit(Request $request, $id){
         $request = $this->admission_request_admit($request, $id);

@@ -2,7 +2,6 @@ import './bootstrap';
 import {createRouter, createWebHistory} from 'vue-router';
 
 import router from './router';
-//import { registerGlobalComponents } from './globalComponents';
 import { createApp, ref } from 'vue';
 import _ from 'lodash';
 import { globalMethods } from './globalMethods'; 

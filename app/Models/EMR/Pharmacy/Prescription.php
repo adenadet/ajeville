@@ -7,6 +7,11 @@ use App\Models\Structure;
 
 class Prescription extends Structure
 {
+
+    public const StatusBooked = 0;
+    public const StatusCancelled = 100;
+    public const StatusConfirmed = 10;
+
     protected $primaryKey = 'id';
     protected $table = 'emr_prescriptions';
     protected $fillable = array('visit_id', 'consultation_id', 'patient_id', 'date', 'doctor_id', 'doctor_name', 'refill_count', 'valid_till', 'status', 'start_date', 'end_date', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');

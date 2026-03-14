@@ -26,7 +26,11 @@
 </section>
 </template>
 <script>
+import ProcurementDetailBatchList from '@/procurement/details/BatchList.vue';
 export default {
+    components:{
+        ProcurementDetailBatchList
+    },
     data() {
         return {
             current_page: 1,

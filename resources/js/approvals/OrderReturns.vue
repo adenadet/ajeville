@@ -27,7 +27,13 @@
 </section>
 </template>
 <script>
+import ApprovalFormAction from '@/approvals/forms/Action.vue';
+import SalesDetailReturnList from '@/sales_orders/details/ReturnList.vue';
+import SalesFormReturn from '@/sales_orders/forms/Return.vue';
 export default {
+    components:{
+        ApprovalFormAction, SalesDetailReturnList, SalesFormReturn
+    },    
     data() {
         return {
             current_page: 1,

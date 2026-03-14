@@ -1,13 +1,5 @@
 <template>
     <section class="card">
-        <!--div class="modal fade" id="nextOfKinDataModal">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header"><h4 class="modal-title" v-html="editMode ? 'Edit User' : 'Create User'"></h4><button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button></div>
-                    <div class="modal-body"><HrUserFormNOK :editMode="editMode"/></div>
-                </div>
-            </div>
-        </div-->
         <div class="card-header bg-dark">
             <h4 class="card-title">Next of Kin</h4>
         </div>
@@ -73,7 +65,8 @@ export default {
         return  {
             editMode: false,
             insurance: {},
-            insurances: [], 
+            insurances: [],
+            loading: false, 
         }
     },
     mounted() {
@@ -86,11 +79,10 @@ export default {
             $('#nextOfKinModal').modal('hide');
         },
         editNok(nok){
-            this.$Progress.start();
+            this.loading = true;
             this.editMode = true;
-            //Fire.$emit('NextOfKinFill', {'nok': nok, 'user_id': this.patient.user.id});
             $('#nextOfKinModal').modal('show');
-            this.$Progress.finish();
+            this.loading = false;
         },
     },
 }

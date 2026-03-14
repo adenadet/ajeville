@@ -12,8 +12,6 @@ const InventoryItemsBulk           = () => import('../../inventory/ItemsBulk.vue
 const InventoryItemTypes           = () => import('../../inventory/ItemTypes.vue');
 const InventoryPackage             = () => import('../../inventory/Package.vue');
 const InventoryPackages            = () => import('../../inventory/Packages.vue');
-const InventorySalesOrder          = () => import('../../inventory/SalesOrder.vue');
-const InventorySalesOrders         = () => import('../../inventory/SalesOrders.vue');
 const InventoryStore               = () => import('../../inventory/Store.vue');
 const InventoryStores              = () => import('../../inventory/Stores.vue');
 const InventoryTransferOrder       = () => import('../../inventory/TransferOrder.vue');
@@ -60,8 +58,6 @@ export default[
     {path: '/inventory/items_bulk',                         component: InventoryItemsBulk},
     {path: '/inventory/packages',                           component: InventoryPackages},
     {path: '/inventory/packages/:id',                       component: InventoryPackage},
-    {path: '/inventory/sales_orders',                       component: InventorySalesOrders},
-    {path: '/inventory/sales_orders/:id',                   component: InventorySalesOrder},
     {path: '/inventory/stores',                             component: InventoryStores},
     {path: '/inventory/stores/:id',                         component: InventoryStore},
     {path: '/inventory/transfer_orders/in',                 component: InventoryTransferOrdersIn},

@@ -57,7 +57,7 @@
             </div>
         </div>
     </div>
-    <table class="table table-head-fixed text-nowrap">
+    <table class="table table-head-fixed table-striped  text-nowrap">
         <thead>
             <tr>
                 <th>ID</th>
@@ -69,7 +69,7 @@
                 <th></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody v-if="purchase_orders.length > 0">
             <tr v-for="(purchase_order, index) in purchase_orders" :key="index">
                 <td>{{ addOne(index) }}</td>
                 <td>{{ purchase_order.vendor != null ? purchase_order.vendor.name : 'Not Assigned'  }}</td>
@@ -101,11 +101,25 @@
                 </td>
             </tr>
         </tbody>
+        <tbody v-else>
+            <tr>
+                <td colspan="7">No Purchase Order meets your requirements</td>
+            </tr>
+        </tbody>
     </table>
 </section>
 </template>
 <script>
+import ProcurementDetailPurchaseOrder from '@/procurement/details/PurchaseOrder.vue';
+import ProcurementFormAdditionalCost from '@/procurement/forms/AdditionalCost.vue';
+import ProcurementFormAssignStore from '@/procurement/forms/AssignStore.vue';
+import ProcurementFormAssignVendor from '@/procurement/forms/AssignVendor.vue';
+import ProcurementFormPurchaseOrderApproval from '@/procurement/forms/PurchaseOrderApproval.vue';
+import ProcurementFormPurchaseOrder from '@/procurement/forms/PurchaseOrder.vue';
 export default {
+    components:{
+        ProcurementDetailPurchaseOrder, ProcurementFormAdditionalCost, ProcurementFormAssignStore, ProcurementFormAssignVendor, ProcurementFormPurchaseOrderApproval, ProcurementFormPurchaseOrder
+    },
     data() {
         return {
             editMode: false,

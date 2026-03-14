@@ -5,7 +5,7 @@
                 <div class="col-lg-4 col-6">
                     <div class="small-box text-primary">
                         <div class="inner">
-                            <h3>{{ pending.length }}</h3>
+                            <h3>{{ pending.total }}</h3>
                             <p>New Requests</p>
                         </div>
                         <div class="icon">
@@ -16,7 +16,7 @@
                 <div class="col-lg-4 col-6">
                     <div class="small-box text-primary">
                         <div class="inner">
-                            <h3>{{ pending_new.length }}</h3>
+                            <h3>{{ pending_new.total }}</h3>
                             <p>Requests Today</p>
                         </div>
                         <div class="icon">
@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-lg-4 col-6">
                     <div class="small-box text-danger">
-                        <div class="inner"><h3>{{ emergency.length }}</h3><p>Emergency Requests</p></div>
+                        <div class="inner"><h3>{{ emergency.total }}</h3><p>Emergency Requests</p></div>
                         <div class="icon"><i class="fa fa-first-aid text-danger"></i></div>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
             <div class="row">
                 <div class="col-6">
                     <div class="card">
-                        <div class="card-header bg-dark">
+                        <div class="card-header bg-primary">
                             <h3 class="card-title">Pending Requests</h3>
                             <div class="card-tools">
                                 <div class="input-group input-group-sm" style="width: 150px;">
@@ -110,7 +110,7 @@
                             </div>
                         </div>
                         <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <EMRLaboratoryDetailRequestList source="laboratory" :requests="pending" />
+                            <EMRLaboratoryDetailRequestList source="laboratory" :requests="pending.data" />
                         </div>
                     </div>
                 </div>
@@ -126,7 +126,7 @@
                             </div>
                         </div>
                         <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <EMRLaboratoryDetailRequestList source="laboratory" :requests="emergency" />
+                            <EMRLaboratoryDetailRequestList source="laboratory" :requests="emergency.data" />
                         </div>
                     </div>
                 </div>
@@ -144,10 +144,10 @@ export default {
             completed: [],
             completed_referred_in: [],
             completed_referred_out: [],
-            emergency: [],
+            emergency: {data:[], total:0},
             loading: false,
-            pending: [],
-            pending_new: [],
+            pending: {data:[], total:0},
+            pending_new: {data:[], total:0},
             pending_referred_in: [],
             pending_referred_out: [],
             pendings: [],

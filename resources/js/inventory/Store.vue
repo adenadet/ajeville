@@ -12,7 +12,14 @@
 </section>
 </template>
 <script>
+import InventoryDetailStoreExpired from '@/inventory/details/StoreExpired.vue';
+import InventoryDetailStoreSoonToExpire from '@/inventory/details/StoreSoonToExpire.vue';
+import InventoryDetailStoreSummary from '@/inventory/details/StoreSummary.vue';
+import InventoryDetailStoreTransferRequest  from '@/inventory/details/StoreTransferRequestList.vue';
 export default {
+    components:{
+        InventoryDetailStoreExpired, InventoryDetailStoreSoonToExpire, InventoryDetailStoreSummary, InventoryDetailStoreTransferRequest
+    },
     data(){
         return  {
             current_page: 1,

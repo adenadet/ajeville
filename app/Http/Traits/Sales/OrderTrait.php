@@ -30,6 +30,9 @@ use App\Models\Sales\Quotation;
 use App\Models\Sales\QuotationItem;
 use App\Services\Finance\OrderIncomeService;
 use App\Services\Inventory\IssuanceService;
+use App\Services\Sales\OrderFulfillmentService;
+use App\Services\Sales\UniqueIDService;
+use App\Services\Sales\OrderService;
 use Carbon\Carbon;
 use DateTime;
 use Exception;
@@ -43,79 +46,6 @@ trait OrderTrait {
     use CustomerTrait, ExpenseTrait, FileManagerTrait, IncomeTrait, MainTransactionTrait, LogTrait, PurchaseOrderTrait, StoreTrait; 
     //use IncomeTrait;
 
-    private function sales_generateRandomString($length = 10){
-        $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[random_int(0, $charactersLength - 1)];
-        }
-        return $randomString;
-    }
-    private function sales_generate_unique_id($type){
-        //return uniqid($type . '_');
-        $code = $this->sales_generateRandomString(10);
-        switch($type){
-            case 'deliverable':
-                $prefix = 'DEL';
-                $query = DeliveryNote::where('uuid', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('deliverable');
-                }
-                else{
-                    return $prefix.'-'.$code;
-                }
-            case 'fulfillment':
-                $prefix = 'FFL';
-                $query = OrderFulfillment::where('uuid', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('fulfillment');
-                }
-                else{
-                    return $prefix.'-'.$code;
-                }
-            case 'order':
-                $prefix = 'ORD';   
-                $query = Order::where('unique_id', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('order');
-                }else{
-                    return $prefix.'-'.$code;
-                }
-            case 'order_item':
-                $prefix = 'OIT';   
-                $query = OrderItem::where('uuid', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('order_item');
-                }else{
-                    return $prefix.'-'.$code;
-                }
-            case 'quotation':
-                $prefix = 'QUT';
-                $query = Quotation::where('uuid', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('quotation');
-                }else{
-                    return $prefix.'-'.$code;
-                }
-            case 'return':
-                $prefix = 'RTN';   
-                $query = OrderReturn::where('unique_id', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('return');
-                }else{
-                    return $code;
-                }
-            case 'return_item':
-                $prefix = 'RTI';
-                $query = OrderReturnItem::where('uuid', '=', $prefix.'-'.$code)->first();
-                if($query){
-                    return $this->sales_generate_unique_id('return_item');
-                }else{
-                    return $code;
-                }   
-        }
-    }
 
     /*
     -----------------------------------------------------------------------------------------------
@@ -125,16 +55,17 @@ trait OrderTrait {
 
     public function sales_order_item_fulfill($data, $type = 'sales'){
         try{
-            $fulfillment = OrderFulfillment::create([
-                'uuid'          => $this->sales_generate_unique_id('fulfillment'),
-                'type'          => $type,
-                'store_item_id' => $data['store_item_id'],
-                'reference_id'  => $data['order_item_id'],
+            $unique_id = new UniqueIDService();
+
+            $fulfiller = new OrderFulfillmentService();
+            $fulfillment = $fulfiller->fulfill_item_manually([
+                'type' => $type,
                 'batch_id'      => $data['batch_id'],
                 'quantity'      => $data['quantity'],
-                'created_by'    => auth('api')->id() ?? Auth::id(),
-                'updated_by'    => auth('api')->id() ?? Auth::id(),
-            ]);
+                'referenceable_type' => OrderItem::class,
+                'reference_id'  => $data['order_item_id'],
+                'store_item_id' => $data['store_item_id'],
+            ], $data['order_item_id']);
             return $fulfillment;
         }
         catch(Exception $e){

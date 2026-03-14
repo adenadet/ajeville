@@ -44,7 +44,12 @@
 </section>
 </template>
 <script>
+import FinanceDetailIncomeList from '@/finance/details/IncomeList.vue';
+import FinanceFormIncome from '@/finance/forms/Income.vue';
 export default {
+    components:{
+        FinanceDetailIncomeList, FinanceFormIncome
+    },
     data() {
         return {
             current_page: 1,

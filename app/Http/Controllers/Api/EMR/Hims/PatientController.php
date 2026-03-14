@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\EMR\Hims;
 
 use App\Http\Controllers\Controller;
+use App\Services\EMR\MergePatientService;
+use App\Services\EMR\PatientMergeService;
 use Illuminate\Http\Request;
 
 use App\Models\EMR\Patient;
@@ -31,9 +33,11 @@ use App\Http\Traits\General\SettingsTrait;
 use App\Http\Traits\Finance\TransactionTrait;
 use App\Http\Traits\Inventory\ItemTrait;
 use App\Http\Traits\UMS\UserTrait;
+use App\Models\EMR\Patient\Patient as EMRPatient;
 use App\Models\EMR\Visit;
 use App\Models\EMR\VisitTransaction;
 use App\Models\Operations\Branch;
+use App\Services\EMR\PatientService;
 
 class PatientController extends Controller
 {
@@ -82,6 +86,30 @@ class PatientController extends Controller
         ]);
     }
 
+    public function merge(Request $request)
+    {
+        $patient_merge = new PatientMergeService();
+        $merge_patient = new MergePatientService();
+        return response()->json([
+            'patient' =>  $merge_patient->merge($request->input('source_id'), $request->input('target_id'), $request->input('reason'), ['keepTargetUser' => $request->input('keepTargetUser')])
+        ]);
+    }
+
+    public function merge_preview()
+    {
+        return response()->json([
+            'source' => $this->emr_patient_get_by_id(null, $_GET['source_id'], true),
+            'target' => $this->emr_patient_get_by_id(null, $_GET['target_id'], true),
+        ]);
+    }
+
+    public function search()
+    {
+        return response()->json([
+            'patients' => $this->emr_patient_search_patients($_GET['q'])
+        ]);
+    }
+
     public function set_cookie(Request $request)
     {
         $patient = $request->input('patient');
@@ -97,11 +125,14 @@ class PatientController extends Controller
                 'patient' => $patient,
             ], 404);    
         }
-        $visit = Visit::where('patient_id', '=', $patient->id)->whereNotIn('status', [Visit::StatusClosed, Visit::StatusBooked])->latest()->with(['branch', 'patient.user', 'price_list'])->first();
+        //print $patient->id;
+        $visit = $this->emr_visit_patient_active_visit($patient->id);
+        $visit_id = is_string($visit) ? null : $visit->id;
+
         return response()->json([
             'patient' => $patient,
-            'transactions' => $this->emr_visit_transaction_get_all(null, ['patient_id' => $patient->id, 'visit_id' => $visit->id], true, true),
-            'pending_transactions' => $this->emr_visit_transaction_get_all('pending', ['patient_id' => $patient->id, 'visit_id' => $visit->id], true, true), 
+            'transactions' => $this->emr_visit_transaction_get_all(null, ['patient_id' => $patient->id, 'visit_id' => $visit_id ], true, true),
+            'pending_transactions' => $this->emr_visit_transaction_get_all('pending', ['patient_id' => $patient->id, 'visit_id' => $visit_id], true, true), 
             'visit' => $visit,    
         ]);
     }
@@ -109,8 +140,9 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         //Create New User
-        $patient = $this->emr_patient_create($request);
+        $patient_service = new PatientService();
 
+        $patient = $request->input('reg_type') == EMRPatient::TypeReg ? $patient_service->createAndRegister($request) : $patient_service->createTemporary($request);
 
         return response()->json([
             'patient' => $patient,    

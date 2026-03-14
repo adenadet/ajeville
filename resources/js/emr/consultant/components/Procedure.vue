@@ -5,35 +5,17 @@
         <!-- Procedure -->
         <div class="row mb-2">
             <div class="col-md-6">
-                <label class="form-label fw-bold">
-                    Procedure / Service
-                </label>
-                <ModelListSelect
-                    class="form-control"
-                    :list="services"
-                    v-model="local.service_id"
-                    option-value="id"
-                    option-text="name"
-                    placeholder="Select procedure"
-                />
+                <label class="form-label fw-bold">Procedure / Service</label>
+                <ModelListSelect class="form-control" :list="services" v-model="local.service_id" option-value="id" option-text="name" placeholder="Select procedure"/>
             </div>
 
             <div class="col-md-3">
-                <label class="form-label fw-bold">
-                    Quantity / Sessions
-                </label>
-                <input
-                    type="number"
-                    min="1"
-                    class="form-control"
-                    v-model="local.quantity"
-                />
+                <label class="form-label fw-bold">Quantity / Sessions</label>
+                <input type="number" min="1" class="form-control" v-model="local.quantity"/>
             </div>
 
             <div class="col-md-3">
-                <label class="form-label fw-bold">
-                    Urgency
-                </label>
+                <label class="form-label fw-bold">Urgency</label>
                 <select class="form-control" v-model="local.urgency">
                     <option value="routine">Routine</option>
                     <option value="urgent">Urgent</option>
@@ -44,49 +26,27 @@
 
         <!-- Indication -->
         <div class="mb-2">
-            <label class="form-label fw-bold">
-                Clinical Indication
-            </label>
-            <textarea
-                class="form-control"
-                rows="2"
-                v-model="local.indication"
-                placeholder="Why is this procedure required?"
-            ></textarea>
+            <label class="form-label fw-bold">Clinical Indication</label>
+            <textarea class="form-control" rows="2" v-model="local.indication" placeholder="Why is this procedure required?"></textarea>
         </div>
 
         <!-- Scheduling -->
         <div class="row mb-2">
             <div class="col-md-6">
-                <label class="form-label fw-bold">
-                    Preferred Date
-                </label>
-                <input
-                    type="date"
-                    class="form-control"
-                    v-model="local.preferred_date"
-                />
+                <label class="form-label fw-bold">Preferred Date</label>
+                <input type="date" class="form-control" v-model="local.preferred_date" />
             </div>
 
             <div class="col-md-6">
-                <label class="form-label fw-bold">
-                    Additional Notes
-                </label>
-                <input
-                    type="text"
-                    class="form-control"
-                    v-model="local.notes"
-                />
+                <label class="form-label fw-bold">Additional Notes</label>
+                <QuillEditor class="form-control" v-model:content="local.notes" content-type="html" theme="snow"/>
             </div>
         </div>
 
         <!-- Actions -->
         <div class="text-end">
-            <button class="btn btn-sm btn-dark" @click="emitRequest">
-                Add Procedure
-            </button>
+            <button class="btn btn-sm btn-dark" @click="emitRequest">Add Procedure</button>
         </div>
-
     </div>
 </div>
 </template>

@@ -23,7 +23,7 @@
                     </div>
                 </div>
             </div>
-            <ProcurementDetailPurchaseOrderList :purchase_orders="purchase_orders.data" source="approvals" ty="list" />
+            <ProcurementDetailWorkOrderList :work_orders="work_orders.data" source="approvals" ty="list" />
         </div>
     </div>
 </section>
@@ -34,7 +34,7 @@ export default {
         return {
             editMode: false,
             form: new Form({}),
-            purchase_orders: { data: []},
+            work_orders: { data: []},
             query: '',
             source: 'all',
             status: 1,

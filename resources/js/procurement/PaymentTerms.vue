@@ -54,7 +54,11 @@
 </section>
 </template>
 <script>
+import ProcurementDetailPurchaseOrderList from '@/procurement/details/PurchaseOrderList.vue';
+import ProcurementFormPaymentTerm from '@/procurement/forms/PaymentTerm.vue';
+import ProcurementFormPurchaseOrder from '@/procurement/forms/PurchaseOrder.vue';
 export default {
+    components:{ProcurementDetailPurchaseOrderList, ProcurementFormPaymentTerm, ProcurementFormPurchaseOrder},
     data(){
         return  {
             payment_term: {},

@@ -30,7 +30,11 @@
 </section>
 </template>
 <script>
+import EquipmentFormAsset from '@/equipments/forms/Asset.vue';
 export default {
+    components:{
+        EquipmentFormAsset,
+    },
     computed:{
         current_value(){
             if (this.asset.acquisition_date == null || this.asset.purchase_value == null || this.asset.depreciation_rate == null){

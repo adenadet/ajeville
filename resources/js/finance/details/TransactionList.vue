@@ -63,7 +63,11 @@
 </section>
 </template>
 <script>
+import FinanceFormTransaction from '@/finance/forms/Transaction.vue';
 export default {
+    components:{
+        FinanceFormTransaction,
+    },
     data() {
         return {
             editMode: false,

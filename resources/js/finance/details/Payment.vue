@@ -68,7 +68,10 @@
     </section>
 </template>
 <script>
+import SalesDetailOrderSummary from '@/sales_orders/details/OrderSummary.vue'; 
+import FinanceDetailPaymentAllocationList from '@/finance/details/PaymentAllocationList.vue';
 export default {
+    components:{FinanceDetailPaymentAllocationList, SalesDetailOrderSummary},
     data(){
         return {
         }

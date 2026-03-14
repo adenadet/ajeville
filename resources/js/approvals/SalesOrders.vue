@@ -27,7 +27,11 @@
 </section>
 </template>
 <script>
+import SalesDetailOrderList from '@/sales_orders/details/OrderList.vue';
 export default {
+    components:{
+        SalesDetailOrderList
+    },
     data(){
         return  {
             current_page: 1,

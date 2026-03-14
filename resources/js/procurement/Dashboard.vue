@@ -29,7 +29,7 @@
                 <div class="card-header bg-purple">
                     <h3 class="card-title">Ongoing Purchase Orders</h3>
                 </div>
-                <div class="card-body table-responsive p-0">
+                <div class="card-body table-responsive p-0" style="height: 300px;">
                     <ProcurementDetailPurchaseOrderList :purchase_orders="purchase_orders.data" source="dashboard" ty="All" />
                 </div>
             </div>
@@ -37,10 +37,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-purple">
-                    <h3 class="card-title">Ongoing Purchase Orders</h3>
+                    <h3 class="card-title">Ongoing Work Orders</h3>
                 </div>
-                <div class="card-body table-responsive p-0">
-                <ProcurementDetailWorkOrderList :work_orders="work_orders.data" source="dashboard" ty="All" />
+                <div class="card-body table-responsive p-0"style="height: 300px;">
+                    <ProcurementDetailWorkOrderList :work_orders="work_orders.data" source="dashboard" ty="All" />
                 </div>
             </div>
         </div>

@@ -75,7 +75,10 @@
     </section>
 </template>
 <script>
+import FinanceDetailPayment from '@/finance/details/Payment.vue';
+import FinanceFormPayment from '@/finance/forms/Payment.vue';
 export default {
+    components:{FinanceFormPayment, FinanceDetailPayment},
     data() {
         return {
             editMode: false,

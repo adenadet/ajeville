@@ -11,5 +11,6 @@ Route::group(['prefix'=>'emr/consultations', 'as'=>'api.emr.consultations.'], fu
     Route::apiResources([
         '/consultants'       => 'ConsultantController',
         '/dashboard'         => 'DashboardController',
+        '/request_templates' => 'RequestTemplateController',
     ]);
 });

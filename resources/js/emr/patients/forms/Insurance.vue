@@ -1,49 +1,45 @@
 <template>
-<section>
+<section class="overlay-wrapper p-0">
     <form>
         <alert-error :form="insuranceForm"></alert-error>
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group">
                     <label>Patient</label>
-                    <input disabled type="text" class="form-control"
-                        :value="patient != null ? patient.last_name + ', ' + patient.first_name + ' ' + (patient.middle_name != null ? patient.middle_name : '') : 'Loading Patient Data'" />
+                    <div class="form-control" v-html="FullName(patient.user)"></div>
                     <input type="hidden" name="patient_id" id="patient_id" v-model="insuranceForm.patient_id" />
                 </div>
             </div>
-            <div class="col-sm-6">
+        </div>
+        <div class="row">
+            <div class="col-md-4">
                 <div class="form-group">
-                    <label>Insurance Type*</label>
-                    <select type="text" required class="form-control" id="insurance_type_id" name="insurance_type_id" v-model="insuranceForm.allergy_type_id">
-                        <option value="">--Select Type--</option>
-                        <option v-for="insurance_type in insurance_types" :value="insurance_type.id">{{ insurance_type.name }}</option>
+                    <label>Provider Type</label>
+                    <select class="form-control" v-model="insuranceForm.provider_type_id" @change="loadProviders">
+                        <option value="">Insurance Type</option>
+                        <option v-for="t in provider_types" :key="t.id" :value="t.id">{{ t.name }}</option>
                     </select>
-                    <has-error :form="insuranceForm" field="allergy_type_id"></has-error>
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-md-4">
                 <div class="form-group">
-                    <label>Provider </label>
-                    <select required class="form-control" id="provider_id" name="provider_id" v-model="insuranceForm.provider_id">
+                    <label>Provider</label>
+                    <select class="form-control" v-model="insuranceForm.provider_id" @change="loadPlans">
+                        <option value="">Provider</option>
+                        <option v-for="p in filtered_providers" :key="p.id" :value="p.id">{{ p.name }}</option>
                     </select>
-                    <has-error :form="insuranceForm" field="provider_id"></has-error>
                 </div>
             </div>
-            <div class="col-sm-6">
+            <div class="col-md-4">
                 <div class="form-group">
-                    <label>Plan </label>
-                    <select required class="form-control" id="plan_id" name="plan_id" v-model="insuranceForm.plan_id" />
-                    <has-error :form="insuranceForm" field="plan_id"></has-error>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="form-group">
-                    <label>Description</label>
-                    <wysiwyg rows="3" v-model="insuranceForm.description" name="description" id="description"/>
+                    <label>Plan</label>
+                    <select class="form-control" v-model="insuranceForm.plan_id">
+                    <option v-for="plan in filtered_plans"  :key="plan.id" :value="plan">{{ plan.name }}</option>
+                    </select>
                 </div>
             </div>
         </div>
-        <button @click.prevent="editMode ? updatePatientAllergy() : createPatientAllergy()" type="submit" name="submit" class="submit btn btn-success">Submit</button>
+        <button @click.prevent="editMode ? updateInsurance() : createInsurance()" type="submit" name="submit" class="submit btn btn-success">Submit</button>
     </form>    
 </section>
 </template>
@@ -51,76 +47,92 @@
 export default {
     data(){
         return {
+            loading: false,
+            filtered_plans: [],
+            filtered_providers: [],
             insuranceForm: new Form({
                 id: '',
                 patient_id: '', 
-                allergy_type_id: '', 
-                allergy: '', 
-                description: '', 
+                provider_type_id: '', 
+                provider_id: '', 
+                plan_id: '', 
             }),
-            allergy_types: [],
-            patient: {},
+            insurance_types: [],
+            plans: [],
+            providers: [],
+            provider_types:[],
         }
     },
     methods:{
-        createPatientAllergy(){
-            this.$Progress.start();
-            this.insuranceForm.post('/api/emr/hims/allergies')
+        createInsurance(){
+            this.insuranceForm.post('/api/emr/hims/insurances')
             .then(response =>{
-                this.$Progress.finish();
-                Swal.fire({icon: 'success', title: 'The Allergy details has been created', showConfirmButton: false, timer: 1500});
-                Fire.$emit('refreshPatientAllergies', response.data.patient);
+                this.$swal.fire({icon: 'success', title: 'The Insurance details has been created', showConfirmButton: false, timer: 1500});
+                this.$emit('refreshPatientInsurance', response.data.patient);
             })
             .catch(()=>{
-                Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
-                this.$Progress.fail();
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loading = false;
             });          
         },
         getInitials(){
-            axios.get('/api/emr/hims/allergy_types')
+            axios.get('/api/emr/hims/insurances/initials')
             .then(response =>{
-                this.$Progress.finish();
-                this.reloadAllergy(response);
+                this.reloadInsurance(response);
             })
             .catch(()=>{
-                this.$Progress.fail();
-                toast.fire({
+                this.$toast.fire({
                     icon: 'error',
-                    title: 'Allegry form not loaded successfully',
+                    title: 'Insurance form not loaded successfully',
                 })
+            })
+            .finally(()=>{
+                this.loading = false;
             });
         },
-        reloadAllergy(response){
-            this.allergy_types = response.data.allergy_types;
+        loadPlans(){
+            let provider = this.providers.find(p => p.id == this.insuranceForm.provider_id)
+            this.filtered_plans = provider?.plans || []
         },
-        updatePatientAllergy(){
-            this.$Progress.start();
-            this.insuranceForm.put('/api/emr/hims/allergies/'+this.insuranceForm.id)
+        loadProviders(){
+            let type = this.provider_types.find(t => t.id == this.insuranceForm.provider_type_id)
+            this.filtered_providers = type?.providers || []
+        },
+        reloadInsurance(response){
+            this.provider_types = response.data.provider_types;
+            this.providers = response.data.providers;
+            this.plans = response.data.plans;
+        },
+        updateInsurance(){
+            this.loading = true;
+            this.insuranceForm.put('/api/emr/hims/insurances/'+this.insuranceForm.id)
             .then(response =>{
-                this.$Progress.finish();
-                Swal.fire({icon: 'success', title: 'The Allergy details has been updated', showConfirmButton: false, timer: 1500});
-                Fire.$emit('refreshPatientAllergies', response.data.patient);
+                this.$swal.fire({icon: 'success', title: 'The Insurance details has been updated', showConfirmButton: false, timer: 1500});
+                this.$emit('refreshPatientInsurance', response.data.patient);
             })
             .catch(()=>{
-                Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
-                this.$Progress.fail();
-            });          
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loading = false;
+            });  
         },
     },
     mounted() {
-        Fire.$on('AllergyDataFill', details => {
-            this.getInitials();
-            this.patient = details.patient;
-            this.insuranceForm.id = details.allergy.id;
-            this.insuranceForm.patient_id = details.patient.id; 
-            this.insuranceForm.allergy_type_id = details.allergy.allergy_type_id; 
-            this.insuranceForm.allergy = details.allergy.allergy; 
-            this.insuranceForm.description = details.allergy.description; 
-        });
+        this.getInitials();
     },
     props:{
-        'allergy': Object,
-        'editMode': Boolean,
+        editMode: Boolean,
+        insurance: Object,
+        patient: Object,
     },
+    watch:{
+        insurance(){
+            this.insuranceForm.reset();
+            this.insuranceForm.fill(this.insurance);
+        }
+    }
 }
 </script>

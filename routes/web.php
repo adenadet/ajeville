@@ -94,6 +94,7 @@ Route::group(['middleware' => ['auth', 'role:Staff'],'namespace' => 'App\Http\Co
     Route::get('/insurance',                                'ModulesController@insurance')->name('insurance');
     Route::get('/nursing',                                  'ModulesController@nursing')->name('nursing_care');
     Route::get('/operations',                               'ModulesController@operations')->name('operations');
+    Route::get('/pharmacy',                                 'ModulesController@pharmacy')->name('pharmacy');
     Route::get('/physiotheraphy',                           'ModulesController@physiotheraphy')->name('physiotheraphy');
     Route::get('/radiology',                                'ModulesController@radiology')->name('radiology');
     
@@ -107,6 +108,7 @@ Route::group(['middleware' => ['auth', 'role:Staff'],'namespace' => 'App\Http\Co
     Route::get('/laboratory/{any}',                         'ModulesController@laboratory')->where('any', '.*');
     Route::get('/nursing/{any}',                            'ModulesController@nursing')->where('any', '.*');
     Route::get('/operations/{any}',                         'ModulesController@operations')->where('any', '.*');
+    Route::get('/pharmacy/{any}',                           'ModulesController@pharmacy')->where('any', '.*');
     Route::get('/physiotheraphy/{any}',                     'ModulesController@physiotheraphy')->where('any', '.*');
     Route::get('/radiology/{any}',                          'ModulesController@radiology')->where('any', '.*'); 
 });

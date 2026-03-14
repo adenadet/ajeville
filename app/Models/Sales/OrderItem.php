@@ -10,6 +10,10 @@ class OrderItem extends Structure
 {
     use HasFactory;
 
+    public const StatusPending = 0;
+    public const StatusOngoing = 5;
+    public const StatusFulfilled = 10;
+
     protected $primaryKey = 'id';
     protected $table = 'sales_order_items';
     protected $fillable = array('uuid', 'so_id', 'item_id', 'quantity', 'requested_quantity', 'approved_quantity', 'package_id', 'package_quantity', 'total_quantity', 'fulfilled_quantity', 'unit_price', 'total_price', 'discount', 'status', 'created_by', 'updated_by', 'deleted_by', 'created_at', 'updated_at', 'deleted_at');
@@ -43,8 +47,8 @@ class OrderItem extends Structure
         return $this->belongsTo('App\Models\Procurement\PackageType', 'package_id', 'id');
     }
 
-    public function purchase_order(){
-        return $this->belongsTo('App\Models\Procurement\PurchaseOrder', 'po_id', 'id');
+    public function sales_order(){
+        return $this->belongsTo('App\Models\Sales\Order', 'so_id', 'id');
     }
 
     public function updater(){

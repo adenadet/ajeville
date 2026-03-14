@@ -2,12 +2,12 @@
     <section class="container-fluid overlay-wrapper p-0">
         <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
         <div class="modal fade" id="serviceFormModal">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="overlay" v-if="loading">
                         <i class="fas fa-2x fa-sync fa-spin"></i>
                     </div>
-                    <div class="modal-header">
+                    <div class="modal-header bg-primary">
                         <h4 class="modal-title">{{ editMode ? 'Edit Service' : 'New Service' }}</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
                     </div>
@@ -20,7 +20,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-warning">
+                    <div class="card-header bg-primary">
                         <h3 class="card-title">Laboratory Services</h3>
                         <div class="card-tools">
                             <div class="input-group" style="width: 300px;">
@@ -48,16 +48,18 @@
                                     <th>Category</th>
                                     <th>Bottle</th>
                                     <th>Result Template</th>
+                                    <th>Description</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody v-if="services.total > 0">
                                 <tr v-for="(service, index) in services.data" :key="service.id"  :class="service.special != null ? 'bg-danger' : ''">
                                     <td>{{ addOne(index) }}</td>
-                                    <td>{{ service.service != null && service.service.item != null ? service.service.item.name : 'Name not sorted' }}</td>
+                                    <td>{{ service.emr_service?.item?.name || 'Name not sorted' }}</td>
                                     <td>{{ service.category != null ? service.category.name : 'No Category Yet' }}</td>
                                     <td>{{ service.bottle_type != null ? service.bottle_type.name : 'No Bottle Selected' }}</td>
                                     <td>{{ service.template != null ? service.template.name : 'No Template Selected' }}</td>
+                                    <td v-html="readMore(service.description, 50, '...')" :title="service.description"></td>
                                     <td>
                                         <span class="nav-link" data-toggle="dropdown" href="#">
                                             <i class="fa fa-ellipsis-v"></i>
@@ -72,7 +74,7 @@
                             </tbody>
                             <tbody v-else>
                                 <tr>
-                                    <td colspan="6">No Services meets your requirements.</td>
+                                    <td colspan="7">No Services meets your requirements.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -88,7 +90,12 @@
     </section>
 </template>
 <script>
+import EMRLaboratoryFormService from '@/emr/laboratory/forms/Service.vue';
+import InventoryFormItem from '@/inventory/forms/Item.vue';
 export default {
+    components:{
+        EMRLaboratoryFormService, InventoryFormItem
+    },
     data() {
         return {
             current_page: 1,

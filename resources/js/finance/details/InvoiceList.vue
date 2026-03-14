@@ -84,6 +84,7 @@
                             <button v-if="invoice.status == 1" class="dropdown-item btn btn-block btn-sm" @click="confirmInvoice(invoice)"><i class="fa fa-check mr-1 text-info"></i> Approve Invoice</button>
                          </div>
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" v-else>
+                            <router-link class="dropdown-item btn btn-block btn-sm" :to="'/finance/invoices/'+invoice.id"><i class="fa fa-eye mr-1"></i> View Invoice</router-link>
                             <button class="dropdown-item btn btn-block btn-sm" @click="viewInvoice(invoice)"><i class="fa fa-eye mr-1"></i> View Invoice</button>
                             <button v-if="invoice.status >= 2 && invoice.expense == null" class="dropdown-item btn btn-block btn-sm" @click="createExpense(invoice)"><i class="fa fa-money-bill mr-1 text-purple"></i> Create Expense</button>
                             <button v-if="invoice.status >= 2" class="dropdown-item btn btn-block btn-sm" @click="createQuery(invoice)"><i class="fa fa-exclamation-circle mr-1 text-warning"></i> Create Dispute</button>

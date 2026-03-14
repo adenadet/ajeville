@@ -143,8 +143,11 @@
 </section>
 </template>
 <script>
+import FinanceDetailExpense from '@/finance/details/Expense.vue';
+import FinanceFormExpense from '@/finance/forms/Expense.vue';
 export default {
-    data(){
+    components: {FinanceDetailExpense, FinanceFormExpense},
+    data(){    
         return {
             accounts: [],
             banks: [],

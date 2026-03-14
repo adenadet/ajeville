@@ -5,12 +5,10 @@
 export default {
     data() {
         return {
-            editMode: true,
             loading: false,
-            request: {},
         }
     },
-    emits:['refreshLaboratoryRequestList'],
+    emits:['refreshLaboratoryRequestForm'],
     mounted() {},
     methods: {
         createRequest(){
@@ -44,7 +42,7 @@ export default {
     },
     props: {
         editMode: Boolean,
-        requests: Object,
+        request: Object,
     }
 }
 </script>

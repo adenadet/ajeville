@@ -11,7 +11,7 @@ class RequestItem extends Model
     use HasFactory;
     public const StatusPending = 0;
 
-    public const StatusConfirmed = 10;
+    public const StatusAccepted = 10;
     
     public const StatusSampleCollected = 20;
     public const StatusOutsourced = 70;

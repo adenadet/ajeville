@@ -33,6 +33,7 @@
         @elseif($page_title == 'Loans Admin')@include('partials.lte.asides.loans_staff')
         @elseif($page_title == 'Nursing Care')@include('partials.lte.asides.nursing')
         @elseif($page_title == 'Operations')@include('partials.lte.asides.operations')
+        @elseif($page_title == 'Pharmacy')@include('partials.lte.asides.pharmacy')
         @elseif($page_title == 'Policies')@include('partials.lte.asides.policies')
         @elseif($page_title == 'Policy | Reader')@include('partials.lte.asides.policies')
         @elseif($page_title == 'Procurement')@include('partials.lte.asides.procurement')

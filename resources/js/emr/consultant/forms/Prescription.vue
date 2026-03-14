@@ -80,7 +80,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(drug, index) in prescriptionForm.drugs" :key="drug.id">
-                                <td>{{ index |addOne }}</td>
+                                <td>{{ addOne(index) }}</td>
                                 <td>{{ drug.drug_name }}</td>
                                 <td>{{ drug.specific_drug != null ? drug.specific_drug.name : '' }}</td>
                                 <td>{{ drug.dose }}</td>
@@ -246,7 +246,6 @@ export default {
             this.itemForm.specific_drug = item;
         },
         updatePrescription() {
-            this.$Progress.start();
             this.prescriptionForm.put('/api/emr/hims/prescriptions/' + this.prescriptionForm.id)
             .then(response => {
                 this.$Progress.finish();
@@ -261,32 +260,8 @@ export default {
     },
     mounted() {
         this.getInitials();
-        Fire.$on('PrescriptionDataFill', details => {
-            this.prescriptionForm.patient_id = details.patient.id;
-            if (details.prescription.id != null){
-                this.prescriptionForm.id = details.prescription.id;
-                this.prescriptionForm.doctor_id = details.prescription.doctor_id;
-                this.prescriptionForm.doctor_name = details.prescription.doctor_name;
-                this.prescriptionForm.start_date = details.prescription.start_date;
-                this.prescriptionForm.end_date = details.prescription.end_date;
-                this.prescriptionForm.drugs = details.prescription.drugs;
-            }
-            else{
-                this.prescriptionForm.id = '';
-                this.prescriptionForm.doctor_id = '';
-                this.prescriptionForm.doctor_name = '';
-                this.prescriptionForm.start_date = '';
-                this.prescriptionForm.end_date = '';
-                this.prescriptionForm.drugs = [];
-            }
-            alert(this.prescriptionForm.drugs)
-        });
     },
     props: {
-        'appointment': Object,
-        'consultant': Object,
-        'contact': Object,
-        'editMode': Boolean,
     },
 }
 </script>

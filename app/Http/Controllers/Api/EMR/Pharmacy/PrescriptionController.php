@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Api\EMR\Pharmacy;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\EMR\PharmacyTrait;
 use App\Models\Branch;
-use App\Models\EMR\Patient;
-use App\Models\EMR\PatientInsurance;
-use App\Models\EMR\Prescription;
-use App\Models\EMR\PrescriptionDrug;
+use App\Models\EMR\Patient\Patient;
+use App\Models\EMR\Patient\Insurance;
+use App\Models\EMR\Pharmacy\Prescription;
+use App\Models\EMR\Pharmacy\PrescriptionDrug;
 use App\Models\Finance\PriceList;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,8 @@ use App\Models\Inventory\UserStore;
 
 class PrescriptionController extends Controller
 {
+    use PharmacyTrait;
+
     public function confirm(Request $request, $id)
     {
         $prescription = Prescription::where('id', '=', $id)->first();
@@ -38,52 +41,41 @@ class PrescriptionController extends Controller
 
     }
 
+    public function destroy($id)
+    {
+        $prescription = $this->emr_pharmacy_prescription_deactivate($id);
+
+        return response()->json([
+            'prescription' => $prescription,
+        ], is_string($prescription) ? 404 : 200);
+    }
+
     public function index()
     {
         return response()->json([
-            'prescriptions' => Prescription::where('status', '=', 1)->with(['doctor.user', 'patient.user'])->latest()->get(),
+            'prescriptions' => $this->emr_pharmacy_prescription_get_all($_GET['type'] ?? 'pending', $_GET, true, true)
         ]);
-    }
-
-    public function store(Request $request)
-    {
-        //
     }
 
     public function show($id)
     {
-        $branch_id = request()->cookie('current_branch');
-        $prescription = Prescription::where('id', '=', $id)->select('id', 'visit_id', 'doctor_id', 'doctor_name', 'consultation_id', 'patient_id', 'updated_at')->with(['doctor'])->first();
-        $insurances = PatientInsurance::where('patient_id', '=', $prescription->patient_id)->pluck('plan_id');
-        $user_stores = UserStore::where('user_id', '=', auth('api')->id())->pluck('store_id');
-        $issuing_stores = Store::where('branch_id', '=', $branch_id)->whereIn('id', $user_stores)->get(); 
-        $price_lists = PriceList::select('id', 'name', 'type_id')->where('branch_id', '=', $branch_id)->where(
-            function($query) use ($insurances){
-                return $query->whereIn('plan_id', $insurances)->orWhere('type_id', '=', 0); 
-            }
-        )->with(['price_list_items'])->orderBy('type_id', 'DESC')->get();
-        
-        //where(function($query) use ($insurances){return $query->where('type_id', '=', 0)->whereIn('plan_id', $insurances);})->
-        
-
-        $drugs = PrescriptionDrug::where('prescription_id', '=', $id)->with(['drug.specific_drugs', 'specific_drug', 'specifics'])->get();
+        $prescription = $this->emr_pharmacy_prescription_get_by(null, $id, true);
 
         return response()->json([
-            'drugs' => $drugs,
             'prescription' => $prescription,
-            'issuing_stores' => $issuing_stores,
-            'price_lists' => $price_lists,
-            'branch' => Branch::where('id', '=', $branch_id)->first(),
-            'insurances' => $insurances,
-        ]);
+        ], is_string($prescription) ? 404 : 200);
+    }
+
+    public function store(Request $request)
+    {
+        $prescription = $this->emr_pharmacy_prescription_create($request);
+
+        return response()->json([
+            'prescriptions' => $prescription,
+        ], is_string($prescription) ? 500 : 201);
     }
 
     public function update(Request $request, $id)
-    {
-        //
-    }
-
-    public function destroy($id)
     {
         //
     }

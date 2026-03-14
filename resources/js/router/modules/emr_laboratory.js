@@ -3,12 +3,15 @@ const EMRLaboratoryAnalyte                      = () => import('../../emr/labora
 const EMRLaboratoryBottles                      = () => import('../../emr/laboratory/Bottles.vue');
 const EMRLaboratoryDashboard                    = () => import('../../emr/laboratory/Dashboard.vue');
 const EMRLaboratoryInsurance                    = () => import('../../emr/laboratory/Insurance.vue');
+const EMRLaboratoryLabelPrint                   = () => import('../../emr/laboratory/LabelPrint.vue');
 const EMRLaboratoryPOS                          = () => import('../../emr/laboratory/POS.vue');
 const EMRLaboratoryPanelInvestigations          = () => import('../../emr/laboratory/PanelInvestigations.vue');
 const EMRLaboratoryQueue                        = () => import('../../emr/laboratory/Queue.vue');
 const EMRLaboratoryReferredIn                   = () => import('../../emr/laboratory/ReferredIn.vue');
 const EMRLaboratoryReferredOut                  = () => import('../../emr/laboratory/ReferredOut.vue');
 const EMRLaboratoryReports                      = () => import('../../emr/laboratory/Reports.vue');
+//const EMRLaboratoryRequests                     = () => import('../../emr/laboratory/Requests.vue');
+const EMRLaboratoryRequest                      = () => import('../../emr/laboratory/Request.vue');
 const EMRLaboratoryResultTemplates              = () => import('../../emr/laboratory/ResultTemplates.vue');
 const EMRLaboratoryServices                     = () => import('../../emr/laboratory/Services.vue');
 const EMRLaboratoryService                      = () => import('../../emr/laboratory/Service.vue');
@@ -38,10 +41,15 @@ export default[
     {path: '/emr/laboratory/queues',                            component: EMRLaboratoryQueue},
     {path: '/emr/laboratory/referred_in',                       component: EMRLaboratoryReferredIn},
     {path: '/emr/laboratory/referred_out',                      component: EMRLaboratoryReferredOut},
+    //{path: '/emr/laboratory/requests',                          component: EMRLaboratoryRequests},
+    {path: '/emr/laboratory/requests/:id',                      component: EMRLaboratoryRequest},
+    {path: '/emr/laboratory/requests/:id/print',                component: EMRLaboratoryLabelPrint},
+
     {path: '/emr/laboratory/specimens',                         component: EMRLaboratorySpecimens},
     {path: '/emr/laboratory/settings/analytes',                 component: EMRLaboratoryAnalytes},
     {path: '/emr/laboratory/settings/analytes/:id',             component: EMRLaboratoryAnalyte},
     {path: '/emr/laboratory/settings/bottles',                  component: EMRLaboratoryBottles},
+    {path: '/emr/laboratory/settings/panel_investigations',     component: EMRLaboratoryPanelInvestigations},
     {path: '/emr/laboratory/settings/result_templates',         component: EMRLaboratoryResultTemplates},
     {path: '/emr/laboratory/settings/services',                 component: EMRLaboratoryServices},
     {path: '/emr/laboratory/settings/services/:id',             component: EMRLaboratoryService},

@@ -26,6 +26,12 @@
         <div class="row">
             <div class="col-sm-4">
                 <div class="form-group">
+                    <label>Last Name*</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name *" required v-model="BioData.last_name" :class="{'is-invalid' : BioData.errors.has('last_name') }" />
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
                     <label>First Name *</label>
                     <input type="text" required class="form-control" id="first_name" name="first_name" placeholder="First Name *" v-model="BioData.first_name" :class="{'is-invalid' : BioData.errors.has('first_name') }">
                     <has-error :form="BioData" field="first_name"></has-error> 
@@ -36,12 +42,6 @@
                     <label>Middle Name</label>
                     <input type="text" class="form-control" id="middle_name" name="middle_name" placeholder="middle Name" v-model="BioData.middle_name" :class="{'is-invalid' : BioData.errors.has('middle_name') }"/>
                     <has-error :form="BioData" field="middle_name"></has-error> 
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="form-group">
-                    <label>Last Name*</label>
-                    <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Last Name *" required v-model="BioData.last_name" :class="{'is-invalid' : BioData.errors.has('last_name') }" />
                 </div>
             </div>
         </div>
@@ -162,12 +162,13 @@ export default {
             this.loading = true;
             this.BioData.put('/api/registration/'+ this.BioData.id)
             .then(response =>{
-                this.loading = false;
                 this.$swal.fire({icon: 'success', title: 'Registration Completed Successfully', showConfirmButton: false, timer: 1500});
                 this.$emit('reloadUser', response);
             })
             .catch(()=>{
-                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'User details not updated!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
                 this.loading = false;
             });
         },
@@ -175,12 +176,13 @@ export default {
             this.loading = true;
             this.BioData.post('/api/ums/users')
             .then(response =>{
-                this.loading = false;
-                this.$emit('reloadUser', response);
+                this.$emit('reloadUser');
                 this.$swal.fire({icon: 'success', title: 'The User '+ response.data.user.first_name+' '+  response.data.user.last_name+' has been created', showConfirmButton: false, timer: 1500});
             })
             .catch(()=>{
                 this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
                 this.loading = false;
             });
         },
@@ -218,17 +220,13 @@ export default {
             this.loading = true;
             this.BioData.put('/api/ums/users/'+ this.BioData.id)
             .then(response =>{
-                this.loading = false;
-                this.$swal.fire({
-                    icon: 'success',
-                    title: 'The User has been updated',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-                this.$emit('reloadUser', response);
+                this.$emit('reloadUser');
+                this.$swal.fire({icon: 'success', title: 'The User has been updated', showConfirmButton: false, timer: 1500});
             })
             .catch(()=>{
-                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'User update did not complete!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
                 this.loading = false;
             });            
         },
@@ -251,8 +249,13 @@ export default {
         editMode: Boolean,
     },
     watch:{
-        user(){
-            this.BioData.fill(this.user);
+        user: {
+            handler(newUser){
+                if(!newUser) return;
+                this.BioData.fill(newUser);
+            },
+            immediate: true,
+            deep: true
         },
         'BioData.state_id'(newStateId) {
             if (!newStateId) {
@@ -260,14 +263,13 @@ export default {
                 this.BioData.area_id = ''; // reset area selection
                 return;
             }
-
             // find the selected state
             let selectedState = this.states.find(state => state.id === newStateId);
-
             if (selectedState && selectedState.areas) {
                 this.areas = selectedState.areas;
                 this.BioData.area_id = ''; // reset previous selection
-            } else {
+            } 
+            else {
                 this.areas = [];
                 this.BioData.area_id = '';
             }

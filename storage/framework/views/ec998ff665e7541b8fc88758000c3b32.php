@@ -33,6 +33,7 @@
         <?php elseif($page_title == 'Loans Admin'): ?><?php echo $__env->make('partials.lte.asides.loans_staff', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Nursing Care'): ?><?php echo $__env->make('partials.lte.asides.nursing', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Operations'): ?><?php echo $__env->make('partials.lte.asides.operations', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+        <?php elseif($page_title == 'Pharmacy'): ?><?php echo $__env->make('partials.lte.asides.pharmacy', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Policies'): ?><?php echo $__env->make('partials.lte.asides.policies', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Policy | Reader'): ?><?php echo $__env->make('partials.lte.asides.policies', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php elseif($page_title == 'Procurement'): ?><?php echo $__env->make('partials.lte.asides.procurement', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>

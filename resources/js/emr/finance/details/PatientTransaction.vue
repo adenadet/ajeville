@@ -1,17 +1,18 @@
 <template>
-    <section>
-        <div class="card card-widget widget-user-2" v-if="loading">
-            <div class="overlay-wrapper">
-                <div class="overlay"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+    <section class="overlay-wrapper">
+        <div class="overlay" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>
+        <div class="row">
+            <div class="col-md-12">
+                
             </div>
-        </div> 
+        </div>
         <div class="card card-widget widget-user-2" v-if="!loading">
-            <div class="widget-user-header bg-warning">
+            <!--div class="widget-user-header bg-warning">
                 <div class="widget-user-image">
-                    <img class="img-circle elevation-2" :src="patient != null && patient.user != null ? '/img/profile/'+patient.user.image : '/img/profile/default.png'" alt="User Avatar">
+                    <img class="img-circle elevation-2" :src="transaction.patient != null && transaction.patient.user != null ? '/img/profile/'+transaction.patient.user.image : '/img/profile/default.png'" alt="User Avatar">
                 </div>
-                <h3 class="widget-user-username">{{ patientName(patient)}}</h3>
-                <h5 class="widget-user-desc">{{patient.insurances != null && patient.insurances.length != 0 ? 'Insurance' : 'Cash' }} </h5>
+                <h3 class="widget-user-username">{{ patientName(transaction.patient)}}</h3>
+                <h5 class="widget-user-desc">{{transaction.patient.insurances != null && transaction.patient.insurances.length != 0 ? 'Insurance' : 'Cash' }} </h5>
             </div>
             <div class="card-body table-responsive p-0">
                 <div class="card">
@@ -60,25 +61,15 @@
                         </a>
                     </li>
                 </ul>
-            </div>
+            </div-->
         </div>
     </section>
 </template>
 <script>
 export default {
-    computed:{
-        patient(){
-            var patient = this.$store.getters.currentPatient;
-            return patient;
-        },
-        visit(){
-            var visit = this.$store.getters.currentVisit;
-            return visit;
-        },
-    },
     data() {
         return {
-            loading: true,
+            loading: false,
         }
     },
     mounted() {},
@@ -89,7 +80,10 @@ export default {
         },
     },
     props: {
-        transaction:Object,
-    }
+        transaction: Object,
+    },
+    watch(){
+
+    },
 }
 </script>

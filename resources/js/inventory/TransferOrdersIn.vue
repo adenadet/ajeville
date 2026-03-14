@@ -54,7 +54,13 @@
     </section>
 </template>
 <script>
+import InventoryDetailTransferOrder from '@/inventory/details/TransferOrder.vue';
+import InventoryDetailTransferOrderList from '@/inventory/details/TransferOrderList.vue';
+import InventoryFormTransferOrder from '@/inventory/forms/TransferOrder.vue';
 export default {
+    components:{
+        InventoryDetailTransferOrder, InventoryDetailTransferOrderList, InventoryFormTransferOrder
+    },
     data() {
         return {
             current_page: 1,

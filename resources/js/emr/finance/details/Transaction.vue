@@ -4,47 +4,34 @@
         <div class="col-md-5">
             <div class="card card-primary card-outline">
                 <div class="card-body box-profile">
-                    <h3 class="profile-username text-center">{{ transaction?.service_type?.name || transaction?.item_name }}</h3>
                     <p class="text-muted text-center">{{ patientName(transaction?.patient) }}</p>
                     <ul class="list-group list-group-unbordered mb-3">
                         <li class="list-group-item">
                             <b>Visit:</b> <a class="float-right">{{ transaction?.visit?.unique_id }}</a>
                         </li>
                         <li class="list-group-item">
-                            <b>Payment Status:</b> <a class="float-right">{{ transaction?.status == 100 ? 'Paid' : 'Unpaid' }}</a>
+                            <b>Payment Status:</b> <a class="badge badge-dark float-right">{{ transaction?.status == 100 ? 'Paid' : 'Unpaid' }}</a>
                         </li>
                         <li class="list-group-item">
                             <b>Status:</b>
-                            <span class="float-right" v-if="transaction?.status == 400"> Cancelled</span>
-                            <span class="float-right" v-else-if="transaction?.status == 1000"> Transferred</span>
-                            <span class="float-right" v-else-if="transaction?.service_status == 1"> Completed</span>
+                            <span class="badge float-right" v-if="transaction?.status == 400"> Cancelled</span>
+                            <span class="badge badge-primary float-right" v-else-if="transaction?.status == 1000"> Transferred</span>
+                            <span class="badge badge-success float-right" v-else-if="transaction?.service_status == 1"> Completed</span>
+                            <span class="badge badge-danger float-right" v-else>Undone</span>
                         </li>
                     </ul>
-                    <!--a href="#" class="btn btn-primary btn-block"><b>Follow</b></a-->
                 </div>
                 <div class="card-footer p-0">
                     <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                            Requested By: <span class="float-right badge">{{ FullName(transaction?.creator) }}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                            Service Type <span class="float-right badge">{{ transaction?.service_type?.name || 'N/A' }}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                Payment Type <span class="float-right badge">{{ transaction?.paid_by == 1 ? 'Cash' : (transaction?.paid_by == 2 ? 'Credit' : 'Co-paid') }}</span>
-                            </a>
-                        </li>
+                        <li class="nav-item"><a href="#" class="nav-link">Requested By: <span class="float-right badge">{{ FullName(transaction?.creator) }}</span></a></li>
+                        <li class="nav-item"><a href="#" class="nav-link">Service Type <span class="float-right badge">{{ transaction?.item?.service_type?.name || 'N/A' }}</span></a></li>
+                        <li class="nav-item"><a href="#" class="nav-link">Payment Type <span class="float-right badge">{{ transaction?.paid_by == 1 ? 'Cash' : (transaction?.paid_by == 2 ? 'Credit' : 'Co-paid') }}</span></a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-
+            {{ transaction }}
         </div>
         <div class="col-md-3">
 
@@ -66,7 +53,7 @@ export default {
     mounted() {},
     methods: {
         getInitials() {
-            axios.get('/api/emr/visit/transactions/'+this.transaction_id).then(response => {
+            axios.get('/api/emr/hims/visit_transactions/'+this.transaction_id).then(response => {
                 this.refreshPage(response);
             })
             .catch(() => {
