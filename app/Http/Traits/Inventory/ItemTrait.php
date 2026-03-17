@@ -52,8 +52,7 @@ trait ItemTrait {
                 else{
                     return $prefix.'-'.$code;
                 }
-        }   
-        
+        }      
     }
 
     public function inventory_item_create($data){
@@ -233,19 +232,20 @@ trait ItemTrait {
         try{
             $item = Item::where('id', '=', $id)->orWhere('unique_id', '=', $id)->first();
             
-            $item->name                 = $data['name'] ?? $item->name;
-            $item->unique_id            = is_null($item->unique_id) ? $this->inventory_generate_unique_id('item') : $item->unique_id;
-            $item->average_landing_cost = $data['average_landing_cost']  ?? $item->average_landing_cost;
-            $item->barcode              = $data['barcode'] ?? $item->barcode;
-            $item->brand_id             = $data['brand_id'] ?? $item->brand_id;
-            $item->category_id          = $data['category_id'] ?? $item->category_id;
-            $item->classification_id    = $data['classification_id'] ?? $item->classification_id;
-            $item->description          = $data['description'] ?? $item->description;
-            $item->last_landing_cost    = $data['last_landing_cost'] ?? $item->last_landing_cost;
-            $item->status               = $data['status'] ?? "active";
-            $item->type_id              = $data['type_id'] ?? $item->type_id;
-            $item->updated_by           = auth('api')->id();
-            
+            $item->update([
+                'name'                 => $data['name'] ?? $item->name,
+                'unique_id'            => is_null($item->unique_id) ? $this->inventory_generate_unique_id('item') : $item->unique_id,
+                'average_landing_cost' => $data['average_landing_cost']  ?? $item->average_landing_cost,
+                'barcode'              => $data['barcode'] ?? $item->barcode,
+                'brand_id'             => $data['brand_id'] ?? $item->brand_id,
+                'category_id'          => $data['category_id'] ?? $item->category_id,
+                'classification_id'    => $data['classification_id'] ?? $item->classification_id,
+                'description'          => $data['description'] ?? $item->description,
+                'last_landing_cost'    => $data['last_landing_cost'] ?? $item->last_landing_cost,
+                'status'               => $data['status'] ?? "active",
+                'type_id'              => $data['type_id'] ?? $item->type_id,
+                'updated_by'           => auth('api')->id() ?? Auth::id(),
+            ]);
             $item->save();
 
             if ($item->type_id == 2){
@@ -253,6 +253,9 @@ trait ItemTrait {
                 switch($data['service']['service_type_id']){
                     case 3:
                         $reference_type = 'App\Models\EMR\Admission';
+                    break;
+                    case 4:
+                        $reference_type = 'App\Models\EMR\Consultation\Service';
                     break;
                     case 6:
                         $reference_type = 'App\Models\EMR\Laboratory\Service';
@@ -306,7 +309,6 @@ trait ItemTrait {
                         else{
 
                         }
-
                     break;
                     case 6: //If it is a Laboratory Item 
                         if(empty($emr_service->referenceable_id)){

@@ -26,13 +26,17 @@
                         <th></th>
                     </tr>
                 </thead>
-                  <tbody>
+                <tbody>
                     <tr v-for="insurance in patient.insurances">
-                      <td>{{ insurance.plan.name }}</td>
-                      <td>{{ insurance.plan.provider.name }}</td>
-                      <td>{{ insurance.enrollee_number }}</td>
-                      <td><span class="tag tag-success">{{ insurance.expiry_date }}</span></td>
-                      <td></td>
+                        <td>{{ insurance.plan?.name }}</td>
+                        <td>{{ insurance.plan?.provider?.name }}</td>
+                        <td>{{ insurance.enrollee_id }}</td>
+                        <td><span class="tag tag-success">{{ insurance.expiry_date }}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary" @click="editInsurance(insurance)"><i class="fa fa-edit"></i></button>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -72,7 +76,14 @@ export default {
         closeModal(){
             $('#allergyModal').modal('hide');
             $('#contactModal').modal('hide');
-            $('#contactModal').modal('hide');
+            $('#insuranceModal').modal('hide');
+        },
+        editInsurance(insurance){
+            this.loading = true;
+            this.editMode = true;
+            this.insurance = insurance;
+            $('#insuranceModal').modal('show');
+            this.loading =false;
         },
         getInitials(id){
             this.loading = true;

@@ -4,9 +4,7 @@ import moment from 'moment';
 export const globalMethods = {
     methods: {
         addOne(value) {
-            if (isNaN(value)) {
-                return '0';
-            }
+            if (isNaN(value)) {return '0';}
             let val = value + 1;
             return val;
         },
@@ -57,7 +55,8 @@ export const globalMethods = {
             if (isNaN(value)) {
                 return '₦ 0.00';
             }
-            let val = (value / 1).toFixed(2).replace(',', '.');
+            
+            let val = ( (Math.abs(value)) / 1).toFixed(2).replace(',', '.');
             return  '₦ '+val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         },
         dateCompareToday(date, query){
@@ -157,6 +156,17 @@ export const globalMethods = {
             } else {
                 return text.substring(0, length) + suffix;
             }
+        },
+        serviceModule(value) {
+            if (!value) return '';
+
+            const map = {
+                'App\\Models\\EMR\\Consultation\\Service': 'Consultation',
+                'App\\Models\\EMR\\Laboratory\\Service': 'Laboratory',
+                'App\\Models\\EMR\\Radiology\\Service': 'Radiology',
+            };
+
+            return map[value] || value;
         },
         shortDate(text) {
             return moment(text).format('MMM Do, YY');

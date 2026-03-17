@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Api\EMR\Hims;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Traits\EMR\ConsultationTrait;
-#use App\Http\Traits\EMR\DialysisTrait;
-#use App\Http\Traits\EMR\EmergencyTrait;
-#use App\Http\Traits\EMR\QueueTrait;
 use App\Http\Traits\EMR\InsuranceTrait;
 use App\Http\Traits\EMR\PatientTrait;
 use App\Http\Traits\EMR\VisitTrait;
@@ -17,20 +14,26 @@ use App\Models\EMR\Service;
 use App\Models\EMR\Settings\ServiceType;
 use App\Models\EMR\Visit;
 use App\Models\EMR\Patient\Patient;
-#use App\Models\EMR\VisitType;
 
 use App\Models\Finance\Transaction;
 use App\Models\Finance\PriceList;
 use App\Models\Insurance\ProviderType;
 use App\Models\Inventory\Item;
 use App\Models\Operations\Branch;
+use App\Services\EMR\VisitService;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
 
 class VisitationController extends Controller
 {
+    protected $visit_service;
+    public function __construct(VisitService $visit_service)
+    {
+        $this->visit_service = $visit_service;
+    }
     use ConsultationTrait, InsuranceTrait, PatientTrait, VisitTrait; //DialysisTrait, EmergencyTrait, QueueTrait, TransactionTrait
+
     public function bills($id){
         $branch_id = request()->cookie('current_branch');
         $visit = $this->visit_get_by_unique_id($id);
@@ -60,20 +63,36 @@ class VisitationController extends Controller
 
     public function end(Request $request, $id)
     {
-        $visit = Visit::find($id);
+        $request->validate(['defer_items' => 'nullable|array']);
+        try {
+            $visit = $this->visit_service->end_visit($id, $request->input('defer_items', []));
 
-        $visit->status = 2;
-        $visit->end_date = date('Y-m-d');
-        $visit->end_timestamp = date('Y-m-d H:i:s');
-        $visit->updated_by = auth('api')->id();
-        $visit->updated_at = date('Y-m-d H:i:s');
-
-        $visit->save();
-
-        return response()->json([
-            'visit' => $visit,
-            'visits' => $this->emr_visit_get_all('all', request()->cookie('current_branch'), null, true, true, $_GET['page'] ?? 1),
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Visit closed successfully',
+                'visit' => $visit,
+                'visits' => $this->emr_visit_get_all('all', request()->cookie('current_branch'), true,true,),
+            ]);
+        } 
+        catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function end_check($id)
+    {
+        try {
+            $data = $this->visit_service->end_check($id);
+            return response()->json($data);
+        } 
+        catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function get_cookie()
@@ -101,7 +120,7 @@ class VisitationController extends Controller
             'plans' => $this->insurance_provider_plan_get_all('branch', null, false, false, null),
             'providers' => $this->insurance_provider_get_all('active', null, true, false, null),
             'insurance_types' => ProviderType::select('id', 'name')->get(),
-            'service_types' => ServiceType::select('id', 'name')->orderBy('name', 'ASC')->get(),
+            'visit_types' => ServiceType::select('id', 'name')->whereNotNull('queueable')->orderBy('name', 'ASC')->get(),
         ]);
     }
 

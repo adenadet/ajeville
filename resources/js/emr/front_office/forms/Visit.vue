@@ -39,7 +39,7 @@
                     <label>Insurance</label>
                     <select class="form-control" name="branch_id" id="branch_id" v-model="VisitForm.plan_id">
                         <option value="">--Select Branch--</option>
-                        <option v-for="insurance in patient_insurances" :key="insurance.id" :value="insurance.plan.id">{{ insurance.plan.
+                        <option v-for="insurance in patient?.insurances" :key="insurance.id" :value="insurance.plan.id">{{ insurance.plan.
                         name }}</option>
                         <option value=0>Cash - No Insurance </option>
                     </select>
@@ -97,6 +97,7 @@ export default {
             .then(response => {
                 
                 if (response.data.status == 'Completed'){
+                    this.$emit('reloadVisitForm');
                     this.$store.dispatch('setPatientCookie', response.data.patient);
                     this.$store.dispatch('setVisitCookie', response.data.visit);
                     this.$swal.fire({
@@ -105,26 +106,10 @@ export default {
                         showConfirmButton: false,
                         timer: 5000,
                     });
-
-                    if ((this.VisitForm.visit_type_id == 1) || (this.VisitForm.visit_type_id == 3)){
-                        this.$router.push('/hims/visits/consultation/create/'+response.data.visit.unique_id);
-                    }
-                    else if(this.VisitForm.visit_type_id == 2){
-                        this.$router.push('/hims/visits/admission/create/'+response.data.visit.unique_id);
-                    }
-                    else if(this.VisitForm.visit_type_id == 4){
-                        this.$router.push('/hims/visits/admission/create/'+response.data.visit.unique_id);
-                    }
-                    else if(this.VisitForm.visit_type_id == 5){
-                        this.$router.push('/hims/visits/admission/create/'+response.data.visit.unique_id);
-                    }
-                    else if((this.VisitForm.visit_type_id == 6) ||(this.VisitForm.visit_type_id == 7)) {
-                        this.$router.push('/hims/visits/admission/create/'+response.data.visit.unique_id);
-                    }
                 }
                 else if (response.data.status == 'Error'){
                     if (response.data.message == 'Previous Visit not closed'){
-                        Swal.fire({
+                        this.$swal.fire({
                             icon: 'error',
                             title: 'Patient has '+response.data.count_visit+' outstanding visit(s)',
                             text: 'Kindly close the visit before opening a new visit',
@@ -147,7 +132,7 @@ export default {
         },
         getAllInitials(){
             this.loading = true;
-            axios.get('/api/emr/hims/visits/initials').then(response =>{
+            axios.get('/api/emr/hims/visits/'+this.$route.params.id+'/initials').then(response =>{
                 this.refresh(response);
             })
             .catch(()=>{

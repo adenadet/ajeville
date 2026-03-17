@@ -4,7 +4,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header"><h4 class="modal-title" v-html="editMode ? 'Edit Contact' : 'Create Contact'"></h4><button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button></div>
-                <div class="modal-body"><EMRPatientFormContact :editMode="editMode" :contact="contact" /></div>
+                <div class="modal-body"><EMRPatientFormContact :editMode.sync="editMode" :contact.sync="contact" :patient_id.sync="patient.id"/></div>
             </div>
         </div>
     </div>
@@ -21,41 +21,41 @@
                         <li class="nav-item" v-if="source =='consultation'"><a class="nav-link" href="#consultations" data-toggle="tab">Consultations</a></li>
                         <li class="nav-item" v-if="source != 'consultation'"><a class="nav-link" href="#contacts" data-toggle="tab">Contacts</a></li>
                         <li class="nav-item"><a class="nav-link" href="#insurances" data-toggle="tab">Insurances</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#laboratory" data-toggle="tab">Laboratory </a></li>
+                        <li class="nav-item" v-if="source =='consultation'"><a class="nav-link" href="#laboratory" data-toggle="tab">Laboratory </a></li>
                         <li class="nav-item" v-if="source !='consultation'"><a class="nav-link" href="#next-of-kin" data-toggle="tab">Next of Kin</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#radiology" data-toggle="tab"> Radiology</a></li>
+                        <li class="nav-item" v-if="source =='consultation'"><a class="nav-link" href="#radiology" data-toggle="tab"> Radiology</a></li>
                         <li class="nav-item"><a class="nav-link" href="#transactions" data-toggle="tab">Transactions</a></li>
                         <li class="nav-item" v-if="source !='consultation'"><a class="nav-link" href="#password" data-toggle="tab">Reset Password</a></li>
                     </ul>
                 </div>
                 <div class="card col-md-10  p-0">
                     <div class="tab-content" v-if="patient.user != null">
-                        <div class="tab-pane active" id="bio-data">
+                        <div class="tab-pane active" id="bio-data" style="min-height: 500px;">
                             <EMRPatientDetailBioData  @reloadPatient="getInitials"/>
                         </div>
-                        <div class="tab-pane" id="consultations" v-if="source =='consultation'">
+                        <div class="tab-pane" id="consultations" v-if="source =='consultation'" style="min-height: 500px;">
                             Put previous consultations list here
                             <!--EMRConsultantDetailBioData /-->
                         </div>
-                        <div class="tab-pane" id="next-of-kin" v-if="source !='consultation'">
+                        <div class="tab-pane" id="next-of-kin" v-if="source !='consultation'" style="min-height: 500px;">
                             <EMRPatientDetailNextOfKin />
                         </div>
-                        <div class="tab-pane" id="allergies" v-if="source == 'consultation'">
+                        <div class="tab-pane" id="allergies" v-if="source == 'consultation'" style="min-height: 500px;">
                             <EMRPatientDetailAllergies :patient="patient" />
                         </div>
-                        <div class="tab-pane p-0" id="insurances">
+                        <div class="tab-pane p-0" id="insurances" style="min-height: 500px;">
                             <EMRPatientDetailInsurances />
                         </div>
-                        <div class="tab-pane p-0" id="laboratory" v-if="source == 'consultation'">
+                        <div class="tab-pane p-0" id="laboratory" v-if="source == 'consultation'" style="min-height: 500px;">
                             <EMRLaboratoryDetailRequestList type="patient"/>
                         </div>
-                        <div class="tab-pane p-0" id="radiology" v-if="source == 'consultation'">
+                        <div class="tab-pane p-0" id="radiology" v-if="source == 'consultation'" style="min-height: 500px;">
                             <EMRRadiologyDetailRequestList type="patient"/>
                         </div>
-                        <div class="tab-pane p-0" id="radiology" v-if="source == 'consultation'">
+                        <div class="tab-pane p-0" id="radiology" v-if="source == 'consultation'" style="min-height: 500px;">
                             <EMRPharmacyDetailPrescriptionList type="patient"/>
                         </div>
-                        <div class="tab-pane p-0" id="contacts" v-if="source != 'consultation'">
+                        <div class="tab-pane p-0" id="contacts" v-if="source != 'consultation'" style="min-height: 500px;">
                             <div class="card-header bg-dark">
                                 <h3 class="card-title">List of Contact(s)</h3>
                                 <div class="card-tools"><button type="button" @click="addContact()" class="btn btn-xs btn-primary"><i class="fa fa-plus"></i></button></div>
@@ -164,7 +164,7 @@ export default {
         editContact(contact){
             this.loading = true;
             this.editMode = true;
-            let details = {'patient': this.patient, 'contact': contact};
+            this.contact = contact;
             $('#contactModal').modal('show');
             this.loading = false;
         },
@@ -183,6 +183,7 @@ export default {
         reloadPatient(response){
             this.patient = response.data.patient;
             this.$store.dispatch('setPatientCookie', response.data.patient);
+            if (response.data.visit != null){this.$store.dispatch('setVisitCookie', response.data.visit);}
         },
         refreshPage(){}
     }

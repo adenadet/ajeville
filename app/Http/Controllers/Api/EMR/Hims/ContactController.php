@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\EMR\Hims;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Models\EMR\PatientContact; 
+use App\Models\EMR\Patient\Contact; 
 
 class ContactController extends Controller
 {
@@ -21,10 +21,10 @@ class ContactController extends Controller
             'name' => 'required|string',
             'address'=> 'required|string',
             'email_address'=> 'nullable|string',
-            'phone'=> 'nullable|string',
+            'phone'=> 'nullable',
         ]);
 
-        $patient_contact = PatientContact::create([
+        $patient_contact = Contact::create([
             'patient_id' => $request->input('patient_id'),
             'name' => $request->input('name'),
             'address'=> $request->input('address'),
@@ -41,7 +41,7 @@ class ContactController extends Controller
     public function show($id)
     {
         return response()->json([
-            'contacts' => PatientContact::where('patient_id', '=', $id)->paginate(10),
+            'contacts' => Contact::where('patient_id', '=', $id)->paginate(10),
         ]);
     }
 
@@ -55,7 +55,7 @@ class ContactController extends Controller
             'phone'=> 'nullable|string',
         ]);
 
-        $patient_contact = PatientContact::find($id);
+        $patient_contact = Contact::find($id);
         $patient_contact->patient_id = $request->input('patient_id');
         $patient_contact->name = $request->input('name');
         $patient_contact->address = $request->input('address');

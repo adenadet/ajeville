@@ -32,9 +32,10 @@ Route::group(['prefix'=>'emr/hims', 'as'=>'api.emr.hims.'], function () {
     Route::get( '/radiology/initials',               'RadiologyController@initials')->name('radiology.initials');
     Route::get( '/services/initials',                'ServiceController@initials')->name('services.initials');
     Route::get( '/visits/bills/{id}',                'VisitationController@bills')->name('visits.bills');
-    Route::put( '/visits/end/{id}',                  'VisitationController@end')->name('visits.end');
+    Route::put( '/visits/{id}/end',                  'VisitationController@end')->name('visits.end');
+    Route::get( '/visits/{id}/end-check',            'VisitationController@end_check')->name('visits.end-check');
     Route::get( '/visits/get_cookie',                'VisitationController@get_cookie')->name('visits.get_cookie');
-    Route::get( '/visits/initials',                  'VisitationController@initials')->name('visits.initials');
+    Route::get( '/visits/{id}/initials',             'VisitationController@initials')->name('visits.initials');
     Route::get( '/visits/{id}/start',                'VisitationController@start')->name('visits.start');
     Route::post('/visits/set_cookie',                'VisitationController@set_cookie')->name('visits.set_cookie');
     Route::post('/visits/transactions',              'VisitationController@transactions')->name('visits.transactions');

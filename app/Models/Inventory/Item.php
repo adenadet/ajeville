@@ -10,8 +10,8 @@ class Item extends Structure
 {
     use HasFactory;
 
-    const StatusActive = "active";
-    const StatusInactive = "inactive";
+    public const StatusActive = "active";
+    public const StatusInactive = "inactive";
     
     protected $primaryKey = 'id';
     protected $table = 'inventory_items';

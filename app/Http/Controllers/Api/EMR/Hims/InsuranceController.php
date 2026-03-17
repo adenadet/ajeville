@@ -11,6 +11,8 @@ use App\Models\Inventory\Item;
 use App\Models\EMR\LaboratoryRequest;
 use App\Models\EMR\RadiologyRequest;
 use App\Models\EMR\Patient;
+use App\Models\EMR\Patient\Insurance;
+use App\Services\EMR\PatientInsuranceService;
 
 class InsuranceController extends Controller
 {
@@ -31,7 +33,16 @@ class InsuranceController extends Controller
 
     public function store(Request $request)
     {
-        
+        $request->validate([
+            'patient_id' => ['numeric', 'required', 'exists:emr_patients,id'],
+            'plan_id' => ['numeric', 'exists:hmo_provider_plans,id'],
+        ]);
+        $insurance_service = new PatientInsuranceService();
+        $patient_insurance = $insurance_service->create($request->input('patient_id'), $request->input());
+
+        return response()->json([
+            'patient_insurance' => $patient_insurance,
+        ]);
     }
 
     public function show($id)
@@ -41,7 +52,18 @@ class InsuranceController extends Controller
 
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'patient_id' => ['numeric', 'required', 'exists:emr_patients,id'],
+            'plan_id' => ['numeric', 'exists:hmo_provider_plans,id'],
+        ]);
+        
+        $insurance = Insurance::findOrFail($id);
+        $insurance_service = new PatientInsuranceService();
+        $patient_insurance = $insurance_service->update($insurance, $request->input('patient_id'), $request->input());
+
+        return response()->json([
+            'patient_insurance' => $patient_insurance,
+        ]);
     }
 
     public function destroy($id)

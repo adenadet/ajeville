@@ -4,7 +4,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header"><h4 class="modal-title" v-html="editMode ? 'Edit Contact' : 'Create Contact'"></h4><button type="button" class="close"  @click="closeModal"><span aria-hidden="true">&times;</span></button></div>
-                <div class="modal-body"><EMRPatientFormContact :editMode="editMode" :contact="contact" /></div>
+                <div class="modal-body"><EMRPatientFormContact :editMode="editMode" :contact="contact" :patient="patient"/></div>
             </div>
         </div>
     </div>
@@ -20,10 +20,10 @@
                         <li class="nav-item"><a class="nav-link active" href="#bio-data" data-toggle="tab">Bio Data</a></li>
                         <li class="nav-item" v-if="source =='consultation'"><a class="nav-link" href="#consultations" data-toggle="tab">Consultations</a></li>
                         <li class="nav-item" v-if="source != 'consultation'"><a class="nav-link" href="#contacts" data-toggle="tab">Contacts</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#insurances" data-toggle="tab">Insurances</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#laboratory" data-toggle="tab">Laboratory </a></li>
+                        <li class="nav-item" v-if="source != 'consultation'"><a class="nav-link" href="#insurances" data-toggle="tab">Insurances</a></li>
+                        <li class="nav-item" v-if="source != 'consultation'"><a class="nav-link" href="#laboratory" data-toggle="tab">Laboratory </a></li>
                         <li class="nav-item" v-if="source !='consultation'"><a class="nav-link" href="#next-of-kin" data-toggle="tab">Next of Kin</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#radiology" data-toggle="tab"> Radiology</a></li>
+                        <li class="nav-item" v-if="source != 'consultation'"><a class="nav-link" href="#radiology" data-toggle="tab"> Radiology</a></li>
                         <li class="nav-item"><a class="nav-link" href="#tasks" data-toggle="tab">Transactions</a></li>
                         <li class="nav-item" v-if="source !='consultation'"><a class="nav-link" href="#password" data-toggle="tab">Reset Password</a></li>
                     </ul>
@@ -37,7 +37,7 @@
                             Put previous consultations list here
                             <!--EMRConsultantDetailBioData /-->
                         </div>
-                        <div class="tab-pane" id="next-of-kin" v-if="source !='consultation'">
+                        <div class="tab-pane" id="next-of-kin">
                             <EMRPatientDetailNextOfKin />
                         </div>
                         <div class="tab-pane" id="allergies" v-if="source == 'consultation'">
@@ -159,7 +159,8 @@ export default {
         editContact(contact){
             this.loading = true;
             this.editMode = true;
-            let details = {'patient': this.patient, 'contact': contact};
+            this.contact = contact;
+            //let details = {'patient': this.patient, 'contact': contact};
             //Fire.$emit('ContactDataFill', details);
             $('#contactModal').modal('show');
             this.loading = false;

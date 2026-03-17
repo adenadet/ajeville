@@ -25,14 +25,15 @@
                 <th>Last Landing Cost</th>
                 <th>Avg. Landing Cost</th>
                 <th>Status</th>
-                <th>&nbsp;</th>
+                <th><button type="button" class="btn btn-primary btn-xs ml-1" @click="addItem" title="Add New Item"><i class="fa fa-plus"></i></button></th>
             </tr>
         </thead>
         <tbody v-if="items.length != 0 && items != null">
             <tr v-for="item in items" :key="item.id">
                 <td :title="item.name">{{ readMore(item.name, 50, '...') }}</td>
-                <td>{{ item.item_type != null ? item.item_type.name : 'Not Assigned' }}</td>
-                <td>{{ item.category != null ? item.category.name : 'Not Assigned' }}</td>
+                <td>{{ item.item_type?.name || 'Not Assigned' }}</td>
+                <td>{{  serviceModule(item.service?.referenceable_type) || 'Not Assigned' }}</td>
+
                 <td>{{ item.brand != null ? item.brand.name : 'Unbranded' }}</td>
                 <td>{{ currency(item.last_landing_cost) }}</td>
                 <td>{{ currency(item.current_cost_price) }}</td>
@@ -57,7 +58,11 @@
 
 </template>
 <script>
+import InventoryFormItem from '@/inventory/forms/Item.vue';
 export default {
+    components:{
+        InventoryFormItem
+    },
     data(){
         return  {
             current_page: 1,
@@ -76,7 +81,6 @@ export default {
             this.loading = true;
             this.editMode = false;
             this.item = {};
-            //Fire.$emit('ItemDataFill', {});
             $('#itemModal').modal('show');
             this.loading = false;  
         },

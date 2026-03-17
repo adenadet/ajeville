@@ -21,7 +21,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal()"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
-                        <EMRFinanceDetailPatientTransaction :patient="patient"/>
+                        <EMRFinanceDetailPatientTransaction :patient="patient" :visit="visit"/>
                     </div>
                 </div>
             </div>
@@ -45,12 +45,12 @@
             <div class="card-tools">
                 <div class="btn-group">
                     <button class="btn btn-sm btn-primary" title="New Transactions" @click="addService"><i class="fa fa-plus"></i></button>
-                    <router-link :to="source == 'visit' ? '/hims/visits/bills/'+this.$route.params.id : '/hims/patients/bills/'+this.$route.params.id" class="btn btn-sm btn-default" title="Print Transactions"><i class="fa fa-print"></i></router-link>
+                    <router-link :to="source == 'visit' ? '/emr/front_office/visits/bills/'+this.$route.params.id : '/hims/patients/bills/'+this.$route.params.id" class="btn btn-sm btn-default" title="Print Transactions"><i class="fa fa-print"></i></router-link>
                     <button class="btn btn-sm btn-warning" title="Export Transactions"><i class="fa fa-file-pdf"></i></button>
                 </div>
             </div>
         </div>
-        <div class="card-body table-responsive p-0">
+        <div class="card-body table-responsive p-0" style="min-height: 500px;">
             <table class="table table-striped table-hover text-nowrap">
                 <thead>
                     <tr>

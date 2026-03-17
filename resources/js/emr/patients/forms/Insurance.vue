@@ -34,8 +34,39 @@
                 <div class="form-group">
                     <label>Plan</label>
                     <select class="form-control" v-model="insuranceForm.plan_id">
-                    <option v-for="plan in filtered_plans"  :key="plan.id" :value="plan">{{ plan.name }}</option>
+                    <option v-for="plan in filtered_plans"  :key="plan.id" :value="plan.id">{{ plan.name }}</option>
                     </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Enrollee ID</label>
+                    <input type="text" class="form-control" v-model="insuranceForm.enrollee_id" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="date" class="form-control" v-model="insuranceForm.expiry_date" >
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control" v-model="insuranceForm.status">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Other Details</label>
+                    <QuillEditor content-type="html" class="form-control" v-model:content="insuranceForm.other_details" theme="snow" />
                 </div>
             </div>
         </div>
@@ -44,6 +75,8 @@
 </section>
 </template>
 <script>
+import { QuillEditor } from '@vueup/vue-quill';
+
 export default {
     data(){
         return {
@@ -52,10 +85,14 @@ export default {
             filtered_providers: [],
             insuranceForm: new Form({
                 id: '',
+                enrollee_id: '', 
+                expiry_date: '',
+                other_details: '',
                 patient_id: '', 
                 provider_type_id: '', 
                 provider_id: '', 
-                plan_id: '', 
+                plan_id: '',
+                status: '',
             }),
             insurance_types: [],
             plans: [],
@@ -65,6 +102,7 @@ export default {
     },
     methods:{
         createInsurance(){
+            this.insuranceForm.patient_id = this.patient.id;
             this.insuranceForm.post('/api/emr/hims/insurances')
             .then(response =>{
                 this.$swal.fire({icon: 'success', title: 'The Insurance details has been created', showConfirmButton: false, timer: 1500});
@@ -107,6 +145,7 @@ export default {
         },
         updateInsurance(){
             this.loading = true;
+            this.insuranceForm.patient_id = this.patient.id;
             this.insuranceForm.put('/api/emr/hims/insurances/'+this.insuranceForm.id)
             .then(response =>{
                 this.$swal.fire({icon: 'success', title: 'The Insurance details has been updated', showConfirmButton: false, timer: 1500});

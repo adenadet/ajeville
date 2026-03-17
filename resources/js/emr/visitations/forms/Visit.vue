@@ -13,7 +13,7 @@
                 <div class="form-group" v-else>
                     <label>Patient Name</label>
                     <input type="hidden" name="patient_id" id="patient_id" v-model="VisitForm.patient_id" />
-                    <div class="form-control">{{ patient | patientName }}</div>
+                    <div class="form-control">{{ patientName(patient)  }}</div>
                     <has-error :form="VisitForm" field="patient_id"></has-error> 
                 </div>
             </div>  
@@ -40,7 +40,7 @@
                     <label>Insurance</label>
                     <select class="form-control" name="branch_id" id="branch_id" v-model="VisitForm.plan_id">
                         <option value="">--Select Branch--</option>
-                        <option v-for="insurance in patient_insurances" :key="insurance.id" :value="insurance.plan.id">{{ insurance.plan.
+                        <option v-for="insurance in patient.insurances" :key="insurance.id" :value="insurance.plan.id">{{ insurance.plan.
                         name }}</option>
                         <option value=0>Cash - No Insurance </option>
                     </select>
@@ -89,18 +89,6 @@ export default {
     },
     mounted() {
         this.getAllInitials();
-        Fire.$on('VisitResponse', request => {
-            if (request != null) {
-                this.VisitForm.patient_id = request.patient != null ? request.patient.id : '';
-                this.patient = request.patient != null ? request.patient.id : '';
-                this.VisitForm.start_date = request.id;
-                this.VisitForm.assessments = [];
-                for (let i = 0; i < request.assessments.length; i++) {
-                    this.VisitForm.assessments.push(request.assessments[i].id);
-                }  
-            }
-            else { this.VisitForm.reset(); }
-        });
     },
     methods: {
         codeAndNameAndDesc (item) {

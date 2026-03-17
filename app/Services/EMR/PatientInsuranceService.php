@@ -17,7 +17,7 @@ class PatientInsuranceService
         return Insurance::create([
             'patient_id'   => $patientId,
             'provider_id'  => $data['provider_id'],
-            'plan_id'      => $data['id'],
+            'plan_id'      => $data['plan_id'],
             'enrollee_id'  => $data['enrollee_id'] ?? null,
             'expiry_date'  => $data['expiry_date'] ?? null,
             'other_details'=> $data['other_details'] ?? null,
@@ -34,6 +34,22 @@ class PatientInsuranceService
         $insurance->update([
             'status'     => 0,
             'updated_by' => $this->actorId(),
+        ]);
+
+        return $insurance;
+    }
+
+    public function update($insurance, $patientId, array $data): Insurance
+    {
+        $insurance->update([
+            'patient_id'   => $patientId,
+            'provider_id'  => $data['provider_id'] ?? $insurance->provider_id,
+            'plan_id'      => $data['plan_id'] ?? $insurance->plan_id,
+            'enrollee_id'  => $data['enrollee_id'] ?? $insurance->enrollee_id,
+            'expiry_date'  => $data['expiry_date'] ?? $insurance->expiry_date,
+            'other_details'=> $data['other_details'] ?? $insurance->other_details,
+            'status'       => $data['status'] ?? 1,
+            'updated_by'   => $this->actorId(),
         ]);
 
         return $insurance;

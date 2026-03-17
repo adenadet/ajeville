@@ -14,10 +14,10 @@
                         <i class="fa fa-calendar" width="24" height="24"></i> {{patient?.user != null ? ExcelDate(patient?.user.dob) : ''}}
                     </li>
                     <li class="list-group-item">
-                        <a :href="'mailto:'+(patient?.user != null ? patient?.user.email : '')"><i class="fa fa-envelope" width="24" height="24"></i> {{patient?.user != null ? patient?.user.email : ''}}</a>
+                        <a :href="'mailto:'+(patient?.user?.email || '')"><i class="fa fa-envelope" width="24" height="24"></i> {{patient?.user?.email || ''}}</a>
                     </li>
                     <li class="list-group-item" v-if="patient?.user != null">
-                        <i class="fa fa-phone" width="24" height="24"></i> {{patient?.user.phone}} {{patient?.user.alt_phone ? ', '+patient?.user.alt_phone: ''}} 
+                        <i class="fa fa-phone" width="24" height="24"></i> {{patient?.user?.phone}}, {{patient?.user?.alt_phone || ''}} 
                     </li>
                     <li class="list-group-item" v-if="patient?.user != null">
                         <i class="fa fa-money-bill" width="24" height="24"></i> <span :class="patient?.balance < 0 ? 'text-primary' : 'text-danger'">{{currency(patient?.balance)}}</span> 

@@ -8,21 +8,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModals()"><span aria-hidden="true" class="text-white">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <InventoryFormItemImport @itemReload="getAllInitials(current_page)"/> 
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="itemModal">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-dark">
-                    <h4 class="modal-title" v-show="editMode">Edit Item: {{item.name}}</h4>
-                    <h4 class="modal-title" v-show="!editMode">New Item</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModals()"><span aria-hidden="true" class="text-white">&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <InventoryFormItem :editMode="editMode" :item.sync="item" @itemReload="getAllInitials(current_page)"/> 
+                    <InventoryFormItemImport @itemReload="getAllInitials()"/> 
                 </div>
             </div>
         </div>
@@ -42,7 +28,6 @@
                                     <option value="active">Active</option>
                                     <option value="all">All</option>
                                 </select>
-                                <button type="button" class="btn btn-primary ml-1" @click="addItem" title="Add New Item"><i class="fa fa-plus"></i></button>
                                 <button type="button" class="btn btn-success ml-1" @click="uploadItems" title="Upload Items"><i class="fa fa-upload"></i></button>
                                 <button type="button" class="btn btn-info ml-1" @click="downloadItems" title="Download All Items"><i class="fa fa-download"></i></button>
                             </div>
@@ -64,9 +49,10 @@
 <script>
 import InventoryDetailItemList from '@/inventory/details/ItemList.vue';
 import InventoryFormItem from '@/inventory/forms/Item.vue';
+import InventoryFormItemImport from '@/inventory/forms/ItemImport.vue';
 export default {
     components:{
-        InventoryDetailItemList, InventoryFormItem
+        InventoryDetailItemList, InventoryFormItem, InventoryFormItemImport
     },
     data(){
         return  {
@@ -83,13 +69,6 @@ export default {
         this.getAllInitials();
     },
     methods:{
-        addItem(){
-            this.loading = true;
-            this.editMode = false;
-            this.item = {};
-            $('#itemModal').modal('show');
-            this.loading = false;  
-        },
         closeModals(){
             $('#itemModal').modal('hide');
         },

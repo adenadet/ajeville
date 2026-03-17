@@ -133,7 +133,7 @@ class PatientController extends Controller
             'patient' => $patient,
             'transactions' => $this->emr_visit_transaction_get_all(null, ['patient_id' => $patient->id, 'visit_id' => $visit_id ], true, true),
             'pending_transactions' => $this->emr_visit_transaction_get_all('pending', ['patient_id' => $patient->id, 'visit_id' => $visit_id], true, true), 
-            'visit' => $visit,    
+            'visit' => is_string($visit) ? null : $visit,    
         ]);
     }
 

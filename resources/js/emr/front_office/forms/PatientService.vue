@@ -146,6 +146,10 @@ export default {
     emits: ['refreshPatientServiceForm'],
     methods: {
         addServices(){
+            if (this.visit == null){
+                this.$swal.fire('No Active Visit', 'Visit Transaction can not be created', 'warning');
+                return;
+            }
             this.loading = true;
             this.billForm.patient_id = this.patient.id;
             this.billForm.visit_id = this.visit.id;

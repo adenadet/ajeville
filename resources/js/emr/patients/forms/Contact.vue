@@ -1,5 +1,6 @@
 <template>
-<form id="register_form">    
+<form id="register_form" class="overlay-wrapper p-0"> 
+    <div class="overlay dark" v-if="loading"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Loading...</div></div>   
     <div class="row">
         <div class="col-sm-12">
             <div class="form-group">
@@ -45,68 +46,56 @@ export default {
                 phone:'',
                 patient_id: '',
             }),
-            patient: {},
+            loading: false,
         }
     },
+    emits: ['refreshPatientContacts'],
     methods:{
         createContact(){
-            this.$Progress.start();
+            this.loading = true;
+            this.contactForm.patient_id = this.patient_id;
             this.contactForm.post('/api/emr/hims/contacts')
             .then(response =>{
-                this.$Progress.finish();
-                Fire.$emit('refreshPatientContacts', this.patient);
-                Swal.fire({icon: 'success', title: 'The Contact details has been created', showConfirmButton: false, timer: 1500});
+                this.$emit('refreshPatientContacts', this.patient);
+                this.$swal.fire({icon: 'success', title: 'The Contact details has been created', showConfirmButton: false, timer: 1500});
                 })
             .catch(()=>{
-                Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
-                this.$Progress.fail();
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=> {
+                this.loading = false;
             }); 
         },
         updateContact(){
-            this.$Progress.start();
+            this.loading = true;
             this.contactForm.put('/api/emr/hims/contacts/'+this.contactForm.id)
             .then(response =>{
-                this.$Progress.finish();
-                Fire.$emit('refreshPatientContacts', this.patient);
-                Swal.fire({icon: 'success', title: 'The Contact details has been updated', showConfirmButton: false, timer: 1500 });})
+                this.$emit('refreshPatientContacts', this.patient);
+                this.$swal.fire({icon: 'success', title: 'The Contact details has been updated', showConfirmButton: false, timer: 1500 });})
             .catch(()=>{
-                Swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
-                this.$Progress.fail();
+                this.$swal.fire({icon: 'error', title: 'Oops...', text: 'Something went wrong!', footer: 'Please try again later!'});
+            })
+            .finally(()=>{
+                this.loading = false;
             });          
         },    
     },
     mounted() {
-        /*Fire.$on('ContactDataFill', details =>{
-            console.log(details);
-            this.contactForm.patient_id = details.patient.id;
-            this.patient = details.patient;
-            if (details.contact != null){
-                this.contactForm.id = details.contact.id;
-                this.contactForm.name = details.contact.name;
-                this.contactForm.address = details.contact.address;
-                this.contactForm.phone = details.contact.phone;
-                this.contactForm.email_address = details.contact.email_address;
-            }
-            else{}
-        });*/
     },
     props:{
-        details: Object,
+        contact: Object,
         editMode: Boolean,
+        patient_id: Number,
     },
     watch:{
-        details(){
-            this.contactForm.patient_id = this.details.patient.id;
-            this.patient = this.details.patient;
-            if (this.details.contact != null){
-                this.contactForm.id = this.details.contact.id;
-                this.contactForm.name = this.details.contact.name;
-                this.contactForm.address = this.details.contact.address;
-                this.contactForm.phone = this.details.contact.phone;
-                this.contactForm.email_address = this.details.contact.email_address;
-            }
-            else{}
-        }
+        contact:{
+            handler(newContact){
+                if(!newContact) return;
+                this.contactForm.fill(newContact);
+            },
+            immediate: true,
+            deep: true
+        },
     }
 }
 </script>
